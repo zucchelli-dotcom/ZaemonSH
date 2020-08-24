@@ -1,0 +1,163 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# unpacker : 
+# Given an input stream with a uuencoded archive from 
+# the remotebackup script, this unpacks and installs the archive.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME temp home mydir webhome notify
+
+VERSION="0.0.1"
+FCT_NAME="unpacker"
+
+temp="/tmp/$(basename $0).$$"
+home="${HOME:-/usr/home/bzz}"
+mydir="$home/archive"
+webhome="/usr/home/bzz/web"
+
+notify="taylor@intuitive.com"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+  clear
+  echo "${NC}"  
+  echo " ###################################################################################################"
+  echo " #                                                                                                 #"
+  echo " #     ${GREEN}This is ${RED}$FCT_NAME : ${YEL}$VERSION FOR $OSTYPE ${NC}                                #"
+  echo " #     CopyL®®v 2019, Zucchelli Bryan                                                              #"
+  echo " #                                                                                                 #"
+  echo " #     Unless required by applicable law or agreed to in writing, software                         #"
+  echo " #     distributed under the License is distributed on an "AS IS" BASIS,                             #"
+  echo " #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.                    #"
+  echo " #     See the License for the specific language governing permissions and                         #"
+  echo " #     limitations under the License.                                                              #"
+  echo " #                                                                                                 #"
+  echo " ###################################################################################################"
+  echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+( cat - > $temp  # shortcut to save stdin to a file
+  
+  target="$(grep "^Subject: " $temp | cut -d\  -f2-)"
+  
+  echo $(basename $0): Saved as $temp, with $(wc -l < $temp) lines
+  echo "message subject=\"$target\""
+  
+  # move into the temporary unpacking directory...
+  if [ ! -d $mydir ] ; then
+    echo "Warning: archive dir $mydir not found. Unpacking into $home"
+    cd $home
+    mydir=$home         # for later use
+  else
+    cd $mydir
+  fi
+  
+  # extract the resultant filename from the uuencoded file...
+  fname="$(awk '/^begin / {print $3}' $temp)"
+  
+  uudecode $temp
+  
+  if [ ! -z "$(echo $target | grep 'Backup archive for')" ] ; then
+    # all done. no further unpacking needed.
+    echo "Saved archive as $mydir/$fname"
+    exit 0
+  fi
+  
+  # Otherwise, we have a uudecoded file and a target directory
+  if [ "$(echo $target|cut -c1)" = "/" -o "$(echo $target|cut -c1-2)" = ".." ]
+  then
+    echo "Invalid target directory $target. Can't use '/' or '..'"
+    exit 0
+  fi
+  
+  targetdir="$webhome/$target"
+
+  if [ ! -d $targetdir ] ; then
+    echo "Invalid target directory $target. Can't find in $webhome"
+    exit 0
+  fi
+
+  gunzip $fname
+  fname="$(echo $fname | sed 's/.tgz$/.tar/g')"
+
+  # are the tar archive filenames in a valid format?
+  if [ ! -z "$(tar tf $fname | awk '{print $8}' | grep '^/')" ] ; then
+    echo "Can't unpack archive: filenames are absolute."
+    exit 0
+  fi
+
+  echo ""
+  echo "Unpacking archive $fname into $targetdir"
+
+  cd $targetdir
+  tar xvf $mydir/$fname | sed 's/^/  /g'
+
+  echo "done!"
+  
+) 2>&1 | mail -s "Unpacker output $(date)" $notify
+  
+exit 0

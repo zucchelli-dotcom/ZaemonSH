@@ -1,0 +1,200 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# switch_users :
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 05/01/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME VERS_ACT VERS_MIN
+
+VERS_ACT=$(sw_vers -productVersion | sed 's/^10.//')
+VERS_MIN=$(echo "10.4"  | sed 's/^10.//')
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage: 
+
+    Examples:
+
+
+  ${NC}
+__EOF__
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+#
+
+
+
+
+
+banner
+if (( $VERS_ACT < $VERS_MIN  )); then
+#if [[ $(sw_vers -productVersion | sed 's/^10.//') < 10.4  ]]; then
+     print "Fast User Switching is not available in OSX version $(sw_vers -productVersion) "
+     return 1
+fi
+
+
+# swuser - Switch users via Mac OS X's Fast User Switching 
+#
+# Originally via Schoun Reagan, but later 
+# http://www.macosxhints.com/article.php?story=20031102031045417
+#
+# v0.1   2006-10-18 - Morgan Aldridge <morgant@makkintosshu.com>
+#                     Initial release
+# v0.2   2010-12-27 - Morgan Aldridge
+#                     Renamed to 'swuser', added usage instructions, options
+#                     for switching to login window, user by name, or user by ID.
+#
+
+# global variables
+user=$(whoami)
+id=$(id -u $user)
+cgsession="/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession"
+
+# print usage instructions (help)
+function usage() {
+	
+    echo "${RED}Usage: swuser [options [username|useried]]\n"
+	printf "  -h            print these usage instructions\n"
+	printf "                switch to the login window\n"
+	printf "  -n            switch to a different user by user name\n"
+	printf "  -u            switch to a different user by user id${NC}\n"
+}
+
+function check_id() {
+	if (( $1 == $2 )); then
+		echo "${RED}Sorry, you can't switch to yourself.${NC}\n"
+		break
+        return -1;
+	fi
+}
+
+# exit with an error if being run from screen
+if [ "$STY" != "" ]; then
+	printf "Sorry, swuser doesn't work from within screen. I know, I hate it too!\n"
+	return 0;
+fi
+
+# see if any arguments were passed in
+if [ $# -gt 0 ]; then
+	# if so, step through them all and process them
+	while [ $# -gt 0 ]; do
+		# see if the user requested help
+		if [ "$1" = "-h" ]; then
+			usage
+			return 1;
+		# handle switch to login window
+		elif [ "$1" = "-l" ]; then
+			"$cgsession" -suspend
+			shift
+		# handle switching to another user by name
+		elif [ "$1" = "-n" ]; then
+			shift
+			new_id=$(id -u "$1")
+			check_id $id $new_id
+			"$cgsession" -switchToUserID $(id -u "$1")
+			shift
+		# handle switch to another user by id
+		elif [ "$1" = "-u" ]; then
+			shift
+			check_id $id $1
+			"$cgsession" -switchToUserID $1
+			shift
+        else 
+            usage
+            return 1;
+        fi
+	done
+else
+    # handle switch to login window
+	"$cgsession" -suspend
+    return 0
+	# printf "No switch user action specified.\n\n"
+	# usage
+fi
+
+
+
+
+
+
+# if [[ -z $1 ]]; then
+#   /System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend
+# else
+#   USERID=`/usr/bin/id -u $1`;
+#   if [[ -z $USERID ]]; then
+#     return -1;
+#   fi
+#   /System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -switchToUserID $USERID
+# fi
+

@@ -1,0 +1,106 @@
+#compdef Z_FunctionBySubcat
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _Z_FunctionBySubcat :
+# Author: Zucchelli Bryan
+# nov 07 2016
+# Z_FunctionlistBySubcat completion to list ZaemonSH function by system and category.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 18/08/19 :
+# • Create this one.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+_notes(){
+  local -a _1st_arguments
+  _1st_arguments=(
+    'core:Core ZaemonSH functions by categories'
+    'darwin:Darwin ZaemonSH functions by categories'
+    'linux:Linux ZaemonSH functions by categories'
+    'universal:Universal ZaemonSH functions by categories'
+    )
+
+
+_core-lst(){compadd -X %B"--- Available core sub-categories --- "%b linux osx universal}
+
+ _darw-lst(){compadd -X %B"--- Available darwin  sub-categories --- "%b administration dailyuse development media network sudoneed}
+ _linu-lst(){compadd -X %B"--- Available linux sub-categories --- "%b administration dailyuse development media network sudoneed}
+ _uni-lst(){compadd -X %B"--- Available universal sub-categories --- "%b administration dailyuse development media network sudoneed}
+ #
+  local curcontext="$curcontext" state line expl
+  local -A opt_args
+
+  _arguments -C '*:: :->subcmds'
+
+  if (( CURRENT == 1 )); then
+    _describe -t commands "Z_FunctionBySubcat subcommands" _1st_arguments
+    return
+  fi
+
+  case "$words[1]" in
+    	core)
+        _arguments \
+        "1: : _core-lst" && return 0
+
+            ;;
+    	darwin)
+        _arguments \
+        "1: : _darw-lst" && return 0
+       ;;
+     	linux)
+        _arguments \
+         "1: : _linu-lst" && return 0
+     	 _arguments && return 0
+       ;;
+     	universal)
+        _arguments \
+         "1: : _uni-lst" && return 0
+     	 _arguments && return 0
+       ;;
+        *)
+     	 _message "unknown user command: $words[1]"
+      	 _default
+      	;;
+  esac
+  return 1
+}
+#----------------------------------------------------------------------------------------#
+#                                      COMPLETION
+#----------------------------------------------------------------------------------------#
+_notes "$@"

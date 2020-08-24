@@ -1,0 +1,90 @@
+#! /usr/bin/env zsh -f
+
+######################################################################################################
+#                                                                                                    #
+#    ZAEMONSH Created by Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2017.         #
+#    Copyright (c) 2019. All rights reserved.                                                        #
+#    Hardly inspired by zsh-templates created by William Scott on May 11, 2007.                      #
+#    Copyright (c) 2007. All rights reserved.                                                        #
+#                                                                                                    #
+#    This program is free software; you can redistribute it and/or modify it under the terms of      #
+#    the GNU General Public License as published by the Free Software Foundation; either             #
+#    version 2 of the License, or (at your option) any later version.                                #
+#                                                                 									 # 
+#    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY ;      #
+#    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.       #
+#    See the GNU General Public License for more details.                                  			 #
+#                                                        											 #
+#    You should have received a copy of the GNU General Public License along with this program ;     #
+#    if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,           #
+#    Boston,  MA 02110-1301 USA                    													 #
+#                                                                                                    #
+#    cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                                       #
+#                                                                                                    #
+######################################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# locate_pat :
+# Search the locate database for the specified pattern.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="locate_pat"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage: $0 <PATTERN>
+  ${NC}
+__EOF__
+}
+
+
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+[[ $# == 0 ]] && help && return 1
+[[ -f /var/locate.db ]] && local locatedb="/var/locate.db"
+[[ -f /var/db/locate.database ]] && local locatedb="/var/db/locate.database"
+grep -i "$@" $locatedb

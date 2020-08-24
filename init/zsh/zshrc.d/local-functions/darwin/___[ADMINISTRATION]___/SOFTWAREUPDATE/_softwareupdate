@@ -1,0 +1,128 @@
+#compdef softwareupdate
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+#  _softwareupdate :
+# Completion function for softwareupdate; MacOS system software update tool.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify completion presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+_softwareupdate_ignored_update_name() {
+  if [[ -z "$_softwareupdate_ignored_updates" ]]; then
+    local res="$(_call_program pkgs softwareupdate --ignored)"
+    _softwareupdate_ignored_updates=("${(Qs/, /)${${res#Current ignored updates: \(}%\)}}")
+  fi
+  if (( ${#_softwareupdate_ignored_updates} > 0 )); then
+    _wanted pkgs expl "ignored package" compadd -a _softwareupdate_ignored_updates && return 0
+  fi
+  return 1
+}
+
+_softwareupdate_update_name() {
+  local name line
+  if [[ -z "$_softwareupdate_updates" ]]; then
+    _softwareupdate_updates=()
+    for line in ${(f)"$(_call_program pkgs softwareupdate --list)"}; do
+      if [[ $line == '   '* ]]; then
+        name="${line#   ? }"
+      elif [[ -n "$name" ]]; then
+        _softwareupdate_updates+=("$name:${line#  }")
+        name=""
+      fi
+    done
+  fi
+  if (( ${#_softwareupdate_updates} > 0 )); then
+    _describe -t pkgs "update name" _softwareupdate_updates && return 0
+  fi
+  return 1
+}
+
+_softwareupdate() {
+  local context state line expl
+  typeset -A opt_args
+
+  _arguments -R \
+    '(-h --help -l --list)-q[quiet mode]' \
+    {-l,--list}'[List all available updates]:*:' \
+    {-d,--download}'[download to directory set in InternetConfig]:*:' \
+    {-i,--install}'[install (requires root)]:*: :->install' \
+    '--ignored[show or manage ignored updates list (per-user)]:*:: :->ignored' \
+    '--schedule[scheduler preferences (per-user)]:automatic checking:(on off)' \
+    {-h,--help}'[print command usage]:*:' && return 0
+
+  case "$state" in
+    install)
+      _arguments \
+        '(* -a --all)'{-a,--all}'[all available active updates]' \
+        '(* -r --req)'{-r,--req}'[all required active updates]' \
+        '*:update name:_softwareupdate_update_name' && return 0
+      ;;
+    ignored)
+      local -a ignored_subcmd
+      ignored_subcmd=(add remove)
+
+      if (( CURRENT == 1 )); then
+        _describe -t commands "subcommands" ignored_subcmd && return 0
+      fi
+      case $words[1] in
+        add)
+          _softwareupdate_update_name && return 0
+          ;;
+        remove)
+          _arguments \
+            '(* -a --all)'{-a,--all}'[all available active updates]' \
+            '*:update name:_softwareupdate_ignored_update_name' && return 0
+          ;;
+      esac
+      ;;
+  esac
+  return 1
+}
+
+#----------------------------------------------------------------------------------------#
+#                                      COMPLETION
+#----------------------------------------------------------------------------------------#
+_softwareupdate "$@"
+

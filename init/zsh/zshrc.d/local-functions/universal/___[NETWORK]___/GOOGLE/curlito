@@ -1,0 +1,120 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# curlito :
+### Query index of / + [foldername] + [filetype] 
+### eg: [AI] + [EPS] + [PSD] + [TIFF]
+### https://www.google.fr/search?q=index+of+/+%2B+encours+%2B+[AI]+%2B+[EPS]&ie=utf-8&oe=utf-8&gws_rd=cr&ei=AL-wVbeXA4OqU_nvgKAJ
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 13/01/2018 :
+#  • To finish and test.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/01/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="2.0.0"
+FCT_NAME="curlito"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+
+
+# curl -A Mozilla http://www.google.com/search?q=linux  |html2text -width 70}
+
+clear
+# echo  $(lynx --dump "http://www.google.com/search?q=$(echo $@|sed -e 's/+/%2B/g' -e 's/ /+/g')")
+#lynx --dump "http://www.google.com/search?q=$(echo $@)"
+
+
+
+# gg(){ lynx -dump http://www.google.com/search?q=$@ | sed '/[0-9]*\..http:\/\/www.google.com\/search?q=related:/!d;s/...[0-9]*\..http:\/\/www.google.com\/search?q=related://;s/&hl=//';}
+
+	# search=""
+ #    echo "$1"
+ #    for term in $*; do
+ #        search="$search%20$term"
+ #    done
+    lynx --dump "http://google.com/search?q=$(echo $@|sed -e 's/+/%2B/g' -e 's/ /+/g')" | grep 
+ #$(echo $@|sed -e 's/+/%2B/g' -e 's/ /+/g') 
+ #for startpage results try "https://startpage.com/do/search/?q=$search"
+ ## Just extensions
+ # wget -q -U "Mozilla/5.001" -O - "http://www.google.com/search?q=indef+of+/+filetype%3Apdf&num=10O" | grep -o -E 'href="([^"#]+)"' | cut -d'"' -f2 | grep "/url?q" | sed 's/.......//' |  sed 's/&.*//' | grep -v webcache
+	

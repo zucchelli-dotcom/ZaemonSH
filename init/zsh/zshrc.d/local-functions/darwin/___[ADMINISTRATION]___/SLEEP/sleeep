@@ -1,0 +1,121 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# sleeep :
+# Put your computer into sleep.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 05/01/2018 :
+#  • Merge sleepno sleepyes into sleep one.
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2019, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+    cat<<__EOF__
+    ${RED}
+    usage: sleeep [ until | now | help ]
+
+    Examples:
+      sleeep until 3600            # Sleep until 3600 seconds
+      sleeep until my_script.sh    # Sleep until the script ends
+      sleeep now                   # sleep now.
+    ${NC}
+__EOF__
+}
+
+nosleep_until(){
+    case $1 in
+        [0-9]*)
+            caffeinate -u -t $1
+            ;;
+        *)
+            [ ! -z "$1" ] && caffeinate $@
+            ;;
+    esac
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+case $1 in
+    help)
+        help
+        ;;
+    until)
+        shift  # remove "until" arg
+        nosleep_until $@
+        ;;
+    now)
+        pmset sleepnow
+        ;;
+    *)
+        help
+        ;;
+esac
+
+# vim: ts=4 sw=4 softtabstop=4 expandtab

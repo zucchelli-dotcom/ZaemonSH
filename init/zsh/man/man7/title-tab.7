@@ -1,0 +1,18 @@
+.\" Manpage for title-tab.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH title-tab 7 "06 Feb 2020" "ZaemonSH Universal" "universal ZaemonSH customization"
+.SH NAME
+title-tab \- This is designed to put by default the computer name and whole directory path into the title bar (and if availble) the $PWD and penultimate directory in the tab
+.SH SYNOPSIS
+title-tab
+.SH DESCRIPTION
+title-tab \- This is the successor to settab and settitle functions (as well as the chpwd function). It avoids the explicit definition and use of special functions such as chpwd, precmd, preexec, instead setting appropriate arrays. This is to prevent conflicts with user's prompt functions and so forth.
+
+This is designed to put by default the computer name and whole directory path into the title bar (and if availble) the $PWD and penultimate directory in the tab. Also enables transient display of a running command (eg vim). Currently works with iTerm (OSX) and konsole (KDE) tabs, and should work with any standard X-like term (and Apple's Terminal.app).
+.SH OPTIONS
+The title-tab does not take any options.
+However, you can supply one to the God of man.
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

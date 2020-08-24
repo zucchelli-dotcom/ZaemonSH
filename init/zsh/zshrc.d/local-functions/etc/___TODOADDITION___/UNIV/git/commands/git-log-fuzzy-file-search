@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+
+prefix=$(echo `pwd` | sed "s:`git root`/::")
+
+if [ "$1" = "" ]; then
+    echo Filter required
+else
+    git log -n 500 --pretty=format: --name-only . | sed "s:$prefix/::" | sort -u | grep "$1" | xargs git log --pretty=format':%C(yellow)%h%Cblue%d%Creset %s %C(white)%an, %ar%Creset' --stat --
+fi

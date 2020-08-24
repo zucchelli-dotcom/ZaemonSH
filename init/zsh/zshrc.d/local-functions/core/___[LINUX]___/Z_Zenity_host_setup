@@ -1,0 +1,226 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_Zenity_host_setup
+# By Zucchelli Bryan, 0ct 19, 2016
+# Sets up host names and its completion using Zenity gui on Linux. 
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 10/10/2017 :
+#  • Test if no bug exist.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 10/10/2017 :
+#  • Modifying Script presentation, add description.
+#  • put script on function.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#=======================
+# Define local variables
+#=======================
+local version use_ssh_known_hosts use_custom_hosts use_etc_hosts hostnames custom_list rep1 rep2 rep3 rep4 answer1
+version="0.0.1"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+#==================================
+# Check current completion settings
+#==================================
+compSetCheck () {
+if [[ $USE_SSH_KNOWN_HOSTS == 'yes' ]]; then
+    use_ssh_known_hosts='1'
+    condikhosts="TRUE"
+else
+    use_ssh_known_hosts='0'
+    condikhosts="FALSE"
+
+fi
+
+if [[ $USE_CUSTOM_HOSTS == 'yes' ]]; then
+    use_custom_hosts='1'
+    condichosts="TRUE"
+else
+    use_custom_hosts='0'
+    condichosts="FALSE"
+fi
+
+if [[ $USE_ETC_HOSTS == 'yes' ]]; then
+    use_etc_hosts='1'
+    condietchosts="TRUE"
+else
+    use_etc_hosts='0'
+    condietchosts="FALSE"
+fi   
+}
+
+# #=============
+# # Starting gui
+# #=============
+
+guiStarting () {
+rep1="Use ~/.ssh/Known_hosts for host name completion."
+rep2="Use user-defined list of hosts."
+rep3="Use zsh _etc_hosts completion function with /etc/hosts file."
+rep4="revert to default settings"
+    ##  emacs or vi keybindings?
+    function host_setup {
+            answer1=$(zenity --list --title="user completion setup" --width=400 --multiple --radiolist --text="Choose user name completion options:" --column "" --column "Item" "$condikhosts" "$rep1" "$condichosts" "$rep2" "$condietchosts" "$rep3" --hide-header  --extra-button="revert to default settings"    2>/dev/null)
+            if [[ "$?" == "1"  ]] && [[ "$answer1" != "$rep4"  ]]; then
+                 print "You chse to cancel the task."
+                return 0
+            fi
+
+            # ###
+            if [[ "$answer1" == "$rep1"  ]] && [[ "$?" == "0" ]]; then
+                print "You chse use ~/.ssh/Known_hosts for host name completion."
+                perl -pi -e "s|USE_SSH_KNOWN_HOSTS.+|USE_SSH_KNOWN_HOSTS=\'yes\'|g" ~/.zsh/cache/Z_Host_user_completion_settings
+                source ~/.zsh/cache/Z_Host_user_completion_settings
+             else
+                perl -pi -e "s|USE_SSH_KNOWN_HOSTS.+|USE_SSH_KNOWN_HOSTS=\'no\'|g" ~/.zsh/cache/Z_Host_user_completion_settings
+                source ~/.zsh/cache/Z_Host_user_completion_settings
+            fi
+
+            # ###
+            if [[ "$answer1" == "$rep2"  ]] && [[ "$?" == "0" ]]; then
+                print "You chse use user-defined list of hosts.."
+            #     /bin/rm -f ~/.zsh/zshvi
+                local custom_list=$(zenity --entry --text="Custom-defined list of users separate by space" --entry-text=$custom_list 2>/dev/null)
+                print ${custom_list} | sed 's/ /\n/g' >| ~/.zsh/cache/custom_hosts
+                perl -pi -e "s|USE_CUSTOM_HOSTS.+|USE_CUSTOM_HOSTS=\'yes\'|g" ~/.zsh/cache/Z_Host_user_completion_settings
+                source ~/.zsh/cache/Z_Host_user_completion_settings
+            else
+                perl -pi -e "s|USE_CUSTOM_HOSTS.+|USE_CUSTOM_HOSTS=\'no\'|g" ~/.zsh/cache/Z_Host_user_completion_settings
+                source ~/.zsh/cache/Z_Host_user_completion_settings
+            fi
+            
+            # ###
+            if [[ "$answer1" == "$rep3"  ]] && [[ "$?" == "0" ]]; then
+                  print "You chse zsh _etc_hosts completion function with /etc/hosts file."
+                perl -pi -e "s|USE_ETC_HOSTS.+|USE_ETC_HOSTS=\'yes\'|g" ~/.zsh/cache/Z_Host_user_completion_settings
+                source ~/.zsh/cache/Z_Host_user_completion_settings
+            else
+                perl -pi -e "s|USE_ETC_HOSTS.+|USE_ETC_HOSTS=\'no\'|g" ~/.zsh/cache/Z_Host_user_completion_settings
+                source ~/.zsh/cache/Z_Host_user_completion_settings
+            fi
+            if [[ "$answer1" == "$rep4"  ]] && [[ "$?" == "0" ]]; then
+                print "You chse to revert to revert to default settings."
+                perl -pi -e "s|USE_SSH_KNOWN_HOSTS.+|USE_SSH_KNOWN_HOSTS=\'yes\'|g" ~/.zsh/cache/Z_Host_user_completion_settings
+                perl -pi -e "s|USE_CUSTOM_HOSTS.+|USE_CUSTOM_HOSTS=\'no\'|g" ~/.zsh/cache/Z_Host_user_completion_settings
+                perl -pi -e "s|USE_ETC_HOSTS.+|USE_ETC_HOSTS=\'yes\'|g" ~/.zsh/cache/Z_Host_user_completion_settings
+                # print ${usernames} | sed 's/ /\n/g' >| ~/.zsh/cache/custom_users
+                source ~/.zsh/cache/Z_Host_user_completion_settings 
+            fi
+  
+            #========================================================
+            # Issue a warning message if custom_hosts is empty and if
+            # USE_CUSTOM_HOSTS variable is set to 'yes'.
+            #========================================================
+            if [[ -z $( < ~/.zsh/cache/custom_hosts ) && $USE_CUSTOM_HOSTS == 'yes' ]]; then
+                if [[ $ENCODING == '1:14' ]]; then
+                    print ""
+                    print "\e[1m  custom_hosts Z_Host_setup.\e[0m"
+                    print ""
+                else
+                    print ""
+                    print "\e[1m  custom_hosts file is empty.  Please execute Z_Host_setup.\e[0m"
+                    print ""
+                fi
+            fi
+
+            #=======================
+            # Update $HOSTS variable
+            #=======================
+            #~~~~~~~~~~~~~~~~~~~~~~~~~
+            # Clear elements in $HOSTS
+            #~~~~~~~~~~~~~~~~~~~~~~~~~
+            HOSTS=()
+            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            # Define a list of hosts for host name completion
+            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            if [[ $USE_SSH_KNOWN_HOSTS == 'yes' && -f ~/.ssh/known_hosts ]]; then
+            ssh_hosts=(
+            #----------------------------------------------
+            # This gets known hosts from ~/.ssh/known_hosts
+            #----------------------------------------------
+             $( cat ~/.ssh/known_hosts | awk '{print $1}' | cut -d \, -f 1 )
+            )
+            HOSTS+=( $ssh_hosts )
+            fi
+
+
+            if [[ $USE_CUSTOM_HOSTS == 'yes' && -f ~/.zsh/cache/custom_hosts ]]; then
+            custom_hosts=(
+            #----------------------------------
+            # This gets hosts from custom_hosts
+            #----------------------------------
+             $( cat ~/.zsh/cache/custom_hosts )
+            )
+            HOSTS+=( $custom_hosts )
+            fi
+
+
+            if [[ $USE_ETC_HOSTS == 'yes' ]]; then
+            etc_hosts=(
+            #--------------------------------
+            # This gets hosts from /etc/hosts
+            #--------------------------------
+             $( cat /etc/hosts | grep -v localhost | grep -v \# | grep -v broadcast | awk '{print $2}' ) 
+            )
+            HOSTS+=( $etc_hosts )
+            fi
+            #~~~~~~~~~~~~~~~~~~~~~~~
+            # get rid of the repeats
+            #~~~~~~~~~~~~~~~~~~~~~~~
+            typeset -U HOSTS
+        }
+
+host_setup
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+[[ $IS_LINUX ]] && compSetCheck && guiStarting
+
+
+
+
+
+
+
+

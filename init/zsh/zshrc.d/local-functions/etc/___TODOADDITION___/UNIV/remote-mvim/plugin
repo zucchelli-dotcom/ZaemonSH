@@ -1,0 +1,15 @@
+### remote-mvim / zeesh! plugin
+
+# make sure to change settings in prefs file before usage
+# ~/.zsh/plugins/remote_mvim/prefs
+# local: <host of this machine>
+# remote: <host of remote which will open file>
+# cmd: <full path to remote's copy of mvim>
+
+fpath=( ~/.zsh/plugins/remote-mvim/func $fpath )
+autoload -U ~/.zsh/plugins/remote-mvim/func/*(:t)
+
+## aliases
+alias mvim='remote-mvim'
+
+# vim: ft=zsh

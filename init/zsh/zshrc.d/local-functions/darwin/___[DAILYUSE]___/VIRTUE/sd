@@ -1,0 +1,256 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# sd :
+# Switch desktops (using CodeTek virtual desktops or Virtue).
+# 
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 13/01/2018 : 
+#  • Test if CodeTek virtual desktops or Virtue are installed.
+#  • Test version; osx have space and later expose, anyway people can have this app with space 
+#    and expose.
+#  • Debug this one.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 05/01/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage: 
+
+    Examples:
+
+
+  ${NC}
+__EOF__
+}
+
+function DesktopsRunning {
+    local cvd_process=( $(ps -ax | grep "VirtualDesktop" | grep -v grep | head -n 1 | awk '{print $1}' ))        
+    local vir_process=( $(ps -ax | grep Virtue | grep -v grep | head -n 1 | awk '{print $1}' ))
+                        
+    if [[ -n $cvd_process  &&  $cvd_process -gt 0 ]];then
+        print "yes_cvd"
+    elif [[ -n $vir_process  &&  $vir_process -gt 0 ]];then
+        print "yes_vir"
+    else
+        print "no"
+    fi
+}
+
+function Switch2Desktop {   
+    if [[ $(DesktopsRunning) == yes_cvd ]];then       
+        osascript << eof-1C                                 
+            tell application "CodeTek VirtualDesktop Pro"          
+               switchToDesktop named "$Desktop"
+            end tell
+        eof-1C
+
+    elif [[ $(DesktopsRunning) == yes_vir ]];then
+        :
+
+        #osascript << eof-1V
+        #  tell application "Virtue"
+        #    show desktop "$Desktop"
+        #  end tell
+        #eof-1V
+
+    elif [[ $(DesktopsRunning) == no ]];then
+        print "No virtual desktop program is running"
+    else
+        print "Program error in function Switch2Desktop"
+    fi
+}
+
+function SwitchApp2Desktop {   
+    if [[ -z $(ps -ax | grep "$App" | grep -v grep | awk '{print $1}' ) ]];then
+        open -a "$App"  ; sleep 5
+    else
+        open -a "$App"
+    fi
+
+    if [[ $(DesktopsRunning) == yes_cvd ]];then 
+        osascript << eof-2C
+            tell app "Finder"
+            activate
+                tell application "CodeTek VirtualDesktop Pro"
+                        moveApplication named "$App" toDesktopNamed "$Desktop"
+                end tell
+            end tell
+        eof-2C
+    elif [[ $(DesktopsRunning) == yes_vir ]];then
+        osascript << eof-2V
+         tell application "$App" to set miniaturized of the front window to true
+        --  tell application "System Events"
+        --      activate application "$App"     
+        --      keystroke "m" using {command down}
+        --  end tell
+          tell application "VirtueDesktops"
+              show desktop "$Desktop"
+          end tell
+        eof-2V
+        print "$Desktop"
+        sleep 1
+        open -a "$App"
+    elif [[ $(DesktopsRunning) == no ]];then
+        print "No virtual desktop program is running"
+    else
+        print "Program error in function Switch2Desktop"
+        return 111
+    fi
+}
+
+function Switch2NumDesktop {           
+    osascript << eof-3                                
+        tell application "CodeTek VirtualDesktop Pro"          
+           switchToDesktop named (item $DesktopNumber of (get desktopNames))
+        end tell
+    eof-3
+}
+
+function SwitchApp2NumDesktop {     
+    if [[ -z $(ps -ax | grep "$App" | grep -v grep | awk '{print $1}' ) ]];then
+        open -a "$App"  ; sleep 5
+    else
+        open -a "$App"
+    fi        
+    osascript << eof-4
+        tell app "Finder"
+        activate
+            tell application "CodeTek VirtualDesktop Pro"
+                    moveApplication named "$App" toDesktopNamed (item $DesktopNumber of (get desktopNames))
+            end tell
+        end tell
+        eof-4
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+# set -x
+# if [[ $(DesktopsRunning) == no ]];then
+#     print "CodeTek Virtual Desktops or Virtue must be installed and running for the $0 function to work"
+#     return 42
+# fi
+
+# if [[ $# == 1 && $1 -gt 0 ]];then
+#     DesktopNumber="$1"
+#     Switch2NumDesktop  >/dev/null
+#     if [[ $TERM_PROGRAM == iTerm.app && -z $WINDOWID ]];then
+#         App=iTerm
+#     elif [[  $TERM_PROGRAM == Apple_Terminal  && -z $WINDOWID ]];then
+#         App=Terminal
+#     else    
+#         App=X11
+#     fi
+#     print -n "Switching to Desktop named "
+#     SwitchApp2NumDesktop  
+#     open -a $App
+#     App=""
+#     Desktop=""
+#     DesktopNumber=""
+
+# elif [[ $# == 1 ]];then
+#     Desktop="$1"
+#     Switch2Desktop  >/dev/null
+#     if [[ $TERM_PROGRAM == iTerm.app   && -z $WINDOWID ]];then
+#         App=iTerm
+#     elif [[  $TERM_PROGRAM == Apple_Terminal   && -z $WINDOWID ]];then
+#         App=Terminal
+#     else
+#         App=X11
+#         #sleep 5; xwit -pop
+#     fi
+#     print -n "Switching to Desktop named "
+#     SwitchApp2Desktop
+#     App=""
+#     Desktop=""
+#     DesktopNumber="" 
+# elif [[ $# == 3 && $1 == "-a" ]];then
+#     App="$2"
+#     Desktop="$3"
+#     DesktopNumber="$3"
+#     print -n "Switching $App to Desktop named "
+#     if [[ $3 -gt 0 ]];then
+#         SwitchApp2NumDesktop
+#     else
+#         SwitchApp2Desktop
+#     fi
+#     App=""
+#     Desktop=""
+#     DesktopNumber=""
+# else
+#     print "Usage: $0 <desktop number>"
+#     print "Usage: $0 <desktop name>"
+#     print "Usage: $0 -a <application> <desktop name>"
+#     App=""
+#     Desktop=""
+#     DesktopNumber=""
+#     return 1
+# fi

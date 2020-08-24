@@ -1,0 +1,10 @@
+gvim-wrapper() {
+    local servername="`vim --serverlist | head -n 1`"
+    if [ "$servername" ]; then
+        gvim --servername "$servername" --remote-silent $@ > /dev/null 2>&1
+    else
+        gvim $@ > /dev/null 2>&1
+    fi
+}
+
+# vim: ft=zsh

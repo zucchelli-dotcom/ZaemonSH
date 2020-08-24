@@ -1,0 +1,74 @@
+#compdef ccat
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _ccat  :
+# Completion for command ccat. Colorize FILE(s), or standard input, to standard output.
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 05/08/2020 :
+#  • Create this one.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                     COMPLETION
+#----------------------------------------------------------------------------------------#
+_arguments '--bg[set background to "light" or "dark" depending on the terminals background]:background:(dark light)'\
+  {-C,--color=-}'[": colorize the output; value can be "never", "always" or "auto"]:color:( never always auto)'\
+  '*'{-G,--color-code=-}'[set color codes]:colorcode:->color'\
+  '(1 - :)'{-h,--help}'[help for ccat]'\
+  '--html[output html]'\
+  '(1 - :)--palette[show color palettes]'\
+  '(1 - :)'{-v,--version}'[show version]'\
+  '*:filename:_files'
+
+if [[ $state == 'color' ]]; then
+    _sep_parts '( String Keyword Comment Type Literal Punctuation Plaintext Tag HTMLTag HTMLAttrName HTMLAttrValue Decimal )' = '(black blink mblue bold brown darkblue darkgray darkgreen darkred darkteal darkyellow faint fuchsia fuscia green lightgray overline purple red reset standout teal turquoise underline white yellow)'
+fi
+
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:
+### }}}
+
+
+

@@ -1,0 +1,43 @@
+.\" Manpage for Z_Notes-tag-helper.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH Z_Notes-tag-helper 7 "06 Feb 2020" "ZaemonSH" "ZaemonSH customization"
+.SH NAME
+Z_Notes-tag-helper \- This script gives you a wrapper around the `openmeta` program
+.SH SYNOPSIS
+Z_Notes-tag-helper [-t|-s|-a]
+.SH DESCRIPTION
+Z_Notes-tag-helper \- 
+ This script is really something that can be sourced into your shell, e.g.
+        source $HOME/.notes/notes-tag-helper
+
+ Which gives you a wrapper around the `openmeta` program (from Google Code)
+      http://code.google.com/p/openmeta/
+
+ Either have the openmeta executable on the command line, or set up the OPENMETA environment variable before sourcing this file.
+
+
+ The first argument is an "action" for the function which matches the action option to openmeta, specifically:
+
+   -t   to list the tags
+   -s   to set new tags
+   -a   to add additional tags to what a file already has
+
+ If the function fails to find a file, it does nothing, otherwise, it displays
+ the results.
+.SH OPTIONS
+
+.IP "Z_Notes-tag-helper [-t]"
+.B To list the tags.
+
+.IP "Z_Notes-tag-helper [-s]"
+.B To set new tags.
+
+.IP "Z_Notes-tag-helper [-a]"
+.B To add additional tags to what a file already has.
+
+.SH SEE ALSO
+Z_Agenda(7)
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

@@ -1,0 +1,71 @@
+#autoload
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _insert_kept :
+# Author: Bart Schaefer
+# The function "_insert_kept" copies the value of $kept to the cursor
+# position.  If a prefix of a name is immediately to the left of the
+# cursor, then only the subset of $kept that matches that prefix is
+# copied, as is usual for completion.  The examples bind it to two
+# different widgets, "insert-kept-result" and "expand-kept-result".  If
+# invoked via the "expand-kept-result" widget, it replaces a pattern on
+# the command line with the matching words from the $kept array.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local opts tmp glob pat pats expl tag i def descr end ign ret=1 match tried
+local type sdef
+
+#----------------------------------------------------------------------------------------#
+#                                      COMPLETION
+#----------------------------------------------------------------------------------------#
+(( $#kept )) || return 1
+local action
+zstyle -s :completion:$curcontext insert-kept action
+if [[ -n $action ]]
+then compstate[insert]=$action
+elif [[ $WIDGET = *expand* ]]
+then compstate[insert]=all
+fi
+if [[ $WIDGET = *expand* ]]
+then compadd -U ${(M)kept:#${~words[CURRENT]}}
+else compadd -a kept
+fi
+

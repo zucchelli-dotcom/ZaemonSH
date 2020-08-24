@@ -1,0 +1,15 @@
+stop() {
+    if [ ! -f $_UPSTART_INIT_DIR/$1/start ]; then
+        echo 'unsupported app'
+        return 1
+    fi
+
+    if [ ! -f $_UPSTART_INIT_DIR/$1/stop ]; then
+        echo 'stop unsupported'
+        return 1
+    fi
+
+    source $_UPSTART_INIT_DIR/$1/stop
+}
+
+# vim: ft=zsh

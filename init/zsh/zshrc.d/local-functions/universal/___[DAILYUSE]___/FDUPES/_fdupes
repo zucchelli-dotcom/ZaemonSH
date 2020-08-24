@@ -1,0 +1,80 @@
+#compdef fdupes
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _fdupes  :
+# Completion for command fdupes; finds duplicate files in a given set of directories.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/08/2020 :
+#  • Create this one.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                     COMPLETION
+#----------------------------------------------------------------------------------------#
+_arguments -s {--delete,-d}'[prompt user for files to preserve and delete all]'\
+  {--hardlinks,-H}'[normally, when two or more files point to the same]'\
+  '(: 1 -)'{--help,-h}'[display this help message]'\
+  {--noempty,-n}'[exclude zero-length files from consideration]'\
+  {--nohidden,-A}'[exclude hidden files from consideration]'\
+  {--noprompt,-N}'[together with --delete, preserve the first file in set]'\
+  {--omitfirst,-f}'[omit the first file in each set of matches]'\
+  {--quiet,-q}'[hide progress indicator]'\
+  {--recurse,-r}'[for every directory given follow subdirectories]'\
+  {--recurse\\:,-R}'[for each directory given after this option follow]'\
+  {--sameline,-1}'[list each set of matches on a single line]'\
+  {--size,-S}'[show size of duplicate files]'\
+  {--summarize,-m}'[summarize dupe information]'\
+  {--symlinks,-s}'[follow symlinks]'\
+  '(: 1 -)'{--version,-v}'[display fdupes version]'\
+  '*:filename:_files'
+  
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:
+### }}}
+
+
+
+

@@ -1,0 +1,161 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# arduinoToAVRPinNames :
+# Convert arduino pin names to avr one, with graphic.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 30/07/2019 :
+#  • Create this one .
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  echo "${RED}"
+  cat<<__EOF__
+    usage: $0 [  ]
+
+    Examples:
+                                                 # .
+
+
+__EOF__
+echo ${NC}
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+
+declare -A arduinoName=( D0/RX   PD0/RXD 
+                      D1/TX   PD1/TXD 
+                      D2      PD2/INT0      
+                      D3/PWM  PD3/INT1/OC2B 
+                      D4      PD4           
+                      D5/PWM  PD5/OC0B      
+                      D6/PWM  PD6/OC0A      
+                      D7      PD7           
+                      D8      PB0           
+                      D9/PWM  PB1/OC1A      
+                      D10/PWM PB2/OC1B      
+                      D11/PWM PB3/OC2A      
+                      D12     PB4
+                      D13/LED PB5  
+                      A0/D14 PC0/ADC0
+                      A1/D15 PC1/ADC1
+                      A2/D16 PC2/ADC2
+                      A3/D17 PC3/ADC3
+                      A4/D18 PC4/ADC4/SDA
+                      A5/D19 PC5/ADC5/SCL
+                  )
+
+
+# for ardName in ${(k)arduinoName}; do
+#     echo $ardName -- $arduinoName[$ardName]
+# done
+#
+
+if [[ $# != 1 ]]; then
+    echo "USAGE"
+fi
+
+ardPort=$@
+
+echo $BGREEN
+echo $LINEE
+cat<<EOFj
+
+ArduinoUnoPorts     AvrAT328pPins
+---------------     ------------ 
+D1/TX               PD1/TXD      
+D2                  PD2/INT0                                        _______
+D3/PWM              PD3/INT1/OC2B        PCINT14/RESET)      PC6   1|     |28   PC5 (ADC5/SCL/PCINT13)
+D4                  PD4                  PCINT16/RXD)        PD0   2|     |27   PC4 (ADC4/SDA/PCINT12)
+D5/PWM              PD5/OC0B             PCINT17/TXD)        PD1   3|     |26   PC3 (ADC3/PCINT11)
+D6/PWM              PD6/OC0A             PCINT18/INT0)       PD2   4|     |25   PC2 (ADC2/PCINT10)
+D7                  PD7                  PCINT19/OC2B/INT1)  PD3   5|     |24   PC1 (ADC1/PCINT9) 
+D8                  PB0                  PCINT20/XCK/T0)     PD4   6|     |23   PC0 (ADC0/PCINT8) 
+D9/PWM              PB1/OC1A                                 VCC   7|     |22   GND               
+D10/PWM             PB2/OC1B                                 GND   8|     |21   AREF              
+D11/PWM             PB3/OC2A             PCINT6/XTAL1/TOSC1) PB6   9|     |20   AVCC              
+D12                 PB4                  PCINT7/XTAL2/TOSC2) PB7  10|     |19   PB5 (SCK/PCINT5)  
+D13/LED             PB5                  PCINT21/OC0B/T1)    PD5  11|     |18   PB4 (MISO/PCINT4) 
+A0/D14              PC0/ADC0             PCINT22/OC0A/AIN0)  PD6  12|     |17   PB3 (MOSI/OC2A/PCINT3)
+A1/D15              PC1/ADC1             PCINT23/AIN1)       PD7  13|     |16   PB2 (SS/OC1B/PCINT2)
+A2/D16              PC2/ADC2             PCINT0/CLKO/ICP1)   PB0  14|_____|15   PB1 (OC1A/PCINT1) 
+A3/D17              PC3/ADC3                                     
+A4/D18              PC4/ADC4/SDA
+A5/D19              PC5/ADC5/SCL
+
+  
+EOF
+echo $LINEE
+echo "$NC"
+echo "                 ArduinoUNO-ports: $GREEN$ardPort$NC -- AVRAT328p-pins: $GREEN$arduinoName[$ardPort]$NC"
+echo ""
+echo $LINEE

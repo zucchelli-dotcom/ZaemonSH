@@ -1,0 +1,113 @@
+#! /usr/bin/env bash
+
+LISTFILES=$(find -type f -print0 )
+# Liste fichiers compressés
+EXCLFILES=$(find -regextype posix-extended  -regex '.*\.(gz|zip)')
+
+function argu () {
+	if [[ ! $1 ]]; then
+		echo "No arguments"
+		echo Usage
+		exit 0
+	fi
+
+	if [[ $# > "1" ]];then
+		echo "Too much arguments"
+		echo Usage
+		exit 0
+	fi
+
+	if [[ ! -e $1 ]]  && [[ ! -d $1 ]]; then
+		echo "Directory Don't exist"
+		echo Usage
+		exit 0
+	fi
+}
+
+function untargz () {
+
+	#find -type f -print0 | xargs -0 -I {} tar -cvzf {}.tar.gz {} && wait 
+	find . -type f -print0 | while read -d $'\0' file; do
+		if [[ ${file##*.}  == *(gz|tar)  ]]; then		
+		#if [[ ${file##*.}  == *(xz|gz|7z|bz2|zip|tar)  ]]; then
+		 	CURDIR=$(echo $(pwd))
+		 	#cd $CURDIR
+		 	echo "               ----------------------------------------------------------------"
+		 	echo ""
+		 	file -0 "${file}" 
+		 	wait
+		 	tar -xf "${file}"
+		 	echo "                ----------------------------------------------------------------"
+		 	echo ""
+		fi	
+		done
+}
+
+# function exact ()  {    # Handy Extract Program.
+# 	# find . -type f -print0 | while read -d $'\0' file; do
+# 	# 	echo "                ----------------------------------------------------------------"
+# 	# 	echo ""		
+# 	# 	if [[ ${file##*.*.}  == *(tar.gz|tar.bz2)  ]]; then
+# 	# 	 	file -0  ${file}
+# 	# 	 	wait
+# 	#        	case "${file#*.*.}" in
+# 	#              *tar.bz2)   tar xvjf   "${file}"     ;;
+# 	#              *tar.gz)    tar xvzf   "${file}"     ;;
+# 	#              *)           echo "'${file}' cannot be extracted via >extract<" ;;
+# 	#         esac
+# 	#     fi    
+# 	#     wait
+# 	# 	if [[ ${file##*.}  == *(gz|bz2|tar|tbz2|zip|tgz)  ]]; then
+# 	# 	 	file -0  ${file}
+# 	# 	 	wait
+# 	#         case "${file##*.}" in
+# 	#              *tar)       tar xvf    "${file}"     ;;
+# 	#              *bz2)       bunzip2    "${file}"     ;;
+# 	#              #*rar)      unrar x    "${file}"     ;;
+# 	#              *gz)        gunzip     "${file}"     ;;
+# 	#              *tar)       tar xvf    "${file}"     ;;
+# 	#              *bz2)      tar xvjf   "${file}"     ;;
+# 	#              *tgz)       tar xvzf 	 "${file}"     ;;
+# 	#              *zip)       unzip      "${file}"     ;;
+# 	#              #*.Z)        uncompress "${file}"   ;;
+# 	#              #*.7z)       7z x $1         ;;
+# 	#              *)           echo "'${file}' cannot be extracted via >extract<" ;;
+# 	#         esac
+
+# 	#     fi
+# 	#     echo "                ----------------------------------------------------------------"
+# 	# 	echo ""
+# 	# done
+# }
+
+if [[ ! $1 ]]; then
+	echo "No arguments"
+	echo Usage
+	exit 0
+fi
+
+if [[ $# > "1" ]];then
+	echo "Too much arguments"
+	echo Usage
+	exit 0
+fi
+
+if [[ ! -e $1 ]]  &&  [[ ! -d $1 ]]; then
+	echo "Directory Don't exist"
+	echo Usage
+	exit 0
+fi
+wait
+
+
+
+if [[ $(ls "${@}") != "" ]]; then
+	cd "${@}"
+	untargz
+	wait
+	exit 0
+else 
+	echo "Internal Error"
+	wait
+	exit 0
+fi

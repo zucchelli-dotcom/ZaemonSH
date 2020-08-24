@@ -1,0 +1,10 @@
+#!/usr/bin/env zsh
+
+print -l ${(ko)parameters} | sort -u > $HOME/Desktop/zsh-actuals-variables
+wait
+cat "$P_SYSFCTDIR/etc/___TODOADDITION___/zsh_defaults_variables" | tr ' ' '\n' | sort -u > $HOME/Desktop/zsh-defaults-variables
+wait
+diff -y $HOME/Desktop/zsh-defaults-variables $HOME/Desktop/zsh-actuals-variables > $HOME/Desktop/zsh-diff_defaults_actuals-variables
+rm $HOME/Desktop/zsh-defaults-variables $HOME/Desktop/zsh-actuals-variables
+	#statements
+cat $HOME/Desktop/zsh-diff_defaults_actuals-variables

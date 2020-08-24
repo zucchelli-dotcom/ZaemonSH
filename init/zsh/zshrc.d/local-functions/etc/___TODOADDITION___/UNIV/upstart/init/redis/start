@@ -1,0 +1,8 @@
+#!/usr/bin/env zsh
+
+if [ -z "`pgrep redis-server`" ]; then
+    echo starting redis
+    redis-server /usr/local/etc/redis.conf --daemonize yes --logfile /usr/local/var/log/redis.log
+else
+    echo redis already running
+fi

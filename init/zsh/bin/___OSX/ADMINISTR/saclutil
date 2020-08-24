@@ -1,0 +1,417 @@
+#!/usr/bin/env zsh -f
+PATH=/bin:/usr/bin:/sbin:/usr/sbin export PATH
+
+############################# saclutil #############################
+# Mike Bombich | mike@bombich.com
+# Copyright 2005 Mike Bombich
+####################################################################
+
+#
+## Description
+#
+# This script automates the implementation of Service Access Control
+# Lists, or SACLs. For example, you can use this script to limit
+# access to the loginwindow service (that is, who can login) to a
+# specific group within your organization.  This is particularly
+# useful considering that a generic bind to your organization-wide
+# directory service grants permission, by default, to *anyone*
+# within your organization.
+#
+# Service ACLs are maintained in the local directory store in /Groups
+# with names starting with "com.apple.access_". If you want to apply
+# these changes to multiple machines, you can either apply the
+# settings on your master machine prior to deployment, or you can
+# copy the flat files to your client machines.  These files are 
+# located at /var/db/dslocal/nodes/Default/groups/
+#
+# Note that not all services exist on Mac OS X client, and not all services
+# present on Mac OS X client will respect SACLs in their default configuration
+
+#
+# Examples:
+#
+# Applying/removing access restrictions:
+# sudo ./saclutil -s loginwindow -a -u labadmin -g students
+# sudo ./saclutil -s loginwindow -a -g 'AD\\\\domain admins'
+# sudo ./saclutil -s afp -r -u baddude
+# sudo ./saclutil -s all -r -u baddude
+#
+# Listing current access restrictions:
+# sudo ./saclutil -s smb -l
+# sudo ./saclutil -s all -l
+#
+# Disabling access restrictions altogether
+# sudo ./saclutil -s loginwindow -d
+# sudo ./saclutil -s all -d
+#
+
+
+## Globals
+services="afp chat ftp ical loginwindow mail pcast qtss radius remote_ae screensharing smb ssh vpn weblog xgrid"
+
+
+## Functions
+usage() {
+	echo "Usage: sudo `basename \"$0\"` -s service -l"
+	echo "Usage: sudo `basename \"$0\"` -s service -d"
+	echo "Usage: sudo `basename \"$0\"` -s service -a [[-u user]] [-g group]"
+	echo "Usage: sudo `basename \"$0\"` -s service -r [[-u user]] [-g group]"
+	echo "Usage: sudo `basename \"$0\"` -s service -t [[-u user]] [-g group]"
+	echo ""
+	echo "Options:"
+	echo "	-s: one of: [[$services]] or \"all\""
+	echo "	-l: List current access restrictions"
+	echo "	-d: Disable all access restrictions"
+	echo "	-a: Add users/groups"
+	echo "	-r: Remove users/groups"
+	echo "	-t: Test whether a user/group can access the service"
+	
+	exit 1
+}
+
+create_group() {
+	serv=$1
+	# Check that the com.apple.access_$serv group exists
+	search=`dscl /Local/Default -search /Groups name com.apple.access_$serv`
+	if [[ "$search" == "" ]]; then
+		# Create the group
+		echo "Creating the com.apple.access_$serv group"
+		dseditgroup -o create -n /Local/Default -r "$serv Access" -c "Created by saclutil" com.apple.access_$serv
+	fi
+}
+
+
+prune_group() {
+	serv=$1
+	disable="true"
+	dsmemberutil flushcache
+	
+	user_search=`dscl /Local/Default -read /Groups/com.apple.access_$serv GroupMembership | grep -e 'GroupMembership:$' -e "^No such key"`
+	if [[ "$user_search" != "" ]]; then
+		# Delete the "GroupMembership" attribute, its empty
+		dscl /Local/Default -delete /Groups/com.apple.access_$serv GroupMembership
+	else
+		disable="false"
+	fi
+
+	group_search=`dscl /Local/Default -read /Groups/com.apple.access_$serv GroupMembers | grep -e 'GroupMembers:$' -e "^No such key"`
+	if [[ "$group_search" != "" ]]; then
+		# Delete the "GroupMembers" attribute, its empty
+		dscl /Local/Default -delete /Groups/com.apple.access_$serv GroupMembers
+	else
+		disable="false"
+	fi
+
+	ng_search=`dscl /Local/Default -read /Groups/com.apple.access_$serv NestedGroups | grep -e 'NestedGroups:$' -e "^No such key"`
+	if [[ "$ng_search" != "" ]]; then
+		# Delete the "NestedGroups" attribute, its empty
+		dscl /Local/Default -delete /Groups/com.apple.access_$serv NestedGroups
+	else
+		disable="false"
+	fi
+
+	# Delete com.apple.access_$service group if it has no members, users, or nested groups
+	if [[ "$disable" == "true" ]]; then
+		echo "There are no more users or groups in the $serv access list, disabling access list"
+		dseditgroup -o delete -q -n /Local/Default com.apple.access_$serv
+	else
+		# Check that the current user has access to $serv, otherwise warn the user
+		user=$SUDO_USER; if [[ "$user" == "" ]]; then user=$USER; fi
+		me_search=`dsmemberutil checkmembership -U "$user" -G "com.apple.access_$serv"`
+		if [[ "$me_search" == "user is not a member of the group" ]]; then
+			echo "#!#! WARNING: *YOU* do not have access to the $serv service #!#!"
+		fi
+	fi
+
+}
+
+list_sacl() {
+	serv=$1
+	search=`dscl /Local/Default -search /Groups name com.apple.access_$serv`
+	if [[ "$search" != "" ]]; then
+		users=`dscl /Local/Default -read /Groups/com.apple.access_$serv GroupMembership | grep -ve 'GroupMembership:$' -ve "^No such key"`
+		if [[ "$users" != "" ]]; then
+			echo "The following users have access to $serv:"
+			for user in $users; do
+				if [[ "$user" != "GroupMembership:" ]]; then
+					echo "	$user"
+				fi
+			done
+		fi
+	
+		groups=`dscl /Local/Default -read /Groups/com.apple.access_$serv NestedGroups | grep -ve 'NestedGroups:$' -ve "^No such key"`
+		if [[ "$groups" != "" ]]; then
+			echo "The following groups have access to $serv:"
+			for group in $groups; do
+				if [[ "$group" != "NestedGroups:" ]]; then
+					echo "	`dscl /Search -search /Groups GeneratedUID $group | awk -F\t '{print $1; exit}'`"
+				fi
+			done
+		fi
+	else
+		echo "The $serv service does not currently have any access restrictions"
+	fi
+}
+
+disable_sacl() {
+	serv=$1
+	search=`dscl /Local/Default -search /Groups name com.apple.access_$serv`
+	if [[ "$search" != "" ]]; then
+		echo "Disabling all access restrictions to $serv"
+		dseditgroup -o delete -q -n /Local/Default com.apple.access_$serv
+	else
+		echo "The $serv service does not currently have any access restrictions"
+	fi
+}
+
+add_user_sacl() {
+	serv=$1
+	user_list="$2"
+	for user in $user_list; do
+		user_uuid=`dsmemberutil getuuid -U "$user"`
+		if [[ "$user_uuid" != "" ]]; then
+			is_member=`dscl /Local/Default -read /Groups/com.apple.access_$serv GroupMembers | grep $user_uuid`
+			if [[ "$is_member" == "" ]]; then
+				echo "++ Adding \"$user\" to the $serv access list"
+				dseditgroup -o edit -q -n /Local/Default -a "$user" -t user com.apple.access_$serv
+			else
+				echo "## \"$user\" is already in the $serv access list, skipping"
+			fi
+		else
+			echo "## \"$user\" was not found in the DS search path. Check the spelling and try again."
+		fi
+	done
+}
+
+add_grmbr_sacl() {
+	serv=$1
+	gp_list="$2"
+	for group in $gp_list; do
+		dscl_group=`echo "$group" | sed 's/%20/ /g'`  # escape backslashes and decode spaces
+		group_uuid=`dsmemberutil getuuid -G "$dscl_group"`
+		if [[ "$?" == "0" ]]; then
+			is_member=`dscl /Local/Default -read /Groups/com.apple.access_$serv NestedGroups | grep $group_uuid`
+			if [[ "$is_member" == "" ]]; then
+				echo "++ Adding \"$dscl_group\" to the $serv access list"
+				dseditgroup -o edit -q -n /Local/Default -a "$dscl_group" -t group com.apple.access_$serv
+			else
+				echo "## \"$dscl_group\" is already in the $serv access list, skipping"
+			fi
+		else
+			echo "## \"$dscl_group\" was not found in the DS search path. Check the spelling and try again."
+		fi
+	done
+}
+
+rem_user_sacl() {
+	serv=$1
+	user_list="$2"
+	for user in $user_list; do
+		user_uuid=`dsmemberutil getuuid -U "$user"`
+		if [[ "$user_uuid" != "" ]]; then
+			is_member=`dscl /Local/Default -read /Groups/com.apple.access_$serv GroupMembers | grep $user_uuid`
+			if [[ "$is_member" != "" ]]; then
+				echo "-- Removing \"$user\" from the $serv access list"
+				dseditgroup -o edit -q -n /Local/Default -d "$user" -t user com.apple.access_$serv
+			else
+				echo "## \"$user\" is not in the $serv access list, skipping"
+			fi
+		else
+			echo "## \"$user\" was not found in the DS search path. Check the spelling and try again."
+		fi
+	done
+}
+
+rem_grmbr_sacl() {
+	serv=$1
+	gp_list="$2"
+	for group in $gp_list; do
+		# Remove the group uuid from the "NestedGroups" attribute
+		mygroup=`echo "$group" | sed 's/%20/ /g'` # decode and escape spaces
+		group_uuid=`dsmemberutil getuuid -G "$mygroup"`
+		if [[ "$?" == "0" ]]; then
+			is_member=`dscl /Local/Default -read /Groups/com.apple.access_$serv NestedGroups | grep $group_uuid`
+			if [[ "$is_member" != "" ]]; then
+				echo "-- Removing \"$mygroup\" from the $serv access list"
+				dseditgroup -o edit -q -n /Local/Default -d "$mygroup" -t group com.apple.access_$serv
+			else
+				echo "## \"$mygroup\" is not in the $serv access list, skipping"
+			fi
+		else
+			echo "## \"$mygroup\" was not found in the DS search path. Check the spelling and try again."
+		fi
+	done
+}
+
+test_user_sacl() {
+	serv=$1
+	user_list="$2"
+	for user in $user_list; do
+		is_member=`dsmemberutil checkmembership -U "$user" -G com.apple.access_$serv`
+		if [[ "$is_member" == "user is a member of the group" ]]; then
+			echo "## \"$user\" may use the $serv service"
+		else
+			if [[ "$?" == "0" ]]; then
+				echo "## \"$user\" does not have permission to use the $serv service"
+			else
+				echo "## \"$user\" was not found in the DS search path. Check the spelling and try again."
+			fi
+		fi
+	done
+}
+
+test_group_sacl() {
+	serv=$1
+	gp_list="$2"
+	for group in $gp_list; do
+		mygroup=`echo "$group" | sed 's/%20/ /g'` # decode and escape spaces
+		group_uuid=`dsmemberutil getuuid -G "$mygroup"`
+		if [[ "$?" == "0" ]]; then
+			is_member=`dscl /Local/Default -read /Groups/com.apple.access_$serv NestedGroups | grep $group_uuid`
+			if [[ "$is_member" == "" ]]; then
+				echo "## Membership in the \"$mygroup\" group does not permit users to use the $serv service"
+			else
+				echo "## Members of \"$mygroup\" may use the $serv service"
+			fi
+		else
+			echo "## \"$mygroup\" was not found in the DS search path. Check the spelling and try again."
+		fi
+	done
+}
+
+
+
+## "main"
+if [[ ! $# -gt 2 ]]; then usage; exit 1; fi
+if [[ $EUID -ne 0 ]]; then echo "You must run this utility with \"sudo\""; exit 1; fi
+
+
+users=""
+groups=""
+action=""
+
+while getopts "s:arldu:g:t" var
+do
+  case $var in
+	s)	service="$OPTARG";;
+
+	a)	if [[ "$action" != "" ]]; then usage; fi
+		action=add;;
+
+	r)	if [[ "$action" != "" ]]; then usage; fi
+		action=remove;;
+	
+	l)	if [[ "$action" != "" ]]; then usage; fi
+		action=list;;
+
+	d)	if [[ "$action" != "" ]]; then usage; fi
+		action=disable;;
+
+	u)	users="$OPTARG $users";;
+
+	g)	group=`echo "$OPTARG" | sed 's/ /%20/g'` # encode spaces
+		if [[ "$groups" == "" ]]; then 
+			groups="$group"
+		else
+			groups="$group $groups"
+		fi;;
+
+	t)	if [[ "$action" != "" ]]; then usage; fi
+		action=test;;
+
+	*)	usage;;
+  esac
+done
+
+if [[ "$service" == "" ]]; then usage; fi
+if [[ "$action" == "" ]]; then usage; fi
+
+if [[ "$action" == "disable" ]]; then
+	if [[ "$service" == "all" ]]; then
+		for serv in $services; do
+			disable_sacl $serv
+		done
+	else
+		disable_sacl $service
+	fi
+	
+	exit 0
+
+elif [[ "$action" == "list" ]]; then
+	if [[ "$service" == "all" ]]; then
+		for serv in $services; do
+			list_sacl $serv
+		done
+	else
+		list_sacl $service
+	fi
+	
+	exit 0
+
+fi
+
+
+# if [[ "$users" == "" -a "$groups" == "" ]]; then usage; fi
+
+# Refresh the membership cache so we can be sure we're up to date on user/group membership
+dsmemberutil flushcache
+
+#
+## Add users/groups
+#
+if [[ "$action" == "add" ]]; then
+	if [[ "$service" == "all" ]]; then
+		for serv in $services; do
+			create_group $serv
+			add_user_sacl $serv "$users"
+			add_grmbr_sacl $serv "$groups"
+			prune_group $serv
+		done
+	else
+		create_group $service
+		add_user_sacl $service "$users"
+		add_grmbr_sacl $service "$groups"
+		prune_group $service
+	fi
+
+#
+## Remove users/groups
+#
+elif [[ "$action" == "remove" ]]; then
+	if [[ "$service" == "all" ]]; then
+		for serv in $services; do
+			rem_user_sacl $serv "$users"
+			rem_grmbr_sacl $serv "$groups"
+			prune_group $serv
+		done
+	else
+		rem_user_sacl $service "$users"
+		rem_grmbr_sacl $service "$groups"
+		prune_group $service
+	fi
+
+#
+## Test users/groups privileges to the service(s)
+#
+elif [[ "$action" == "test" ]]; then
+	if [[ "$service" == "all" ]]; then
+		for serv in $services; do
+			search=`dscl /Local/Default -search /Groups name com.apple.access_$serv`
+			if [[ "$search" == "" ]]; then
+				echo "## There are no access restrictions on the $serv service"
+			else
+				test_user_sacl $serv "$users"
+				test_group_sacl $serv "$groups"
+			fi
+		done
+	else
+		search=`dscl /Local/Default -search /Groups name com.apple.access_$service`
+		if [[ "$search" == "" ]]; then
+			echo "## There are no access restrictions on the $service service"
+		else
+			test_user_sacl $service "$users"
+			test_group_sacl $service "$groups"
+		fi
+	fi
+
+fi

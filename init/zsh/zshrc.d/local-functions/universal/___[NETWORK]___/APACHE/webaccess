@@ -1,0 +1,153 @@
+#! /usr/bin/env zsh -f
+
+######################################################################################################
+#                                                                                                    #
+#    ZAEMONSH Created by Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2017.         #
+#    Copyright (c) 2019. All rights reserved.                                                        #
+#    Hardly inspired by zsh-templates created by William Scott on May 11, 2007.                      #
+#    Copyright (c) 2007. All rights reserved.                                                        #
+#                                                                                                    #
+#    This program is free software; you can redistribute it and/or modify it under the terms of      #
+#    the GNU General Public License as published by the Free Software Foundation; either             #
+#    version 2 of the License, or (at your option) any later version.                                #
+#                                                                 									 # 
+#    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY ;      #
+#    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.       #
+#    See the GNU General Public License for more details.                                  			 #
+#                                                        											 #
+#    You should have received a copy of the GNU General Public License along with this program ;     #
+#    if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,           #
+#    Boston,  MA 02110-1301 USA                    													 #
+#                                                                                                    #
+#    cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                                       #
+#                                                                                                    #
+######################################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# webaccess : 
+# Analyze an Apache-format access_log file, extracting
+# useful and interesting statistics
+
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME bytes_in_gb scriptbc nicenumber host firstdate lastdate
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+bytes_in_gb=1048576
+scriptbc="$HOME/bin/scriptbc"
+nicenumber="$HOME/bin/nicenumber"
+host="intuitive.com"
+
+if [ $# -eq 0 -o ! -f "$1" ] ; then
+  echo "Usage: $(basename $0) logfile" >&2
+  exit 1
+fi
+
+firstdate="$(head -1 "$1" | awk '{print $4}' | sed 's/\[//')"
+lastdate="$(tail -1 "$1" | awk '{print $4}' | sed 's/\[//')"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+
+
+
+
+echo "Results of analyzing log file $1"
+echo ""
+echo "  Start date: $(echo $firstdate|sed 's/:/ at /')"
+echo "    End date: $(echo $lastdate|sed 's/:/ at /')"
+
+hits="$(wc -l < "$1" | sed 's/[^[:digit:]]//g')"
+
+echo "        Hits: $($nicenumber $hits) (total accesses)"
+
+pages="$(grep -ivE '(.txt|.gif|.jpg|.png)' "$1" | wc -l | sed 's/[^[:digit:]]//g')"
+
+echo "   Pageviews: $($nicenumber $pages) (hits minus graphics)"
+
+totalbytes="$(awk '{sum+=$10} END {print sum}' "$1")"
+
+echo -n " Transferred: $($nicenumber $totalbytes) bytes "
+
+if [ $totalbytes -gt $bytes_in_gb ] ; then
+  echo "($($scriptbc $totalbytes / $bytes_in_gb) GB)"
+elif [ $totalbytes -gt 1024 ] ; then
+  echo "($($scriptbc $totalbytes / 1024) MB)"
+else
+  echo ""
+fi
+
+# now let's scrape the log file for some useful data:
+
+echo ""
+echo "The ten most popular pages were:"
+
+awk '{print $7}' "$1" | grep -ivE '(.gif|.jpg|.png)' | \
+  sed 's/\/$//g' | sort | \
+  uniq -c | sort -rn | head -10
+
+echo ""
+
+echo "The ten most common referrer URLs were:"
+
+awk '{print $11}' "$1" | \
+  grep -vE "(^"-"$|/www.$host|/$host)" | \
+  sort | uniq -c | sort -rn | head -10
+
+echo ""
+exit 0

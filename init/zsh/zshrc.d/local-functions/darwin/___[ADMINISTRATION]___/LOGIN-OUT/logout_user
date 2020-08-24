@@ -1,0 +1,125 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# logout_user :
+# Script to logout session.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+## Logout with confirmation
+# osascript -e 'tell app "System Events" to log out'
+
+## Logout with no confirmation
+# osascript -e 'tell app "System Events" to «event aevtrlgo»'
+# OR
+# osascript -e 'tell application "loginwindow" to «event aevtrlgo»'
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 17/10/2017 :
+#  • Modify script presentation.
+#  • Define some command variables.
+#  • Add banner.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+# Define some local command
+local CLEAR ECHO PRINT ID GREP AWK  VERS_ACT VERS_MIN LOGINNAME UIDNAME VERSION FCT_NAME
+CLEAR="$(whereis clear)"
+ECHO="$(whereis echo)"
+PRINT="$(whereis print)"
+ID="$(whereis id)"
+GREP="$(whereis grep)"
+AWK="$(whereis awk)"
+
+#
+VERS_ACT=$(sw_vers -productVersion | sed 's/^10.//')
+VERS_MIN=$(echo "10.4"  | sed 's/^10.//')
+LOGINNAME=$($ID -p | $GREP login | $AWK '{print $2}')
+UIDNAME=$($ID -p | $GREP uid | $AWK '{print $2}')
+
+#
+VERSION="0.0.2"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+test_version(){
+	if (( $VERS_ACT < $VERS_MIN )); then
+     	$PRINT "Fast User logout is not available in OSX version $(sw_vers -productVersion)"
+     	return 1
+	fi
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+test_version
+# if [[ $LOGINNAME != $UIDNAME ]];then
+#   return -1
+# else
+  osascript -e 'tell app "System Events" to log out'
+# fi   
+

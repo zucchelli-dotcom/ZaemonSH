@@ -1,0 +1,36 @@
+.\" Manpage for MacRm.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH MacRm 7 "06 Feb 2020" "ZaemonSH MacOS" "MacOS ZaemonSH customization"
+.SH NAME
+MacRm \- MacRm emulates the Gnu FileUtils rm.
+.SH SYNOPSIS
+MacRm (-dfirv) <filename>
+.SH DESCRIPTION
+MacRm \- MacRm emulates the Gnu FileUtils rm except that it moves file to the user's Trash directory, using CpMac. It also unlocks the file if necessary.
+.SH OPTIONS
+
+.IP "MacRm [-d | --directory] <filename>"
+.B unlink directory, even if non-empty (super-user	only)
+
+.IP "MacRm [-f | --force] <filename>"
+.B ignore nonexistent files, never prompt
+
+.IP "MacRm [-i | --interactive] <filename>"
+.B prompt before any removal
+
+.IP "MacRm [-r | -R | --recursive]"
+.B remove the contents of directories recursively
+
+.IP "MacRm [-v | --verbose]"
+.B explain what is being done
+
+.IP "MacRm --help"
+.B display this help and exit
+
+.IP "MacRm --version"
+.B output version information and exit
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

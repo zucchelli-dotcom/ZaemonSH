@@ -1,0 +1,201 @@
+#compdef xattr
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+#  _xattr :
+
+#  Created by W. G. Scott on 23 January 2009.
+#  Copyright (c) . All rights reserved.
+# _xattr completion function for xattr
+# version="0.0.1"
+
+#    usage: xattr [-l] file [file ...]
+#           xattr -p [-l] attr_name file [file ...]
+#           xattr -w attr_name attr_value file [file ...]
+#           xattr -d attr_name file [file ...]
+#    
+#    The first form lists the names of all xattrs on the given file(s).
+#    The second form (-p) prints the value of the xattr attr_name.
+#    The third form (-w) sets the value of the xattr attr_name to attr_value.
+#    The fourth form (-d) deletes the xattr attr_name.
+#    
+#    options:
+#      -h: print this help
+#      -l: print long format (attr_name: attr_value)
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------------------------------
+#compdef xattr
+# zsh completion for OSX's xattr
+#
+# usage: xattr [-l] [-r] [-s] [-v] [-x] file [file ...]
+#        xattr -p [-l] [-r] [-s] [-v] [-x] attr_name file [file ...]
+#        xattr -w [-r] [-s] [-x] attr_name attr_value file [file ...]
+#        xattr -d [-r] [-s] attr_name file [file ...]
+#        xattr -c [-r] [-s] file [file ...]
+#
+# The first form lists the names of all xattrs on the given file(s).
+# The second form (-p) prints the value of the xattr attr_name.
+# The third form (-w) sets the value of the xattr attr_name to the string attr_value.
+# The fourth form (-d) deletes the xattr attr_name.
+# The fifth form (-c) deletes (clears) all xattrs.
+#
+# options:
+#   -h: print this help
+#   -l: print long format (attr_name: attr_value and hex output has offsets and
+#       ascii representation)
+#   -r: act recursively
+#   -s: act on the symbolic link itself rather than what the link points to
+#   -v: also print filename (automatic with -r and with multiple files)
+#   -x: attr_value is represented as a hex string for input and output
+
+# local extra
+# local -a _xattr_options
+
+# _xattr_options=(
+# '(-w -d -c)-p[prints the value of the xattr attr_name]'
+# '(-p -d -c -v)-w[sets the value of the xattr attr_name to the string attr_value]'
+# '(-p -w -c -l -v -x)-d[deletes the xattr attr_name]'
+# '(-p -w -d -l -v -x)-c[deletes (clears) all xattrs]'
+# '(- *)-h[print help]'
+# '-l[print long format (attr_name: attr_value and hex output has offsets and ascii representation)]'
+# '-r[act recursively]'
+# '-s[act on the symbolic link itself rather than what the link points to]'
+# '-v[also print filename (automatic with -r and with multiple files)]'
+# '-x[attr_value is represented as a hex string for input and output]'
+# )
+
+# if [[ $words =~ 'p|d' ]]; then
+# 	[[ ${words[$(($#words-1))]} =~ "^-" ]] && extra='(-)*:attribut name'
+# elif [[ $words =~ 'w' ]]; then
+# 	[[ ${words[$(($#words-2))]} =~ "^-" || ${words[$(($#words-1))]} =~ "^-" ]] && extra=(':attribut name' '(-):attribut value')
+# fi
+# _arguments -s $_xattr_options ${extra:-'(-)*: :_files'}
+# ---------------------------------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify completion presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+function _getAttrName {
+	_message "Enter any string for an Attribute Name, using double quotes if you have spaces between words."
+}
+
+function _getAttrValue {
+	_message "Enter any string for an Attribute Value, using double quotes if you have spaces between words."
+}
+
+function _getParameter {
+	   _arguments -C \
+		'-l[lists the names of all xattrs on the given file(s)]: :->List'\
+		'*:file:->Completer'	 
+}
+
+#----------------------------------------------------------------------------------------#
+#                                      COMPLETION
+#----------------------------------------------------------------------------------------#
+_arguments -C \
+	'-p[prints the value of the xattr attr_name]: :->Print'\
+	'-l[lists the names of all xattrs on the given file(s)]: :->List'\
+	'(-)-w[sets (writes) the value of the xattr attr_name to attr_value]: :->Write'\
+	'(-)-d[deletes the xattr attr_name]: :->Delete'\
+	'(- *)-h[help]: :->Help'\
+	'*:file:->Completer'
+
+case   "$state" in
+	( Print )		
+		if  (( CURRENT == 2 )); then
+			true
+		elif (( CURRENT == 3 )); then
+		   _alternative _getAttrName _getParameter 	
+		else  
+			_files
+		fi
+	;;
+	
+	( List )
+	    if [[ $CURRENT == 4 &&  $words[2] == "-p" ]];then
+		    _getAttrName
+		else 
+		    _files
+		fi
+	;;
+
+	( Write )
+		if  (( CURRENT == 2 )); then
+			true
+		elif (( CURRENT == 3 )); then
+			_getAttrName
+		elif (( CURRENT == 4 )); then
+		    _getAttrValue
+		else  
+			_files
+		fi
+	;;
+	
+	( Delete )
+		if  (( CURRENT == 2 )); then
+			true
+		elif (( CURRENT == 3 )); then
+			_getAttrName
+		else  
+			_files
+		fi
+	;;
+	
+	( Completer )
+		if [[ $words[2] == "-w" && $CURRENT == 4 ]];then
+		     _getAttrValue
+		else
+		     _files
+		fi
+	;;
+	
+	( Help )
+		return 0
+	;;
+	
+esac
+
+
+
+
+
+

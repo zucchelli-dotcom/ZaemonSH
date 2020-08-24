@@ -1,0 +1,25 @@
+#!/usr/bin/env zsh -f
+
+
+### Diagnose all kexts in /System/Library/Extensions
+for kexts in $(ls /System/Library/Extensions | grep .kext); do 
+    echo "---------------------"; 
+    echo "${GREEN}$kexts${RED}";
+    sudo kextutil -v 0 /System/Library/Extensions/$kexts;
+    echo "${NC}---------------------";
+    echo "" ;
+    echo "" ;
+done
+
+
+
+
+### Enablind Kext LOGGING
+### To enable kernel kext logging (in /var/log/kernel.log) on a long-term basis, use the kextlog
+### boot arg or sysctl(8) parameter.  You can set it as root using nvram(8) like so:
+nvram boot-args="kextlog=0xlogspec other_boot_args"
+### Caution: Enabling logging at a high level via boot arg can greatly slow down system startup time.
+### To change the kextlog setting at any time use sysctl(8):
+sysctl -w debug.kextlog=0xlogspec
+
+

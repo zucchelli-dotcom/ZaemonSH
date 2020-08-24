@@ -1,0 +1,171 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_timestamp-defaults :
+# Reinitialize timestamp_timeout between 0 to 5 min in /etc/sudoers
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 29/07/2019 :
+#  • Create this one.
+# 2020-03-04 :
+# • Correct conditions
+# • Add status
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+  clear
+  echo "${NC}"  
+  echo " ###################################################################################################"
+  echo " #                                                                                                 #"
+  echo " #     ${GREEN}This is ${RED}$FCT_NAME : ${YEL}$VERSION FOR $OSTYPE ${NC}                                #"
+  echo " #     CopyL®®v 2019, Zucchelli Bryan	 			                                                       #"
+  echo " #                                                                                                 #"
+  echo " #     Unless required by applicable law or agreed to in writing, software                         #"
+  echo " #     distributed under the License is distributed on an "AS IS" BASIS,                             #"
+  echo " #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.                    #"
+  echo " #     See the License for the specific language governing permissions and                         #"
+  echo " #     limitations under the License.                                                              #"
+  echo " #                                                                                                 #"
+  echo " ###################################################################################################"
+  echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage: $0 [ default | strict | status |  help ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+strict_timestamp () {
+ local reinitornot=$(sudo grep "^Defaults\t*timestamp_timeout=0" /etc/sudoers)
+ local reinitornotdl=$(sudo grep "^Defaults\t*timestamp_timeout=*" /etc/sudoers)
+    if [[  $reinitornot ]] && [[ $reinitornotdl ]]; then 
+        # sudo sed -i -e 's/timestamp_timeout=0/timestamp_timeout=5/' /etc/sudoers
+        # sudo perl -p -i -e 's/timestamp_timeout=*$/timestamp_timeout=0/g' /etc/sudoers
+        sudo perl -p -i -e 's/timestamp_timeout=[1-9]/timestamp_timeout=0/g' /etc/sudoers
+        echo "${WG} ${NC}Timestamp strict mode ${GREEN}done${NC}."
+    else
+        echo "${WN} Timestamp already in strict mode : 0min.${NC}"
+    fi
+unset reinitornot
+unset reinitornotdl
+}
+
+defaults_timestamp () {
+ local reinitornot=$(sudo grep "^Defaults\t*timestamp_timeout=0" /etc/sudoers)
+ local reinitornotdl=$(sudo grep "^Defaults\t*timestamp_timeout=*" /etc/sudoers)
+    if [[ ! $reinitornot ]] && [[ $reinitornotdl ]]; then 
+        # sudo sed -i -e 's/timestamp_timeout=5/timestamp_timeout=0/' /etc/sudoers
+        sudo perl -p -i -e 's/timestamp_timeout=0/timestamp_timeout=5/g' /etc/sudoers
+        echo "${WG} ${NC}Timestamp defaults mode ${GREEN}done${NC}."
+    else
+        echo "${WN} Timestamp already in default mode : 5min.${NC}"
+    fi
+    unset reinitornot
+    unset reinitornotdl
+}
+status_timestamp () {
+  local reinitornot=$(sudo grep "^Defaults\t*timestamp_timeout=0" /etc/sudoers)
+  local reinitornotdl=$(sudo grep "^Defaults\t*timestamp_timeout=*" /etc/sudoers)
+        if [[ $reinitornot ]]; then
+                  sudo grep --color  "^Defaults\t*timestamp_timeout=*" /etc/sudoers
+                  echo "${WG} ${NC}Timestamp strict mode.${NC}."
+             else
+                  sudo grep --color  "^Defaults\t*timestamp_timeout=*" /etc/sudoers
+                  echo "${WG} ${NC}Timestamp defaults mode.${NC}."
+        fi
+        unset reinitornot
+        unset reinitornotdl
+ }
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+emulate -L zsh
+banner
+# select tmp in defaults strict status quit; do
+#     if [[ $tmp == "defaults" ]];then
+#         defaults_timestamp
+#         return 1
+#     elif [[ $tmp == "strict" ]]; then
+#         strict_timestamp
+#         return 1
+#     elif [[ $tmp == "status" ]]; then
+#         status_timestamp 
+#         return 1
+#     else [[ $tmp == "quit" ]]
+#         return 0
+#     fi
+# done
+# (( #$ == 0 )) && help && return 0
+case $1 in
+    default)
+        defaults_timestamp 
+        return 1
+        ;;
+    strict)
+        strict_timestamp 
+        return 1
+        ;;
+    status)
+        status_timestamp
+        return 1
+        ;;
+    *)
+        help
+        ;;
+esac

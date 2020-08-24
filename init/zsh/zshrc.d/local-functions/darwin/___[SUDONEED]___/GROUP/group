@@ -1,0 +1,356 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# group :
+# Create/ delete group, add/ remove user from/to group, list group and get info for specific group
+# know if one user is member of a group
+
+#-------------------------------------------------------------------------------------------#
+#                                               NOTES
+#-------------------------------------------------------------------------------------------#
+## To Add
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 30/07/2019 :
+#  • Cover 10.4 to 10.14.5  versions.
+
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify function presentation.
+# 05/01/2018 :
+#  • Merge with this functions all past functions related to 
+#    creation/deletion of group. (addgroup, delete_group ...)
+# 30/07/2019 :
+#  • Add delete and add group function.
+# 2020-02-23 :
+#  • Add sudo after command on function.
+#  • Add deco
+#  • All options seems to work
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+echo "${RED}" 
+cat<<__EOF__
+    usage: group [ ls | info | addusertogroup | removeuserfromgroup | ismemberofgroup | help ]
+    Examples:
+        group ls                                            # Get list of groups.
+        group info [GROUPNAME]                              # Display group information.
+
+        group addgroup                                      # Add a group.
+
+        group deletegroup [GROUPNAME]                       # Delete a group.
+        
+        group addusertogroup [GROUPNAME] [USERNAME]         # Add an user to a specific group.
+        group removeuserfromgroup  [GROUPNAME] [USERNAME]   # Remove an user from a specific group.
+
+        group ismember  [GROUPNAME] [USERNAME]              # Show if the user is a member of a specific group.
+__EOF__
+    echo "${NC}"
+}
+
+   
+group_ls(){
+    echo "${GREEN}Availables groups : ${NC}"
+    echo "${YEL}"
+    sudo dscl . -list /Groups gid | column
+    echo "${NC}"
+}
+
+group_info(){
+    [[ -z "$1" ]] && help && return 1
+    echo "${GREEN}• Groups $1 informations : ${NC}"
+    echo "${YEL}"
+    sudo dscl . -read "/Groups/$1"
+    echo "${NC}"
+}
+
+group_add_user(){
+   [ -z "$1" -o -z "$2" ] && help && return 1
+  
+   group=$1 ; user=$2
+   
+   ## Verify if group exist. 
+   vgid="$(sudo dscl . -list /Groups  | grep -w $group)"    
+   if [[ ! $vgid ]]; then
+           echo ""
+           echo "${WB} Group is not on your system.${NC}"
+           return 1
+   fi
+   ##
+   if [[ $(sudo dseditgroup -o checkmember -m "$user" "$group") != "no $user is NOT a member of $group" ]]; then echo "${WB} ${YEL}$user${NC} already member of ${YEL}$group${NC}" && return 10; fi
+    # sudo dscl . merge /groups/$group users "$user"
+    echo ZBOOB
+   sudo dseditgroup -o edit -a "$group" -t user "$user"
+   echo "${GREEN}• User $user add to group $group ${NC}"
+}
+
+group_remove_user(){
+    [ -z "$1" -o -z "$2" ] && help && return 1
+    sudo dseditgroup -o edit -d "$1" -t user "$2"
+}
+
+group_is_a_member(){
+    [ -z "$1" -o -z "$2" ] && help && return 1
+    echo "${YEL}"
+    sudo dseditgroup -o checkmember -m "$2" "$1"
+    echo "${NC}"
+}
+
+
+group_add(){
+        # Check parameters
+        # group="$1" 
+        #
+        echo $LINEE
+        print "${GREEN}Group name:${YEL} "
+        read  _YGROUPN
+        [ -z "${_YGROUPN}" ] && echo "Enter a group name" && return 1
+        # search Directory Service for the given group - it should not exist
+        # str="$(nifind /groups/$group .)"
+        group="$_YGROUPN"
+        str="$( sudo dscl . -list /Groups | grep -w ${group} )"
+        if [[ ! -z "$str" ]]; then
+        # if [[  -z "$str" ]]; then
+            echo ""²
+            echo "${WB}${NC} Group ${YEL}${group}${NC} already exists"
+            return 1
+        fi
+     
+        ##
+        print "${GREEN}Group id:${YEL} "
+        read  _YGID
+        gid="$_YGID"
+        echo ${NC}$LINEE
+        [ -z "${_YGID}" ] && echo "Enter a gi number" && return 1
+        
+        # [[ $# -ne 2 ]] &&  help && return 1
+        # [[ $# -ne 1 ]] &&  help && return 1
+        # [ -z "${group}" ] && echo "Enter a group name" && return 1
+
+        ##
+        # check that the group id is numeric
+        if [[ -z "$(echo $gid | egrep "^[[:digit:]]+$")" ]]; then
+            echo ""
+            echo "${WB} Group ID must be numeric${NC}"
+            return 1
+        fi
+
+        ## Verify if gid is not already in use.
+        vgid="$(sudo dscl . -list /Groups gid | grep -w $gid)"    
+        if [[ $vgid ]]; then
+            echo ""
+            echo "${WB} Group ID already in use.${NC}"
+            return 1
+        fi
+        
+        # search Directory Service for the given gid - it should not exist
+        #str="$(nireport . /groups gid | grep -w $uid)"
+        str="$(sudo dscl . -list /Users PrimaryGroupID | awk '{print $2}'  | grep -w $gid)"
+        if [[ ! -z "$str" ]]; then
+            echo ""
+            echo "${WB}${NC} Group ID ${YEL}$uid${NC} already exists"
+            return 2
+        fi
+
+        group="${_YGROUPN}"; gid="${_YGID}"
+        # group="${_NEWGRP}"
+
+        # Add the new group to Directory Services
+        #
+        # add group and essential properties
+        sudo dscl . create /groups/$group
+        sudo dscl . create /groups/$group name $group
+        sudo dscl . create /groups/$group passwd "*"
+        sudo dscl . create /groups/$group gid "$gid"
+        #dscl . create /groups/$group users "" breaks add-user2group if added as a blank value
+     
+     
+        # sudo dseditgroup -o create "$1"
+        print ""
+        print "${WG} ${NC}New group ${YEL}${group}${NC} has been created"
+        print "${NC}Reality check: The following is gleaned from the Directory Service database"
+        print "The Directory Service database now contains :${YEL} $(sudo dscl . -list /Groups | grep -w $group )${NC}"
+        print ""
+        print "Now add users to it with ${YEL}addusertogroup${NC} "
+
+     
+     
+     return 0
+}
+
+group_delete(){
+       declare quiet="no"  # -q option not specified
+       declare group       # hold te given group name
+       declare gid         # hold the group id derived from the group name 
+       declare ans         # reply from prompt
+
+       thiscommand=$0
+                
+       # Check parameters
+       #
+       if [[ "$1" = "-q" ]]; then
+         quiet="yes"
+         shift
+       fi
+
+       if [[ $# -ne 1 ]]; then
+         usage
+         return 1
+       fi
+
+       group="$1"
+
+       # search Directory Service for the given group - it should exist
+       # str="$(nifind /groups/$group .)"
+       str="$( sudo dscl . -list /Groups | grep -w $group )"
+       if [[ -z "$str" ]]; then
+         usage "Group $group does not exist"
+         return 11
+       fi
+
+       quiet="no"
+       # Check if this is a primary group for some user and warn if so
+       #   but not in quiet mode
+       if [[ $quiet = "no" ]]; then
+           # get the group number from the name
+           gid="$(sudo dscl . -list /Groups PrimaryGroupID | grep -w "^$group" |  awk '{print $2}' )"
+
+           # print a warning if it is any user's primary group
+           # str="$(nireport . /users gid | grep -w $gid)"
+           str="$(sudo dscl . -list /users PrimaryGroupID | grep -w "$gid" )"
+
+           if [[ ! -z "$str" ]]; then
+               echo "${WB} THIS IS PRIMARY GROUP!${NC}"
+               # nireport . /users gid name | grep -w "^$gid"
+               dscl . -list /users PrimaryGroupID | grep -w "^$gid"
+           
+               print -n "${RED}Do you really want to do this?${NC} "
+               read -t 10 -A ans
+               if [[ "$ans" != (yes|Yes|y|Y|YES) ]]; then
+                 print ""
+                 print "${GREEN}Abandoning deletion of the group ${YEL}$group${NC} ."
+                 print "${GREEN}Terminating with extreme prejudice.${NC}"
+                 return 100
+               fi
+           fi
+       fi
+
+
+       # Delete the group from NetInfo
+       #
+       # sanity check
+       if [[ "$group" = "" ]]; then return 42; fi
+       sudo dscl . delete /groups/$group
+       echo ""
+       echo "${WG} ${NC}${YEL}Group${NC} ${YEL}$group${NC} deleted"
+       return 0
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+# The script must be run as an admin user 
+# if [[ -z $(/usr/bin/id -p $USER | grep admin) ]];then
+#        print "You must be an administrative user with sudo privileges in order to run $0"
+# fi
+[[ ! $IS_ADMIN  ]] || [[ ! $IS_ROOT  ]] && print "You must be an administrative user with sudo privileges"
+banner
+case $1 in
+    help)
+        help
+        ;;
+    list|ls)
+        group_ls
+        ;;
+    info)
+        shift
+        group_info $@
+        ;;
+    addgroup)
+        shift
+        group_add $@
+        ;;
+    deletegroup)
+        shift
+        group_delete $@
+        ;; 
+    addusertogroup)
+        shift
+        group_add_user $@
+        ;;
+    removeuserfromgroup)
+        shift
+        group_remove_user $@
+        ;;
+    ismemberofgroup)
+        shift
+        group_is_a_member $@
+        ;;
+    *)
+        help
+        ;;
+esac
+# vim: ts=4 sw=4 softtabstop=4 expandtab

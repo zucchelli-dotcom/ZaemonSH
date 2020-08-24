@@ -1,0 +1,16 @@
+# Funktion, es sind keine RAID ARRAYS vorhanden# {{{
+#
+# usage: no_raid_arrays_msg
+no_raid_arrays_msg() {
+	if [[ $argv == change ]] ; then
+		MSG=$(gettext 'Es sind keine RAID Arrays mit einer bestimmten Anzahl von Laufwerken vorhanden.')
+	else
+		MSG=$(gettext 'Es sind keine RAID Arrays vorhanden.')
+	fi
+	msgbox "$gv_Attention" "$MSG"
+}
+# }}}
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:                                                                               
+### }}}

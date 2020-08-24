@@ -1,0 +1,149 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+#  Z_inpath :
+#  inpath - verify that a specified program is either valid as-is,
+#  or can be found in the PATH directory list.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 20/08/2019 :
+#  • Debug.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 10/10/2017 :
+#  • Modifying Script presentation.
+# 18/08/2019 :
+#  • unify script.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  echo "${RED}"
+  cat<<__EOF__
+    usage: $0 [ BINARY_NAME ]
+
+    	$0 [ BINARY_NAME ]             # Search pattern on config files.
+    	$0 [ BINARY_NAME ]             # Search pattern on $ZDOT.
+
+__EOF__
+echo "${NC}"
+}
+
+in_path()
+{
+  # given a command and the PATH, try to find the command. Returns
+  # 0 if found and executable, 1 if not. Note that this temporarily modifies 
+  # the the IFS (input field seperator), but restores it upon completion.
+  cmd=$1        path=$2         retval=1
+  oldIFS=$IFS   IFS=":"
+
+  # for directory in $path
+  for directory in $PATH
+  do
+    if [ -x $directory/$cmd ] ; then
+      retval=0      # if we're here, we found $cmd in $directory
+    fi
+  done
+  IFS=$oldIFS
+  echo $retval
+  return $retval
+}
+  
+checkForCmdInPath()
+{
+  var=$1
+  echo $var
+  # The variable slicing notation in the following conditional 
+  # needs some explanation: ${var#expr} returns everything after
+  # the match for 'expr' in the variable value (if any), and
+  # ${var%expr} returns everything that doesn't match (in this
+  # case just the very first character. You can also do this in
+  for directory in $PATH
+  # for directory in $path
+  # Bash with ${var:0:1} and you could use cut too: cut -c1
+  if [ "$var" != "" ] ; then
+    if [ "${var%${var#?}}" = "/" ] ; then
+      if [ ! -x $var ] ; then
+        return 1
+      fi
+    elif ! in_path $var $PATH ; then
+      return 2
+    fi 
+  fi
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+if [ $# -ne 1 ] ; then
+ help
+ return 0
+fi
+
+checkForCmdInPath "$1"
+case $? in
+  0 ) echo "$1 found in PATH"			;;
+  1 ) echo "$1 not found or not executable"	;;
+  2 ) echo "$1 not found in PATH"		;;
+esac
+
+return 0

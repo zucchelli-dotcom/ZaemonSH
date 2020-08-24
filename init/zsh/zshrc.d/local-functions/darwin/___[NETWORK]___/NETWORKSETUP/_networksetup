@@ -1,0 +1,279 @@
+#compdef networksetup
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _networksetup  :
+# Completion for networksetup; configuration tool for network settings in System 
+# Preferences.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 02/08/2020 :
+#  • Create this one.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+_networksetup(){
+	local ret
+	local commands_list
+	local -a hardwareport_device_list \
+	      	 device_list \
+		 networkservice_list
+
+	typeset -A opt_args
+
+	commands_list=(
+		"-listnetworkserviceorder:Display services with corresponding port and device in order they are tried for connecting to a network. An asterisk (*) denotes that a service is disabled."
+		"-listallnetworkservices:Display list of services. An asterisk (*) denotes that a network service is disabled."
+		"-listallhardwareports:Display list of hardware ports with corresponding device name and ethernet address."
+		"-detectnewhardware:Detect new network hardware and create a default network service on the hardware."
+		"-getmacaddress:Display ethernet (or Wi-Fi) address for hardwareport or device specified."
+		"-getcomputername:Display the computer name."
+		"-setcomputername:Set the computer's name (if valid) to <name>."
+		"-getinfo:Display IPv4 address, IPv6 address, subnet mask, router address, ethernet address for <networkservice>."
+		"-setmanual:Set the <networkservice> TCP/IP configuration to manual with IP address set to ip,Subnet Mask set to subnet, and Router address set to router."
+		"-setdhcp:Set the <networkservice> TCP/IP configuration to DHCP. You can set the DHCP client id to the optional [clientid]. Specify "Empty" for [clientid] to clear the DHCP client id."
+		"-setbootp:Set the <networkservice> TCP/IP configuration to BOOTP."
+		"-setmanualwithdhcprouter:Set the <networkservice> TCP/IP configuration to manual with DHCP router with IP address set to ip."
+		"-getadditionalroutes:Get additional IPv4 routes associated with <networkservice>"
+		"-setadditionalroutes:Set additional IPv4 routes associated with <networkservice> by specifying one or more [ <dest> <mask> <gateway> ] tuples. Remove additional routes by specifying no arguments. If <gateway> is '', the route is direct to the interface"
+		"-setv4off:Turn IPv4 off on <networkservice>."
+		"-setv6off:Turn IPv6 off on <networkservice>."
+		"-setv6automatic:Set the service to get its IPv6 info automatically."
+		"-setv6LinkLocal:Set the service to use its IPv6 only for link local."
+		"-setv6manual:Set the service to get its IPv6 info manually. Specify <address> <prefixLength> and <router>."
+		"-getv6additionalroutes:Get additional IPv6 routes associated with <networkservice>"
+		"-setv6additionalroutes:Set additional IPv6 routes associated with <networkservice> by specifying one or more [ <dest> <prefixlength> <gateway> ] tuples. Remove additional routes by specifying no arguments. If <gateway> is '', the route is direct to the interface"
+		"-getdnsservers:Display DNS info for <networkservice>."
+		"-setdnsservers:Set the <networkservice> DNS servers to <dns1> [dns2] [...]. Any number of dns servers can be specified. Specify "Empty" for <dns1> to clear all DNS entries."
+		"-getsearchdomains:Display Domain Name info for <networkservice>."
+		"-setsearchdomains:Set the <networkservice> Domain Name servers to <domain1> [domain2] [...]. Any number of Domain Name servers can be specified. Specify "Empty" for <domain1> to clear all Domain Name entries."
+		"-create6to4service:Create a 6 to 4 service with name <newnetworkservicename>."
+		"-set6to4automatic:Set the service to get its 6 to 4 info automatically."
+		"-set6to4manual:Set the service to get its 6 to 4 info manually. Specify <relayaddress> for the relay address."
+		"-getftpproxy:Display FTP proxy (server, port, enabled value) info for <networkservice>."
+		"-setftpproxy:Set FTP proxy for <networkservice> with <domain> and <port number>. Turns proxy on. Optionally, specify <on> or <off> for <authenticated> to enable and disable authenticated proxy support. Specify <username> and <password> if you turn authenticated proxy support on."
+		"-setftpproxystate:Set FTP proxy to  either <on> or <off>."
+		"-getwebproxy:Display Web proxy (server, port, enabled value) info for <networkservice>."
+		"-setwebproxy:Set Web proxy for <networkservice> with <domain> and <port number>. Turns proxy on. Optionally, specify <on> or <off> for <authenticated> to enable and disable authenticated proxy support. Specify <username> and <password> if you turn authenticated proxy support on."
+		"-setwebproxystate:Set Web proxy to  either <on> or <off>."
+		"-getsecurewebproxy:Display Secure Web proxy (server, port, enabled value) info for <networkservice>."
+		"-setsecurewebproxy:Set Secure Web proxy for <networkservice> with <domain> and <port number>. Turns proxy on. Optionally, specify <on> or <off> for <authenticated> to enable and disable authenticated proxy support. Specify <username> and <password> if you turn authenticated proxy support on."
+		"-setsecurewebproxystate:Set SecureWeb proxy to  either <on> or <off>."
+		"-getstreamingproxy:Display Streaming proxy (server, port, enabled value) info for <networkservice>."
+		"-setstreamingproxy:Set Streaming proxy for <networkservice> with <domain> and <port number>. Turns proxy on. Optionally, specify <on> or <off> for <authenticated> to enable and disable authenticated proxy support. Specify <username> and <password> if you turn authenticated proxy support on."
+		"-setstreamingproxystate:Set Streaming proxy to  either <on> or <off>."
+		"-getgopherproxy:Display Gopher proxy (server, port, enabled value) info for <networkservice>."
+		"-setgopherproxy:Set Gopher proxy for <networkservice> with <domain> and <port number>. Turns proxy on. Optionally, specify <on> or <off> for <authenticated> to enable and disable authenticated proxy support. Specify <username> and <password> if you turn authenticated proxy support on."
+		"-setgopherproxystate:Set Gopher proxy to  either <on> or <off>."
+		"-getsocksfirewallproxy:Display SOCKS Firewall proxy (server, port, enabled value) info for <networkservice>."
+		"-setsocksfirewallproxy:Set SOCKS Firewall proxy for <networkservice> with <domain> and <port number>. Turns proxy on. Optionally, specify <on> or <off> for <authenticated> to enable and disable authenticated proxy support. Specify <username> and <password> if you turn authenticated proxy support on."
+		"-setsocksfirewallproxystate:Set SOCKS Firewall proxy to  either <on> or <off>."
+		"-getproxybypassdomains:Display Bypass Domain Names for <networkservice>."
+		"-setproxybypassdomains:Set the Bypass Domain Name Servers for <networkservice> to <domain1> [domain2] [...]. Any number of Domain Name servers can be specified. Specify "Empty" for <domain1> to clear all Domain Name entries."
+		"-getproxyautodiscovery:Display whether Proxy Auto Discover is on or off for <network service>."
+		"-setproxyautodiscovery:Set Proxy Auto Discovery to either <on> or <off>."
+		"-getpassiveftp:Display whether Passive FTP is on or off for <networkservice>."
+		"-setpassiveftp:Set Passive FTP to either <on> or <off>."
+		"-setautoproxyurl:Set proxy auto-config to url for <networkservice> and enable it."
+		"-getautoproxyurl:Display proxy auto-config (url, enabled) info for <networkservice>."
+		"-setautoproxystate:Set proxy auto-config to either <on> or <off>."
+		"-getairportnetwork:Display current Wi-Fi Network for <device name>."
+		"-setairportnetwork:Set Wi-Fi Network to <network> for <device name>. If a password is included, it gets stored in the keychain."
+		"-getairportpower:Display whether Wi-Fi power is on or off for <device name>."
+		"-setairportpower:Set Wi-Fi power for <device name> to either <on> or <off>."
+		"-listpreferredwirelessnetworks:List the preferred wireless networks for <device name>."
+		"-addpreferredwirelessnetworkatindex:Add wireless network named <network> to preferred list for <device name> at <index>. For security type, use OPEN for none, WPA for WPA Personal, WPAE for WPA Enterprise, WPA2 for WPA2 Personal, WPA2E for WPA2 Enterprise, WEP for plain WEP, and 8021XWEP for 802.1X WEP. If a password is included, it gets stored in the keychain."
+		"-removepreferredwirelessnetwork:Remove <network> from the preferred wireless network list for <device name>."
+		"-removeallpreferredwirelessnetworks:Remove all networks from the preferred wireless network list for <device name>."
+		"-getnetworkserviceenabled:Display whether a service is on or off (enabled or disabled)."
+		"-setnetworkserviceenabled:Set <networkservice> to either <on> or <off> (enabled or disabled)."
+		"-createnetworkservice:Create a service named <networkservice> on port <hardwareport>. The new service will be enabled by default."
+		"-renamenetworkservice:Rename <networkservice> to <newnetworkservicename>."
+		"-duplicatenetworkservice:Duplicate <networkservice> and name it with <newnetworkservicename>."
+		"-removenetworkservice:Remove the service named <networkservice>. Will fail if this is the only service on the hardware port that <networkservice> is on."
+		"-ordernetworkservices:Order the services in order specified. Use "-listnetworkserviceorder" to view service order. Note: use quotes around service names which contain spaces (ie. "Built-in Ethernet")."
+		"-setMTUAndMediaAutomatically:Set hardwareport or device specified back to automatically setting the MTU and Media."
+		"-getMTU:Get the MTU value for hardwareport or device specified."
+		"-setMTU:Set MTU for hardwareport or device specified."
+		"-listvalidMTUrange:List the valid MTU range for hardwareport or device specified."
+		"-getmedia:Show both the current setting for media and the active media on hardwareport or device specified."
+		"-setmedia:Set media for hardwareport or device specified to subtype. Specify optional [option1] and additional options depending on subtype. Any number of valid options can be specified."
+		"-listvalidmedia:List valid media options for hardwareport or device name. Enumerates available subtypes and options per subtype."
+		"-createVLAN:Create a VLAN with name <VLAN name> over device <device name> with unique tag <tag>. A default network service will be created over the VLAN."
+		"-deleteVLAN:Delete the VLAN with name <VLAN name> over the parent device <device name> with unique tag <tag>. If there are network services running over the VLAN they will be deleted."
+		"-listVLANs:List the VLANs that have been created."
+		"-listdevicesthatsupportVLAN:List the devices that support VLANs."
+		"-isBondSupported:Return YES if the specified device can be added to a bond. NO if it cannot."
+		"-createBond:Create a new bond and give it the user defined name. Add the specified devices, if any, to the bond."
+		"-deleteBond:Delete the bond with the specified device-name."
+		"-addDeviceToBond:Add the specified device to the specified bond."
+		"-removeDeviceFromBond:Remove the specified device from the specified bond"
+		"-listBonds:List all of the bonds."
+		"-showBondStatus:Display the status of the specified bond."
+		"-listpppoeservices:List all of the PPPoE services in the current set."
+		"-showpppoestatus:Display the status of the specified PPPoE service."
+		"-createpppoeservice:Create a PPPoE service on the specified device with the service name specified. The "pppoe service name" is optional and may not be supported by the service provider."
+		"-deletepppoeservice:Delete the PPPoE service."
+		"-setpppoeaccountname:Sets the account name for the specified service."
+		"-setpppoepassword:Sets the password stored in the keychain for the specified service."
+		"-connectpppoeservice:Connect the PPPoE service."
+		"-disconnectpppoeservice:Disconnect the PPPoE service."
+		"-getcurrentlocation:Display the name of the current location."
+		"-listlocations:List all of the locations."
+		"-createlocation:Create a new network location with the spcified name. If the optional term "populate" is included, the location will be populated with the default services."
+		"-deletelocation:Delete the location."
+		"-switchtolocation:Make the specified location the current location."
+		"-listalluserprofiles:Display the names of all of the user profiles."
+		"-listloginprofiles:Display the names of the loginwindow profiles for the specified service."
+		"-enablesystemprofile:Enables or disables the system profile for the specified service."
+		"-enableloginprofile:Enables or disables the specified loginwindow profile for the specified service."
+		"-enableuserprofile:Enables or disables the specified user profile."
+		"-import8021xProfiles:Imports the 802.1x profiles for the specified service."
+		"-export8021xProfiles:Exports all of the profiles for the specified service. If the last parameter is yes, it will include the items from the keychain."
+		"-export8021xUserProfiles:Exports only the user profiles. If the last parameter is yes, it will include the items from the keychain."
+		"-export8021xLoginProfiles:Exports only the loginwindow profiles for the specified service. If the last parameter is yes, it will include the items from the keychain."
+		"-export8021xSystemProfile:Exports only the system profile for the specified service. If the last parameter is yes, it will include the items from the keychain."
+		"-settlsidentityonsystemprofile:Sets the TLS identity on the system profile for the specified service. The identity must be a pkcs12 file."
+		"-settlsidentityonuserprofile:Sets the TLS identity on the specified user profile. The identity must be a pkcs12 file."
+		"-deletesystemprofile:Deletes the system profile for the specified service."
+		"-deleteloginprofile:Deletes the specified loginwindow profile for the specified service."
+		"-deleteuserprofile:Deletes the specified user profile."
+		"-version:Display version of networksetup tool."
+		"-help:Display these help listings."
+		"-printcommands:Displays a quick listing of commands (without explanations)."
+	)
+
+	hardwareport_device_list=($(for i in `networksetup -listallhardwareports | egrep "Hardware Port|Device" | awk 'BEGIN{FS=": "}{print $2}' | sed 's/ /\\_/g'`; do echo ${i}; done))
+
+	device_list=($(for i in `networksetup -listnetworkserviceorder| grep "(Hardware" | awk 'BEGIN{FS=", "}{print $2}' | sed 's/Device: //g' | tr -d \) | sort | uniq`; do echo ${i}; done))
+	
+	networkservice_list=($(for i in `networksetup -listallnetworkservices | grep -v An |sed 's/*//g' | sed 's/ /\_/g'`;do echo ${i};done))
+
+
+	_arguments \
+		   '1:cmd:->cmds' \
+		   '2:name:->names' \
+		   '*:: :->args' \
+		   && ret=0
+
+	case ${state} in
+	     cmds)
+		_describe -t commands_list 'command' commands_list && ret=0
+	     ;;
+
+	     names)
+		case ${line[1]} in
+
+		     # no arguments
+		     -listnetworkserviceorder | -listallnetworkservices | -listallhardwareports | \
+		     -detectnewhardware | -listVLANs | -listdevicesthatsupportVLAN | -listBonds | \
+		     -listpppoeservices | -getcurrentlocation | -listlocations | -listalluserprofiles)
+			ret=0
+		     ;;
+
+		     # <hardwareport or device name>
+		     -getmacaddress | -setMTUAndMediaAutomatically | -getMTU | -setMTU | \
+		     -listvalidMTUrange | -getmedia | -setmedia | -listvalidmedia)
+			local -a list
+			for i in ${hardwareport_device_list[@]}; do
+			    list+=("`echo ${i} | sed 's/\_/\\\ /g'`")
+			done
+			_describe -t list 'Hardwareport or Device' list  && ret=0
+		     ;;
+
+		     # <device name>
+		     -getairportnetwork | -setairportnetwork | -getairportpower | -setairportpower | \
+		     -listpreferredwirelessnetworks | -addpreferredwirelessnetworkatindex | \
+		     -removepreferredwirelessnetwork | -removeallpreferredwirelessnetworks | \
+		     -addDeviceToBond | -removeDeviceFromBond | -createpppoeservice)
+			_describe -t device_list 'Device' device_list && ret=0
+		     ;;
+
+		     # <networkservie>
+		     -getinfo | -setmanual | -setdhcp | -setbootp | -setmanualwithdhcprouter | -getadditionalroutes | \
+		     -setadditionalroutes | -setv4off | -setv6off | -setv6automatic | -setv6LinkLocal | -setv6manual | \
+        	     -getv6additionalroutes | -setv6additionalroutes | -getdnsservers | -setdnsservers | -getsearchdomains | \
+		     -setsearchdomains | -set6to4automatic | -set6to4manual | -getftpproxy | -setftpproxy | -setftpproxystate | \
+		     -getwebproxy | -setwebproxy | -setwebproxystate | -getsecurewebproxy | -setsecurewebproxy | \
+		     -setsecurewebproxystate | -getstreamingproxy | -setstreamingproxy | -setstreamingproxystate | \
+		     -getgopherproxy | -setgopherproxy | -setgopherproxystate | -getsocksfirewallproxy | -setsocksfirewallproxy | \
+		     -setsocksfirewallproxystate | -getproxybypassdomains | -setproxybypassdomains | -getproxyautodiscovery | \
+		     -setproxyautodiscovery | -getpassiveftp | -setpassiveftp | -setautoproxyurl | -getautoproxyurl | \
+		     -setautoproxystate | -getnetworkserviceenabled | -setnetworkserviceenabled | -renamenetworkservice | \
+		     -duplicatenetworkservice | -removenetworkservice)
+		     	_describe -t networkservice_list 'networkservice' networkserivce_list &&ret=0
+		     ;;
+		esac
+	     ;;
+	     
+	     args)
+		case ${line[1]} in
+		
+		     -setftpproxystate | -setwebproxystate | -setsecurewebproxystate | -setstreamingproxystate | \
+		     -setgopherproxystate | -setsocksfirewallproxystate | -setproxyautodiscovery | -setpassiveftp | \
+		     -setairportpower | -setnetworkserviceenabled | -enablesystemprofile | -enableloginprofile | \
+		     -enableuserprofile)
+			if [[ -n ${line[2]} ]]; then
+			   if [[ ${line[1]} == "-enableloginprofile" ]]; then
+			      	if [[ -n ${line[3]} ]]; then
+				   _values 'switch' on off && ret=0
+				fi
+			   else
+				_values 'switch' on off && ret=0
+			   fi
+			fi
+		     ;;
+		esac 
+	     ;;
+	esac
+
+return 1
+}
+#----------------------------------------------------------------------------------------#
+#                                     COMPLETION
+#----------------------------------------------------------------------------------------#
+_networksetup "$@"
+
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:
+### }}}
+

@@ -1,0 +1,149 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+#  :
+#  "#################################################################"
+#  "#                                                               #"
+#  "# .-----.-----.-----.-----.----.                                #"
+#  "# |  _  |  _  |__ --|  -__|  __|  author: Rishi Narang          #"
+#  "# |___  |_____|_____|_____|____|  e.mail: code[at]wtfuzz.com    #"
+#  "# |_____|                                                       #"
+#  "#                                                               #"
+#  "# gosec: [GO]ogle [SE]arch [C]ommand - A Linux Bash Script      #"
+#  "#                                                               #"
+#  "#################################################################"
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 2020-08-06 :
+#  • Debug script.
+#  • To finish
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME SEARCHF URL STRING URI NUM LOC
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+SEARCHF=`echo $SEARCH | sed -e 's/ /./g'`
+
+URL="http://google.com/search?hl=en&safe=off&q="
+STRING=`echo $SEARCH | sed 's/ /%20/g'`
+URI="$URL%22$STRING%22"
+
+NUM=`wc -l URLS_$SEARCHF | awk '{print $1}'`
+LOC=`expr $NUM - 5`
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+
+clear
+if [ -z $1 ]
+then
+ echo "ERROR: No search string supplied. Check the README file."
+ echo "USAGE: ./gosec.sh <search srting>"
+ echo ""
+ echo -n "Anyways for now, supply the search string here: "
+ read SEARCH
+else
+ SEARCH=$@
+fi
+    
+lynx -dump $URI > g1.tmp
+if [ $? -gt 0 ]
+then
+ echo "ERROR: Execution error. Check if 'lynx' package is installed."
+ return 127
+fi
+sed 's/http/\^http/g' g1.tmp | tr -s "^" "\n" | grep http| sed 's/\ .*//g' > g2.tmp
+sed '/google.com/d; /webcache/d' g2.tmp > URLS
+
+echo "" > URLS_$SEARCHF
+echo "------------------------------- URL RESULTS --------------------------------" >> URLS_$SEARCHF
+echo "" >> URLS_$SEARCHF
+sed = URLS | sed 'N;s/\n/. /' >> URLS_$SEARCHF
+echo "" >> URLS_$SEARCHF
+echo "----------------------------------------------------------------------------" >> URLS_$SEARCHF
+rm g1.tmp g2.tmp URLS
+
+
+echo "COMPLETED: Extracted '$LOC links' successfully!"
+echo "REFERENCE: File '`pwd`/URLS_$SEARCHF' lists the URL results."
+cat URLS_$SEARCHF
+echo ""
+
+#EOF

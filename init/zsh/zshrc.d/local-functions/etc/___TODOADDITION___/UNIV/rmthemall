@@ -1,0 +1,5 @@
+#! /usr/bin/env bash
+cd "$1"
+
+	find . -type f -print0 | xargs -0  -I {} rm  {}
+exit 0

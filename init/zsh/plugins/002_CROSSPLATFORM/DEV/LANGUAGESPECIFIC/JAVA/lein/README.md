@@ -1,0 +1,1 @@
+# Lein-shell is a plugin for running shell commands with JVM

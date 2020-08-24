@@ -1,0 +1,45 @@
+.\" Manpage for volume.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH volume 7 "06 Feb 2020" "ZaemonSH MacOS" "MacOS ZaemonSH customization"
+.SH NAME
+volume \- Set volume from CLI.
+.SH SYNOPSIS
+volume [ set | increase | decrease | up | down | mute | unmute | ismute ]
+.SH DESCRIPTION
+volume \- Set volume from CLI.
+.SH OPTIONS
+
+.IP "volume"
+.B Get the volume level.
+
+.IP "volume [set] <0..100>"
+.B Set the volume to <0..100>
+
+.IP "volume [increase] <5>"
+.B Increase the volume by 5 (up to 5)
+
+.IP "volume [decrease] <10>"
+.B Decrease the volume by 10 (down to 10)
+
+.IP "volume [up]"
+.B Increase the volume by 6.25
+
+.IP "volume [down]"
+.B Decrease the volume by 6.25
+
+.IP "volume [mute]"
+.B Set mute
+
+.IP "volume [unmute]"
+.B Unset mute
+
+.IP "volume [ismute]"
+.B Check the volume status
+
+.IP "volume [help]"
+.B Obtain script help
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

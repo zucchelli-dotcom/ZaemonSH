@@ -1,0 +1,80 @@
+#compdef apropos
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _apropos  :
+# Completion for command apropos; search the whatis database for strings.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 05/08/2020 :
+#  • Create this one.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                     COMPLETION
+#----------------------------------------------------------------------------------------#
+_arguments -s {-a,--and}'[require all keywords to match]'\
+  {-C,--config-file}'[use this user configuration file]'\
+  {-d,--debug}'[emit debugging messages]'\
+  {-e,--exact}'[search each keyword for exact match]'\
+  {-L,--locale}'[define the locale for this search]'\
+  {-l,--long}'[do not trim output to terminal width]'\
+  {-M,--manpath}'[set search path for manual pages to PATH]'\
+  {-m,--systems}'[use manual pages from other systems]'\
+  {-r,--regex}'[interpret each keyword as a regex]'\
+  {-s,--sections,--section}'[search only these sections (colon-separated)]'\
+  '--usage[give a short usage message]'\
+  {-v,--verbose}'[print verbose warning messages]'\
+  {-V,--version}'[print program version]'\
+  {-w,--wildcard}'[the keyword(s) contain wildcards]'\
+  '*:filename:_files'
+
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:
+### }}}
+
+
+
+
+

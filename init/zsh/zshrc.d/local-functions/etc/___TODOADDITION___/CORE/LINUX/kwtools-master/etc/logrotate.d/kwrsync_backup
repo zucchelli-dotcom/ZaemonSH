@@ -1,0 +1,6 @@
+/var/log/kwrsync_backup.log {
+	rotate 6
+	weekly
+	compress
+	missingok
+}

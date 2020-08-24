@@ -1,0 +1,1 @@
+# jira is buid for every member of your team.Plan and tarck your work while moving towards the next release

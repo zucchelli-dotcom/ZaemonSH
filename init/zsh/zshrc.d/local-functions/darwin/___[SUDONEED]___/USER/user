@@ -1,0 +1,1069 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# user :
+# Manage users with CLI.
+
+#-------------------------------------------------------------------------------------------#
+#                                              NOTES
+#-------------------------------------------------------------------------------------------#
+##############################################################
+#
+# Simple script to list users in the Mac OS X NetInfo database
+#   note that Mac OS X also has an /etc/passwd file, but that's
+#   only used during the initial stages of boot time and for
+#   recovery bootups. Otherwise, all data is in the NetInfo db.
+#
+# fields=""
+#
+# while getopts "Aahnprsu" opt ; do
+#   case $opt in
+#     A ) fields="uid passwd name realname home shell"    ;;
+#     a ) fields="uid name realname home shell"       ;;
+#     h ) fields="$fields home"               ;;
+#     n ) fields="$fields name"               ;;
+#     p ) fields="$fields passwd"             ;;
+#     r ) fields="$fields realname"           ;;
+#     s ) fields="$fields shell"              ;;
+#     u ) fields="$fields uid"                ;;
+#     ? ) cat << EOF >&2
+# Usage: $0 [A|a|hnprsu]
+# Where:
+#    -A    output all known NetInfo user fields
+#    -a    output only the interesting user fields
+#    -h    show home directories of accounts
+#    -n    show account names
+#    -p    passwd (encrypted)
+#    -r    show realname/fullname values
+#    -s    show login shell
+#    -u    uid
+# EOF
+# return 1
+#   esac
+# done
+# exec nireport . /users ${fields:=uid name realname home shell}
+###############################################################
+
+
+##############################################################
+#
+# ADDUSER - add a new user to the system, including building their
+#           home directory, copying in default config data, etc.
+# You can choose to have every user in their own group (which requires
+# a few tweaks) or use the default behavior of having everyone put 
+# into the same group. Tweak dgroup and dgid to match your own config.
+#       VERS_ACT=$(sw_vers -productVersion | sed 's/^10.//')
+#       VERS_MIN=$(echo "10.5"  | sed 's/^10.//')
+#
+#     if (( $VERS_ACT < $VERS_MIN )); then
+#     dgroup="guest"; dgid=31    # default group and groupid
+#     hmdir="/Users"
+#     shell="uninitialized"
+#
+#     if [ "$(/usr/bin/whoami)" != "root" ] ; then
+#       echo "$(basename $0): You must be root to run this command." >&2
+#       return 1
+#     fi
+#
+#     echo "Add new user account to $(hostname)"
+#     echo -n "login: "     ; read login
+#
+#     if nireport . /users name | sed 's/[^[:alnum:]]//g' | grep "^$login$" ; then
+#       echo "$0: You already have an account with name $login" >&2
+#       return 1
+#     fi
+#
+#     uid1="$(nireport . /users uid | sort -n | tail -1)"
+#     uid="$(( $uid1 + 1 ))"
+#
+#     homedir=$hmdir/$login
+#
+#     echo -n "full name: " ; read fullname
+#
+#     until [ -z "$shell" -o -x "$shell" ] ; do
+#       echo -n "shell: "     ; read shell
+#     done
+#
+#     echo "Setting up account $login for $fullname..."
+#     echo "uid=$uid  gid=$dgid  shell=$shell  home=$homedir"
+#
+#     niutil -create     . /users/$login
+#     niutil -createprop . /users/$login passwd
+#     niutil -createprop . /users/$login uid $uid
+#     niutil -createprop . /users/$login gid $dgid
+#     niutil -createprop . /users/$login realname "$fullname"
+#     niutil -createprop . /users/$login shell $shell
+#     niutil -createprop . /users/$login home $homedir
+#
+#     niutil -createprop . /users/$login _shadow_passwd ""
+#
+#     # adding them to the $dgroup group
+#     niutil -appendprop . /groups/$dgroup users $login
+#
+#     if ! mkdir -m 755 $homedir ; then
+#       echo "$0: Failed making home directory $homedir" >&2
+#       echo "(created account in NetInfo database, though. Continue by hand)" >&2
+#       return 1
+#     fi
+#
+#     if [ -d /etc/skel ] ; then
+#       ditto /etc/skel/.[a-zA-Z]* $homedir
+#     else
+#       ditto "/System/Library/User Template/English.lproj" $homedir
+#     fi
+#
+#     chown -R ${login}:$dgroup $homedir 
+#
+#     echo "Please enter an initial password for $login:"
+#     passwd $login
+#
+#     echo "Done. Account set up and ready to use."
+#     return 0
+# else
+#
+# fi
+#
+##############################################################
+
+
+##############################################################
+# NAME
+#   disableGuestLogin.sh -- Disable Guest Account Login Feature
+#
+# SYNOPSIS
+#   sudo disableGuestLogin.sh
+#
+# DESCRIPTION
+#   This script will prevent the guest user account from logging in.
+#
+####################################################################################################
+# OS=`/usr/bin/defaults read /System/Library/CoreServices/SystemVersion ProductVersion | awk '{print substr($1,1,4)}'`
+#
+# if [[ "$OS" < "10.5" ]]; then
+#     echo "Error:  Guest Account Login not a feature in $OS. Not Attempting to disable guest account login"
+#     return 1
+# else
+#     echo "Disabling Guest Account Login for $OS..."
+#     /usr/bin/dscl . -create /Users/Guest AuthenticationAuthority ";basic;"
+#     /usr/bin/dscl . -create /Users/Guest passwd "*"
+# fi
+# return 0
+#
+##############################################################
+
+
+####################################################################################################
+#
+# ABOUT THIS PROGRAM
+#
+# NAME
+#   disableGuestFolderSharing.sh -- Disable guest access to shared folders
+#
+# SYNOPSIS
+#   sudo disableGuestFolderSharing.sh <targetVolume>
+#
+# DESCRIPTION
+#   This script will disable guest access to shared folders through AFP & SMB. 
+#
+#
+# HARDCODED VALUE FOR "targetVolume" IS SET HERE
+# targetVolume=""
+#
+#
+# # CHECK TO SEE IF A VALUE WAS PASSED IN PARAMETER 1 AND, IF SO, ASSIGN TO "USERNAME"
+# if [ "$1" != "" ] && [ "$targetVolume" == "" ];then
+#     targetVolume=$1
+# fi
+#
+# ####################################################################################################
+# # 
+# # SCRIPT CONTENTS - DO NOT MODIFY BELOW THIS LINE
+# #
+# ####################################################################################################
+#
+# OS=`/usr/bin/defaults read $targetVolume/System/Library/CoreServices/SystemVersion ProductVersion | awk '{print substr($1,1,4)}'`
+#
+# if [[ "$OS" < "10.5" ]]; then
+#     echo "Error: Guest folder sharing is not a feature in 10.4 or earlier.  Not able to disable guest access to shared folders." 
+#     return 1 
+# else
+#     #Disables AFP Sharing for Allow guests to connect to shared folders
+#     echo "Disabling AFP Access for Guest Account..."
+#     /usr/bin/defaults write "$targetVolume/Library/Preferences/com.apple.AppleFileServer" guestAccess -bool no
+#
+#     ##Disables SMB Sharing for Allow guests to connect to shared folders
+#     echo "Disabling SMB Access for Guest Account..."
+#     /usr/bin/defaults write "$targetVolume/Library/Preferences/SystemConfiguration/com.apple.smb.server" AllowGuestAccess -bool no
+# fi
+#
+# return 0
+####################################################################################################
+
+####################################################################
+### Description ###
+#
+# The purpose of this script is to move the home directory
+# of the user that was just logged in to a temporary location,
+# then copy the user template to the Users directory to provide a
+# fresh, consistent interface for the next user.
+# This script assumes that you want to manage users that all have
+# the same home directory specified in NetInfo or LDAP.
+# 
+# If a user that just logged out realizes that they need
+# something that was saved in the home directory, they can get to
+# it by selecting "Go to Folder..." from the Finder's "Go" menu,
+# then typing "/tmp". This script will only replace a home
+# directory if the same user logs in (e.g. the default "student"
+# user). If you login as the local admin, for example,
+# the "student" user directory will still be in /Users.
+#
+# /tmp is cleared out on restarts. You could also create a cron task
+# to remove these backups on a regular basis
+### Properties ###
+#
+# These items must be modified to suit your environment before
+# implementing this script! You do not need to make any other
+# modifications to this file than these properties.
+#
+# defGrp: the group that your default user is assigned to
+# defHome: the location of your default user's home directory
+# defTemplate: the location of your default user home dir template
+    # set defGrp = staff
+    # set defHome = /Users/default
+    # set defTemplate = /Library/Management/default
+    # set tmpDir = /Library/Management/savedHomeDirs
+    # set localAdmin = admin
+    # ### Debug/testing sanity check ###
+    # if ( $#argv < 1 ) then
+    #     echo "No user specified!"
+    #     return 1
+    # endif
+    # ### Script action ###
+    # # If this is not the admin user...
+    # if ( $1 != $localAdmin ) then
+    #     # Create a timestamp for the temporary home directory storage
+    #     set time = `date ''+%m-%d-%y_%H.%M.%S''`
+
+    #     # Move the home directory
+    #     mkdir -m 755 "${tmpDir}/prevuser.$time" 
+    #     mv $defHome "${tmpDir}/prevuser.$time"
+
+    #     # Copy a new default home directory from the user template
+    #     /usr/bin/ditto -rsrcFork $defTemplate $defHome
+
+    #     # Change the ownership of the new home directory to the user logging in
+    #     /usr/sbin/chown -R ${1}:${defGrp} $defHome
+    # endif
+    # ### Always return with 0 status
+# return 0
+####################################################################
+
+
+############################ login.sh ###########################
+# Mike Bombich | mike@bombich.com                
+# Copyright 2002 Mike Bombich.     
+# With the appropriate modification to /etc/ttys, this script will
+# execute each time a user logs in.
+##################################################################
+# This script takes the username as an argument, then removes any
+# old default home directory, restores a fresh copy of the default
+# home directory, then chowns it to logging in user.
+##
+## Properties
+# set defGrp = staff
+# # This part is for debugging/testing purposes only
+# if ( $#argv < 1 ) then
+#     echo "No user specified!"
+#     return 1
+# endif
+# # If this is the default user, replace the default home directory
+# # with a copy of the user template
+# if ( $1 == "student" ) then
+#     rm -rf /Users/$1
+#     /usr/bin/ditto -rsrcFork "/System/Library/User Template/English.lproj" /Users/$1
+#     /usr/sbin/chown -R ${1}:${defGrp} /Users/$1
+# endif
+#
+####################################################################
+# MIN_NB="10.5"
+# VERS_ACT=$(sw_vers -productVersion | sed 's/^10.//')
+# VERS_MIN=$(echo "$MIN_NB"  | sed 's/^10.//')
+
+# if (( $VERS_ACT < $VERS_MIN )); then
+#         echo "You need to have at laest Mac OSX 10.5 to run this scripts"
+# fi
+
+# LastID=`dscl . -list /Users UniqueID | awk '{print $2}' | sort -n | tail -1`
+# NextID=$((LastID + 1))
+# . /etc/rc.common
+# dscl . create /Users/administrator
+# dscl . create /Users/administrator RealName "Administrator Account"
+# dscl . create /Users/administrator hint "Password Hint"
+# dscl . create /Users/administrator picture "/Path/To/Picture.png"
+# dscl . passwd /Users/administrator thisistheaccountpassword
+# dscl . create /Users/administrator UniqueID 501
+# dscl . create /Users/administrator PrimaryGroupID 80
+# dscl . create /Users/administrator UserShell /bin/bash
+# dscl . create /Users/administrator NFSHomeDirectory /Users/administrator
+# cp -R /System/Library/User\ Template/English.lproj /Users/administrator
+# chown -R administrator:staff /Users/administrator
+
+
+
+
+# LastID=`dscl . -list /Users UniqueID | awk '{print $2}' | sort -n | tail -1`
+# NextID=$((LastID + 1))
+# $ sudo dscl . -create /Users/hoagie
+# $ sudo dscl . -create /Users/hoagie RealName "Hoagie"
+# $ sudo dscl . -create /Users/hoagie hint "Password Hint"
+# $ sudo dscl . -create /Users/hoagie   picture "/Path/To/Picture.png"
+# $ sudo dscl . -passwd /Users/hoagie password
+# $ sudo dscl . -create /Users/hoagie UniqueID "$NextID"
+# $ sudo dscl . -create /Users/hoagie PrimaryGroupID 20
+# $ sudo dscl . -create /Users/hoagie UserShell /bin/zsh # /usr/bin/false if you don't want the user to have a shell
+
+#$ sudo dscl . -create /Users/hoagie NFSHomeDirectory /Users/hoagie
+# cp -R /System/Library/User\ Template/English.lproj /Users/administrator
+# chown -R administrator:staff /Users/administrator
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 30/07/2019 :
+#  • Add universal over osx versions script.
+# 2020-02-23 :
+#  • Add trap functions
+#  • Finish usage decoration
+#  • Add test funcion to simplify
+#  • add_user work but ERROR  ---> usage: grep
+#  • delete_user(which need delete_group) or user_delete  1rst need clean second work but...
+#    Availables users name 3 times --> loop is here
+#  • put local before variables !!!!!!!!!!
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 05/01/2018 :
+#  • Modify function presentation.
+#  • Merge with this functions all past functions related to 
+#    creation/deletion of user. (add_user_10.5, delete_user, Adduser2group deleteFromgroups ...)
+# 30/07/2019 :
+#  • Add test before creation of user.
+#  • Add Create admin user 
+# 2020-02-23 :
+#  • /!\Problem if this one is compiled --> parse error near `\n'
+#  • Add sudo before commands ( compatibility problrem dscl more restrictive 
+#    on Mojave and so on??)
+#  • add colored resuts.
+#  • Add whichGroup addToGroup delToGroup  options
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME VERS_ACT VERS_MIN
+
+# VERS_ACT=$(sw_vers -productVersion | sed 's/^10.//')
+# VERS_MIN=$(echo "10.4"  | sed 's/^10.//')
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+echo "${RED}"
+    cat<<__EOF__
+    usage: user [ ls | info | whichGroup | create | createhidden | delete | addToGroup | delToGroup | help ]
+
+    Examples:
+        user ls                             # List users.
+
+        user info [USERNAME]                # Display user information.
+        
+        user whichGroup [USERNAME]          # Display which grroups belongs user.
+
+        user create                         # Create a normal or amdin user, 
+                                            # it will ask you the below information.
+                                                Username:
+                                                Full name:
+                                                Shell [/bin/bash]:
+                                                Password:
+                                                ...
+
+        user createhidden                   # Create an hidden user.
+
+        user delete [USERNAME]              # Delete user.
+        
+        user addToGroup [GROUP] [USERNAME]  # Add user to group.
+
+        user delToGroup [GROUP] [USERNAME]  # Delete user to group.
+__EOF__
+echo "${NC}"
+}
+
+# if (( $VERS_ACT < $VERS_MIN )); then
+# else
+# fi
+
+search_byname(){
+    # dscl . -search always returns 0
+    # dscl . -search /Users name "${1}" > /dev/null 2>&1
+    echo "${GREEN}Availables users name : ${NC}"
+    echo "${YEL}"
+    sudo dscl . -list /Users | grep -i "${1}" >/dev/null 2>&1
+    echo "${NC}"
+}
+
+user_ls(){
+    echo "${GREEN}Availables users list : ${NC}"
+    echo "${YEL}"
+    sudo dscl . -list /Users uid | column
+    echo "${NC}"
+}
+
+user_info(){
+    [ -z "$1" ] && help && return 1
+    echo "${GREEN}Availables user informations : : ${NC}"
+    echo "${YEL}"
+    sudo dscl . -read "/Users/$1"
+    echo "${NC}"
+}
+
+remove_user_from_group(){
+    [ -z "$1" -o -z "$2" ] && help && return 1
+    echo "${GREEN}Availables users name : ${NC}"
+    echo "${YEL}"
+    sudo dscl . -delete /Groups/$2 GroupMembership $1
+    echo "${NC}"
+}
+
+groups_user_belongs(){
+    [ -z "$1" ] && help && return 1
+    sudo dscl . -list /groups GroupMembership | grep -i "${1}" | awk '{print $1}'
+}
+
+groups_user_blongs(){
+    [ -z "$1" ] && help && return 1
+    echo "${GREEN}Availables groups belongs to user ${YEL}$1${NC} :"
+    echo "${YEL}"
+    sudo dscl . -list /groups GroupMembership | grep -i "${1}" | awk '{print $1}'
+    echo "${NC}"
+}
+
+user_create(){
+    #SECONDARY_GROUPS=""  # for a non-admin user
+    #SECONDARY_GROUPS="admin _lpadmin _appserveradm _appserverusr" # for an admin user
+    local LAST_ID=$(sudo dscl . -list /Users UniqueID | awk '{print $2}' | sort -n | tail -1)
+    local NEW_ID=$(expr $LAST_ID + 1)
+    echo $LINEE
+    ##
+    print "${GREEN}Username:${YEL} " 
+    read  _USERNAME
+    [ -z "${_USERNAME}" ] && echo "${WB} ${NC}Enter a username" && return 1
+    # check that the users does not already have a home directory
+    if [[ -e /Users/$_USERNAME ]]; then
+       echo "${WB}${NC} User ${YEL}$_USERNAME${NC} already exists at /Users/${YEL}$_USERNAME${NC}"
+       return 11
+    fi
+    # search Directory Service for the given user - it should not exist
+    str="$(sudo dscl . -list /Users  |  grep -w $_USERNAME )"
+    if [[ $_USERNAME == $str ]];then
+       echo "${WB} ${NC}User ${YEL}$_USERNAME${NC} already exists (but does not have a home directory)"
+       return 21
+    fi
+   
+    print "${GREEN}Full name:${YEL} "
+    read  _FULLNAME
+    [ -z "${_FULLNAME}" ] && echo "Enter a real name" && return 1
+   
+    print "${GREEN}Shell [/bin/zsh]:${YEL} "
+    read _USERSHELL
+    _USERSHELL=${_USERSHELL:-/bin/zsh}
+   
+    print "${GREEN}Password: ${YEL}" 
+    read  _PASSWORD
+    [ -z "${_PASSWORD}" ] && echo "Enter a password" && return 1
+   
+    print "${GREEN}Acount type [admin|staff] :${YEL}" 
+    read  _ACCOUNT
+    [ -z "${_ACCOUNT}" ] && echo "Enter an account type" && return 1
+    # ensure either staff or admin is given
+    if [[ $_ACCOUNT != staff ]] && [[ $_ACCOUNT != admin ]]; then
+       # usage "Give account type as 'staff' or 'admin'"
+       return 1
+    fi
+    echo ${NC}$LINEE
+    
+    echo "\n"
+
+    # function usage {
+    #    print "Create a new staff user"
+    #    print "Be sure to wrap the Real Full Name in double quotes."
+    #    if [[ "$*" != "" ]]; then print; print "Error: $*"; fi
+    #    return 1
+    #  }
+
+     # check that the user id is numeric
+     if [[ -z "$(print $NEW_ID | egrep "^[[:digit:]]+$")" ]]; then
+         echo "User ID must be numeric"
+         usage
+         return 1
+     fi
+     # search Directory Service for the given uid - it should not exist
+     # str="$(nireport . /users uid | grep -w $uid)"
+     str="$(sudo dscl . -list /Users UniqueID | awk '{print $2}'  | grep -w $NEW_ID)"
+     if [[ ! -z "$str" ]]; then
+       echo "User ID $NEW_ID already exists"
+       usage
+       return 31
+     fi
+     # # search Directory Service for the given group - it should not exist
+     # # str="$(nifind /groups/$group .)"
+     # str="$( sudo dscl . -list /Groups | grep -w $group )"
+     # if [[ ! -z "$str" ]]; then
+     #     usage "Group $group already exists"
+     #     return 41
+     # fi
+     # search Directory Service for the given gid - it should not exist
+     #str="$(nireport . /groups gid | grep -w $uid)"
+     str="$( sudo dscl . -list /Users PrimaryGroupID | awk '{print $2}'  | grep -w $NEW_ID )"
+     if [[ ! -z "$str" ]]; then
+         usage "Group ID $NEW_ID already exists"
+       return 1
+     fi
+
+
+    echo $LINEE
+    echo "${NC}Creating user...${RED}"
+    sudo  dscl . -create /Users/${_USERNAME}
+    sudo  dscl . -create /Users/${_USERNAME} UserShell "${_USERSHELL}"
+    sudo  dscl . -create /Users/${_USERNAME} RealName "${_FULLNAME}"
+    sudo  dscl . -create /Users/${_USERNAME} UniqueID "${NEW_ID}"
+    sudo  dscl . -create /users/${_USERNAME} "/Library/User Pictures/Fun/Gingerbread Man.tif" 
+    # staff group by default
+    sudo  dscl . -create /Users/${_USERNAME} NFSHomeDirectory /Users/${_USERNAME}
+    sudo  dscl . -create /Users/${_USERNAME} PrimaryGroupID 20
+    #set password
+    sudo  dscl . -passwd /Users/${_USERNAME} ${_PASSWORD}
+    print "${WG} ${NC}New user and group ${_USERNAME} created for ${YEL}${_USERNAME}${NC}"
+    # Add admin users to the admin group
+    #    
+    if [[ ${_ACCOUNT} = admin ]]; then
+      sudo  dscl . merge /groups/admin users ${_USERNAME}
+      sudo  dscl . merge /groups/appserverusr users ${_USERNAME}
+      sudo  dscl . merge /groups/appserveradm users ${_USERNAME}
+      print "${WG} User ${_USERNAME} added to groups admin, appserverusr, appserveradm${NC}"
+    fi
+
+    # Create the home directory
+    sudo  createhomedir -c -u ${_USERNAME} 2>/dev/null
+    if [[ ! -d /Users/$RecordName ]]; then
+       print "${WB} Unable to create the user's home directory /Users/${_USERNAME}"
+       return
+    fi
+    echo "${WG} ${NC}Created user ${YEL}${_USERNAME} - ${_FULLNAME} (${NEW_ID})${NC}"
+    echo ${NC}$LINEE
+    echo ""
+}
+
+user_create_10.5(){
+    # The script must be run as an admin user 
+    #
+    if [[ -z $(/usr/bin/id -p $USER | grep admin) ]];then
+        print "You must be an administrative user with sudo privileges in order to run $0"
+    fi
+    # set -x
+    declare RecordName RealName uid accnt  # to hold the given RecordName and RealName names, uid, and account type
+    declare str                   # working
+    thiscommand=$0
+    function usage {
+      print "Create a new staff or admin user"
+      print "Usage: $thiscommand username \"Real Full Name\" uid staff|admin"
+      print "Be sure to wrap the Real Full Name in double quotes."
+      if [[ "$*" != "" ]]; then print; print "Error: $*"; fi
+      return 1
+    }
+    # Check parameters
+    #
+    if [[ $# -ne 4 ]]; then
+        usage
+        return 1
+    fi
+    RecordName="$1"; RealName="$2"; uid="$3"; accnt="$4"
+    group=${RecordName}  
+    # check that the user id is numeric
+    if [[ -z "$(print $uid | egrep "^[[:digit:]]+$")" ]]; then
+        usage "User ID must be numeric"
+        return 1
+    fi
+    # check that the users does not already have a home directory
+    if [[ -e /Users/$RecordName ]]; then
+        usage "User $RecordName already exists at /Users/$RecordName"
+        return 11
+    fi
+    # search Directory Service for the given user - it should not exist
+    str="$(dscl . -list /Users  |  grep -w $RecordName )"  
+    if [[ $RecordName == $str ]];then
+        usage "User $RecordName already exists (but does not have a home directory)"
+        return 21
+    fi
+    # search Directory Service for the given uid - it should not exist
+    # str="$(nireport . /users uid | grep -w $uid)"
+    str="$(dscl . -list /Users UniqueID | awk '{print $2}'  | grep -w $uid)" 
+    if [[ ! -z "$str" ]]; then
+      usage "User ID $uid already exists"
+      return 31
+    fi
+    # search Directory Service for the given group - it should not exist
+    # str="$(nifind /groups/$group .)"
+    str="$( dscl . -list /Groups | grep -w $group )"
+    if [[ ! -z "$str" ]]; then
+        usage "Group $group already exists"
+        return 41
+    fi
+    # search Directory Service for the given gid - it should not exist
+    #str="$(nireport . /groups gid | grep -w $uid)"
+    str="$( dscl . -list /Users PrimaryGroupID | awk '{print $2}'  | grep -w $uid)"
+    if [[ ! -z "$str" ]]; then
+        usage "Group ID $uid already exists"
+      return 1
+    fi
+    # ensure either staff or admin is given
+    if [[ $4 != staff ]] && [[ $4 != admin ]]; then
+      usage "Give account type as 'staff' or 'admin'"
+      return 1
+    fi
+    # Add the new user to Directory Service
+    #
+    # add user and essential properties
+    sudo dscl . create /users/$RecordName
+    sudo dscl . create /users/$RecordName name $RecordName
+    sudo dscl . create /users/$RecordName passwd "*"
+    sudo dscl . create /users/$RecordName hint ""
+    sudo dscl . create /users/$RecordName uid $uid
+    sudo dscl . create /users/$RecordName gid $uid
+
+    sudo dscl . create /users/$RecordName home /Users/$RecordName
+    sudo dscl . create /users/$RecordName shell /bin/zsh
+    sudo dscl . create /users/$RecordName realname "$RealName"
+    sudo dscl . create /users/$RecordName picture "/Library/User Pictures/Fun/Gingerbread Man.tif" 
+    sudo dscl . create /users/$RecordName sharedDir Public
+    # add some other properties that are usually in Directory Service
+    sudo  dscl . create /users/$RecordName _shadow_passwd ""
+    #dscl . create /users/$RecordName _writers_hint $RecordName
+    #dscl . create /users/$RecordName _writers_real_name $RecordName
+    # add the new group
+    sudo  dscl . create /groups/$RecordName
+    sudo  dscl . create /groups/$RecordName name $RecordName
+    sudo  dscl . create /groups/$RecordName passwd "*"
+    sudo  dscl . create /groups/$RecordName gid $uid
+    print "New user and group $RecordName created for $RealName"
+    # Add admin users to the admin group
+    #
+    if [[ $4 = admin ]]; then 
+      sudo  dscl . merge /groups/admin users $RecordName 
+      sudo  dscl . merge /groups/appserverusr users $RecordName 
+      sudo  dscl . merge /groups/appserveradm users $RecordName 
+      print "User $RecordName added to groups admin, appserverusr, appserveradm"
+    fi
+    # Create the home directory, populate from the template, and set owners
+    #
+    sudo  mkdir /Users/$RecordName
+    if [[ ! -d /Users/$RecordName ]]; then
+      print "Unable to create the user's home directory /Users/$RecordName"
+      return
+    fi
+    # Test for a /Users/Template account, and use that, or in its absence, the
+    # default factory-supplied template, to create the new user's subdirectories
+    # but don't create a problem if this is used to create the Template account
+    if [[ -d /Users/Template && $RecordName != Template ]];then
+        sudo  ditto -rsrc  /Users/Template/  /Users/$RecordName
+        print "Home directory /Users/$RecordName created and populated from /Users/Template"
+    else
+        sudo  ditto -rsrc /System/Library/User\ Template/English.lproj/ /Users/$RecordName
+        print "Home directory /Users/$RecordName created and populated from /System/Library/User\ Template"
+    fi
+    sudo  chown -R ${RecordName}:$RecordName /Users/$RecordName
+    # Now give the user a password
+    #
+    print "${WB} A password for this account must be given, it is currently blank${NC}"
+    sudo passwd $RecordName
+
+    return 0
+}
+
+user_delete(){
+    [ -z "$1" ] && help && return 1
+    # if search_byname "$1"; then
+    if search_byname "$1" 1>/dev/null; then
+#####
+#/!\#
+#####
+   # sudo -v -u $USER
+#####
+#/!\#
+#####
+        sudo dscl . -delete "/Users/${1}"
+        sudo rm -rf /Users/${1} 2>/dev/null
+        # for group in $(groups_user_belongs $1); do
+        #     remove_user_from_group $1 $group 1>/dev/null
+        # done
+        echo "${WG} \"${1}\" ${NC}was deleted!${NC}"
+    else
+        echo "${WB} \"${1}\" ${NC}not found, try other one"
+    fi
+}
+
+delete_user(){
+    # The script must be run as an admin user 
+    #
+    if [[ -z $(/usr/bin/id -p $USER | grep admin) ]];then
+        print "You must be an administrative user with sudo privileges in order to run $0"
+    fi
+
+    # For 10.5:  Eliminated niutil commands in favor of Directory Service
+    # Obtained and modified from a bash shell script available at
+    # http://www.osxfaq.com/tips/unix-tricks/week91/friday.ws
+    # Delete a user.
+    # Takes the account name (short name) and:
+    #   removes the user from all groups
+    #   removes the user's primary group (of the same name)
+    #   removes the user's account in NetInfo
+    #   archives and deletes the user's home directory in /Users/shortname
+    commandname=$0
+
+    declare user  # to hold user's account name
+    declare str   # working
+
+    function usage {
+      print "Delete a user account, group, and group membership"
+      print "Usage: $commandname username"
+      if [[ "$*" != "" ]]; then 
+         print ""
+         print "Error: $*"
+      fi
+      return 1
+    }
+
+    # Check parameters
+    #
+    if [[ $# -ne 1 ]]; then
+      usage
+      return 21
+    fi
+
+    user="$1"
+    RecordName=${user}
+    # dscl="sudo dscl"
+
+    # search Directory Service for the given user - it should exist
+    str="sudo dscl . -list /Users  |  grep -w $RecordName )"
+    if [[  -z "$str" ]]; then
+      usage "User $user does not exist"
+      return 1
+    fi
+
+    # Delete the user from Directory Services
+    # delete the user from all groups
+    autoload -U remove_user_from_group
+    remove_user_from_group all $user
+
+    # delete the user's primary group
+    autoload -U delete_group
+    delete_group -q $user
+
+    # delete the user from NetInfo
+    sudo dscl . delete /users/$user
+    print "User $user deleted"
+
+    # Archive the user's home directory
+    #
+    # check that the user has a home directory
+    if [[ -d /Users/$user ]]; then
+      # archive it
+      cd /Users
+      sudo /usr/bin/tar -czf ${user}-archive.tgz $user
+      cd  
+      
+      # delete it CHECKING THAT AN ARCHIVE WAS CRESATED
+      if [[ -e /Users/${user}-archive.tgz ]]; then
+        sudo rm -rf /Users/${user}
+      fi
+    fi
+
+    print "Users home directory archived as /Users/${user}-archive.tgz and deleted"
+return 0
+}
+
+add_user_to_group(){
+    # The script must be run as an admin user 
+    #
+    if [[ -z $(/usr/bin/id -p $USER | grep -w admin) ]];then
+        print "You must be an administrative user with sudo privileges in order to run $0"
+    fi
+
+    declare group user  # hold the given group name and user account name
+    declare gid         # hold the group id derived from the group name
+    declare str struser stringroup strprimary  # working
+    commandissued=$0
+
+    function usage {
+      print "Add a user (or several users) to an existing group"
+      print "Usage: $commandissued group user [user...]"
+      if [[ "$*" != "" ]]; then echo; echo "Error: $*"; fi
+      return 1
+    }
+
+    # Check parameters
+    #
+    if [[ $# -lt 2 ]]; then
+      usage
+      return 1
+    fi
+
+    group="$1"
+    # echo "--group=$group"
+    # search Directory Service for the given group - it should exist
+
+    str="$( sudo dscl . -list /Groups | grep -w $group )"
+    if [[ -z "$str" ]]; then
+      usage "Group $group does not exist"
+      return 11
+    fi
+
+    # get the group number from the name
+    gid="$(sudo dscl . -list /Groups PrimaryGroupID | grep -w "^$group" |  awk '{print $2}' )"
+
+
+    # Drop the group and loop through additional parameters (users) to add to group
+    #
+    shift
+
+    for user in $*; do
+      # check if the user exists
+      # struser="$(nifind /users/$user .)"
+      struser="$(sudo dscl . -list /Users  |  grep -w $user )"  
+      # check if the user already belongs to the group
+      stringroup="$( sudo dscl . -list /Groups users | grep -w "^$group" | grep -w "$user")"
+      # check if this is the user's primary group
+      strprimary="$(sudo dscl . -list /Groups PrimaryGroupID | grep -w "^$user" | grep -w "$gid" )"
+
+      # ensure that the user exists...
+      if [[ -z "$struser" ]]; then
+        echo "${WB} ${NC}User ${YEL}$user${NC} does not exist"
+      # ...and does not already belong to the group...
+      elif [[ ! -z "$stringroup" ]]; then
+        echo "${WB} ${NC}User${YEL} $user${NC} already belongs to group ${YEL}$group${NC} - not added again"
+      # ...and this is not the user's primary group
+      elif [[ ! -z "$strprimary" ]]; then
+        echo "${WB}This is the user's primary group - not added${NC}"
+      else
+        # add user to the group
+        sudo dscl . merge /groups/$group users "$user" 
+        echo "${WG} ${NC}User ${YEL}$user${NC} added to group ${YEL}$group${NC}"
+      fi
+    done
+
+    return 0
+}
+
+# remove_user_from_group(){
+remoove_user_from_group(){
+    # The script must be run as an admin user 
+    #
+    if [[ -z $(/usr/bin/id -p $USER | grep admin) ]];then
+        print "You must be an administrative user with sudo privileges in order to run $0"
+    fi
+
+    # For 10.5:  Eliminated niutil commands in favor of Directory Service
+    # Obtained and modified from a bash shell script available at
+    # http://www.osxfaq.com/tips/unix-tricks/week91/friday.ws
+    # Remove a user from a group, or all groups
+    # Removes an existing user from an existing group in NetInfo, or from
+    #  all groups to which that user belongs (but not their primary group)
+    declare groups  # hold the given group name or the list of groups
+    declare user    # hold the user account name
+    declare gid     # hold the group id derived from the group name
+    declare str strgroup stringroup strprimary  # working
+
+    thiscommand=$0
+
+    function usage {
+      echo ""
+      echo "${RED}Remove a user from a group or all groups"
+      # echo "Usage: ${YEL}$thiscommand${RED} group|all user"
+      echo "Usage: ${YEL}user delToGroup group|all user${RED}"
+      echo "       for 'all' the user is removed from all but their primary group${NC}"
+      if [[ "$*" != "" ]]; then echo; echo "${WB} Error:${NC} $*"; fi
+      return 1
+    }
+
+    # Check parameters
+    #
+    if [[ $# -lt 2 ]]; then
+      # usage
+      usage && return 1
+    fi
+
+    groups="$1"; user="$2"
+    # groups="$2"; user="$1"
+    # echo "--groups=$groups"
+    # echo "--user=$user"
+    # If group is all, expand into the list of groups to which the user belongs
+    #
+    if [[ $groups = "all" ]]; then
+      groups="$(id -Gnr $user)"
+    fi
+
+    # Loop to remove the user from each group
+    #
+    for group in $groups; do
+      # get the group number from the name
+      gid="$(sudo dscl . -list /Groups PrimaryGroupID | grep -w "^$group" |  awk '{print $2}' )"
+      # check if the group exists
+      # strgroup="$(nifind /groups/$group .)"
+      strgroup="$(sudo dscl . -list /Groups | grep -w $group )"
+      # check if the user is listed for the group (not listed in own primary)
+      # stringroup="$(nireport . /groups name users | grep -w "^$group" | grep -w "$user")"
+      stringroup="$( sudo dscl . -list /Groups users | grep -w "^$group" | grep -w "$user")"
+      # check if this is the user's primary group
+      # strprimary="$(sudo dscl . -list /Groups PrimaryGroupID | grep -w "^$user" | grep -w "$gid" )"
+      strprimary="$(sudo dscl . -list /Groups PrimaryGroupID | grep -w "^$group" | grep -w "$gid" )"
+      # ensure that the group exists...
+      if [[ -z "$strgroup" ]]; then
+        echo "${WB} ${NC}Group ${YEL}$group{NC} does not exist"
+        return 0
+      # ...and this is not the user's primary group
+      # elif [ ! -z "$strprimary" ]; then
+      #   echo "${WB} ${NC}Not removing from primary group ${YEL}$group${NC}"
+      #   return 0
+      # ...and that the user is listed in the group
+      elif [ -z "$stringroup" ]; then
+        echo "${WB} ${NC}User${YEL} $user${NC} not listed in ${YEL}$group${NC}"
+        return 0
+      else
+        # # remove user from the group
+        # # sudo dscl . delete /groups/$group users $user
+        sudo dscl . -delete /Groups/$1 GroupMembership $2
+        echo "${WG} ${NC}User ${YEL}$user${NC} removed from group ${YEL}$group${NC}"
+      fi
+    done
+    return 0   
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+emulate -L zsh
+banner
+case $1 in
+    help)
+        help
+        ;;
+    list|ls)
+        user_ls
+        ;;
+    info)
+        shift
+        user_info $@
+        ;;
+    whichGroup)
+        shift
+        groups_user_blongs $@
+        ;;
+    addToGroup)
+        shift
+        # sudo sed -i -e 's/timestamp_timeout=0/timestamp_timeout=5/' /etc/sudoers
+        # [[ -e /etc/sudoers-e ]] && sudo rm /etc/sudoers-e
+        add_user_to_group $@
+        # sudo sed -i -e 's/timestamp_timeout=5/timestamp_timeout=5/' /etc/sudoers
+        # [[ -e /etc/sudoers-e ]] && sudo rm /etc/sudoers-e
+        # sleep 5
+        # Z_Restart
+        ;;
+    delToGroup)
+         shift
+         # sudo sed -i -e 's/timestamp_timeout=0/timestamp_timeout=5/' /etc/sudoers
+         # [[ -e /etc/sudoers-e ]] && sudo rm /etc/sudoers-e
+         # remove_user_from_group $@
+         remoove_user_from_group $@
+         # sudo sed -i -e 's/timestamp_timeout=5/timestamp_timeout=5/' /etc/sudoers
+         # [[ -e /etc/sudoers-e ]] && sudo rm /etc/sudoers-e
+         # sleep 5
+         # Z_Restart
+         ;;
+    create)
+        shift
+        # sudo sed -i -e 's/timestamp_timeout=0/timestamp_timeout=5/' /etc/sudoers
+        # [[ -e /etc/sudoers-e ]] && sudo rm /etc/sudoers-e
+        user_create
+        # sudo sed -i -e 's/timestamp_timeout=5/timestamp_timeout=5/' /etc/sudoers
+        # [[ -e /etc/sudoers-e ]] && sudo rm /etc/sudoers-e
+        sleep 5
+        Z_Restart
+        ;;
+    delete)
+        shift
+        # sudo sed -i -e 's/timestamp_timeout=0/timestamp_timeout=5/' /etc/sudoers
+        # [[ -e /etc/sudoers-e ]] && sudo rm /etc/sudoers-e
+        user_delete $@
+        # sudo sed -i -e 's/timestamp_timeout=5/timestamp_timeout=0/' /etc/sudoers
+        # [[ -e /etc/sudoers-e ]] && sudo rm /etc/sudoers-e
+        sleep 5        
+        Z_Restart
+        ;;
+    *)
+        help
+        ;;
+esac
+
+# vim: ts=4 sw=4 softtabstop=4 expandtab

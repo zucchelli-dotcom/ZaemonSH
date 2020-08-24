@@ -1,0 +1,154 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+#  mdattr :
+#  Created by  W . G. Scott on 22 January 2009.
+#  Copyright (c) . All rights reserved.
+#  Create or revise an existing Apple-type metadata AttributeName 
+#  of the form kMDItemAttributeName
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NANME FirstArg SecondArg CountArgs
+
+VERSION="0.0.2"
+FCT_NAME="$(echo $0)"
+
+FirstArg="$1"
+SecondArg="$2"
+CountArgs="$#" 
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+function _mdattr_usage {
+    print ""
+    print "\e[1m mdattr\e[0m is a function that can create, delete or revise Apple-style metadata attributes" 
+    print " of the form \e[1mkMDItem\e[0m\e[36mAttributeName\e[0m and assign each to a value of \e[35mAttributeValue\e[0m "
+    print " eg: \e[1m kMDItem\e[0m\e[36mKind\e[0m\e[1m  = \"\e[35mDocument\e[0m\e[1m\" \e[0m "
+    print ""
+    print ""
+    print " Usage: \e[1m  mdattr   \e[0m<\e[36mAttributeName\e[0m>   <\e[35mAttributeValue\e[0m>   \e[1mfilename(s) \e[0m "
+    print "        \e[1m  mdattr  -d  \e[0m<\e[36mAttributeName\e[0m> \e[1mfilename(s) \e[0m "
+    print ""
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+if [[ "$CountArgs" -lt 3 ]]; then
+   _mdattr_usage
+   return 42
+fi
+shift 2  2>/dev/null
+
+if [[ "$FirstArg" == "-d" ]]; then
+    # Delete the AttributeName entry
+    mdAttributeName="${SecondArg}"
+    if [[ ! -O "$1" ]];then
+    	sudo xattr -d com.apple.metadata:kMDItem"${mdAttributeName}"  "$@"
+    else
+    	xattr -d com.apple.metadata:kMDItem"${mdAttributeName}"  "$@"
+    fi	
+else
+    # Over-write or append the AttributeName and AttributeValue entries
+	mdAttributeName="${FirstArg}"
+	mdAttributeValue="${SecondArg}"
+	if [[ ! -O "$1" ]];then
+	    sudo xattr -w com.apple.metadata:kMDItem"${mdAttributeName}" \"$mdAttributeValue\"  "$@"
+	else
+		xattr -w com.apple.metadata:kMDItem"${mdAttributeName}" \"$mdAttributeValue\"  "$@"
+	fi
+fi
+
+# Feedback loop to assure the user it has worked.
+# Pause to let metadata database update
+sleep 3
+foreach mdfilemod in "$@"
+    print ""
+    print "\e[1m The metadata of the file\e[0m "$mdfilemod" \e[1mhave been modified as follows: \e[0m" 
+    mdls "$mdfilemod"  | grep "${mdAttributeName}"
+    print ""
+end
+
+# Cleanup:
+mdAttributeName=""
+mdAttributeValue=""
+mdfilemod=""
+1=""
+2=""
+FirstArg=""
+SecondArg=""
+CountArgs=""

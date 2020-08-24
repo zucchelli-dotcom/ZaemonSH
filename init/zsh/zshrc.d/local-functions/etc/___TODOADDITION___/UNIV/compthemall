@@ -1,0 +1,6 @@
+#! /usr/bin/env bash
+cd "$1"
+find . -type f | while read file; do 
+	gzip "$file";
+	#tar "${file}".tar "${file}" 
+done

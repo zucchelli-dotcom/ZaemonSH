@@ -1,0 +1,38 @@
+#!/usr/bin/perl
+#
+# © 2003 Sveinbjorn Thordarson <sveinbt@hi.is>
+# Search google with command line parameters
+#
+
+use strict;
+use warnings;
+
+my $google_url = "http://www.google.com/search?q=";
+my $google_img_url = "http://images.google.com/images?q=";
+
+my $USAGE = <<EOF;
+usage: google [-ih] searchword ...
+EOF
+
+# Handle image search flag
+my $opt = $ARGV[0] || '';
+if ($opt eq "-i")
+{
+    $google_url = $google_img_url;
+    shift @ARGV;
+}
+elsif ($opt eq "-h")
+{
+    die $USAGE;
+}
+# Print usage if no search terms given
+die $USAGE unless @ARGV;
+
+# Create query string to be passed
+my $query_string = join '+', @ARGV;
+
+#Replace spaces with plus
+$query_string =~ s/ /\+/;
+
+# Pass url to open command, which will open in default browser
+exec("open", "$google_url$query_string");

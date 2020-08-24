@@ -1,0 +1,184 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_Notes-problems :
+# Often when dealing with the same editors working with multiple devices that
+# are not always connected to the internet, I end up with multiple versions of
+# the same file.
+#
+# This script will attempt to show you each version and let you choose the
+# "correct" version. It is interactive, so you can just run the script any
+# time.
+
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 30/07/2017 :
+#  • Create this one .
+
+
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+
+export LESS="-X --QUIT-AT-EOF --quit-if-one-screen --quit-on-intr --line-numbers --raw-control-chars"
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  echo "${RED}"
+  cat<<__EOF__
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+
+__EOF__
+echo ${NC}
+}
+
+#
+# Trims a filename to just the basename regardless of the extension that
+# may be associated with it.
+#
+function baseName() {
+    EXTENSION_MATCHER='\.[^\.]*$'
+    basename "$*" | sed "s/$EXTENSION_MATCHER//"
+}
+
+#
+# Given the original file and the conflicted version (bad) as the two parameters,
+# this function will use less and diff to show the different versions and allow
+# you to choose which to keep.
+#
+function dealWith() {
+    ORIG="$1"
+    BAD="$2"
+    BASE=`baseName $ORIG`
+
+    # If the conflicted version has a different extension (it can happen),
+    # we may not be able to find the original, so let's check for that
+    # up front, and if there is a problem, you can deal with it by hand.
+
+    if [ -f "$ORIG" -a -f "$BAD" ]
+    then
+        # If the conflicted version is really the same file, then we
+        # should be able to get rid of the "bad" version without issue.
+
+        if cmp --quiet "$ORIG" "$BAD"
+        then
+            echo "Note, '$BASE', has an identical version."
+            echo -n "Remove: $BAD [y/n] "
+            read answer
+            if [ "$answer" = "y" ]
+            then
+                rm "$BAD"
+            fi
+        else
+            diff --label "$BASE"  "$ORIG" "$BAD" | less --prompt "$BASE"
+            if [ "$ORIG" -nt "$BAD" ]
+            then
+                echo "$BASE (<) is newer"
+            else
+                echo "$BASE.1 (>) is newer"
+            fi
+            echo -n "Keep which version? [<|>] "
+            read answer
+            if [ "$answer" = "<" ]
+            then
+                echo "Removing: $BAD"
+                rm "$BAD"
+            else
+                echo "Moving: $ORIG"
+                mv "$BAD" "$ORIG"
+            fi
+        fi
+    else
+        echo "Bad note: $BAD"
+        echo "Can not find: $ORIG"
+    fi
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+#
+# Step 1. Deal with multiple versions...
+#
+for BADFILE in `find "$NOTEDIR" -name '*.[1-9].*' -and \! -iname "Interim Note-Changes*" -and \! -iname 'Notes & Settings*'`
+do
+        ORIGFILE=`echo $BADFILE | sed 's/\.[1-9]\(\.[a-z]*\)$/\1/'`
+        dealWith "$ORIGFILE" "$BADFILE" 
+done
+
+#
+# Step 2. Deal with conflicted versions... Hopefully, there is only two...
+#
+for BADFILE in `find "$NOTEDIR" -iname "*conflicted copy*" -and \! -iname "Interim Note-Changes*" -and \! -iname 'Notes & Settings*'`
+do
+        ORIGFILE=`echo $BADFILE | sed 's/ (.*conflicted copy.*)//'`
+        dealWith "$ORIGFILE" "$BADFILE" 
+done

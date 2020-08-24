@@ -1,0 +1,174 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# screensaver :
+# Launch screensaver with the CLI.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 05/01/2018 :
+#  • Modify function presentation.
+# 04/01/2019 :
+#  • Add default version condition for screensaver.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.2"
+FCT_NAME="screensaver"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+
+help(){
+    cat<<__EOF__
+    usage: screensaver [ askforpassword | isscreensaver | help ]
+
+    Examples:
+        screensaver                         #  Launch screensaver
+
+        screensaver isscreensaver           #  Now if screensaver is enable on remote
+
+        screensaver askforpassword          #  get the current status
+        screensaver askforpassword YES      #  enable password requirement to unlock
+        screensaver askforpassword NO       #  disable password requirement to unlock
+__EOF__
+}
+
+askforpassword(){
+    case $1 in
+        [yY][eE][sS])
+            defaults write com.apple.screensaver askForPassword -int 1
+            echo "Screensaver askforpassword: YES"
+            ;;
+        [nN][oO])
+            defaults write com.apple.screensaver askForPassword -int 0
+            echo "Screensaver askforpassword: NO"
+            ;;
+        *)
+            VALUE=$(defaults read com.apple.screensaver askForPassword)
+            if [ "${VALUE}" -eq 1 ]; then
+                echo "Screensaver askforpassword: YES"
+            else
+                echo "Screensaver askforpassword: NO"
+            fi
+            ;;
+    esac
+}
+
+#####
+#/!\#
+#####
+isscreensaver(){   
+    # aqualog=$( ps -u $USER | grep WindowServer  | grep -v grep "--color=auto")
+    # aqualog=$(ps -u $USER | grep Aqua  | grep -v grep "--color=auto")
+    # aqualog=$(ps -ax | grep 'ScreenSaverEngine' | grep -v grep "--color=auto")
+    if [ $SSH_CONNECTION ]; then
+        aqualog=$(ps -ax | grep -q 'ScreenSaverEngine')
+        if [[ $aqualog == "" ]]; then 
+              echo ${RED}NO${NC}; 
+        else 
+              echo ${GREEN}YES${NC};
+        fi 
+    else
+      print "${RED}Only available for remote session eg: ssh.${NC}"
+    fi    
+
+        # aqualog=$(command ps -u $USER | command grep 'ScreenSaverEngine' | command grep  -v "grep ScreenSaverEngine")
+        # screensavon="/System/Library/Frameworks/ScreenSaver.framework/Versions/A/Resources/ScreenSaverEngine.app/Contents/MacOS/ScreenSaverEngine"
+        # if [[ "$aqualog" == "" ]]; then 
+        #     builtin echo ${RED}NO${NC}; 
+        #  else 
+        #     builtin echo ${GREEN}YES${NC};
+        # fi
+}
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+case $1 in
+    help)
+        help
+        ;;
+    askforpassword)
+        shift
+        askforpassword $@
+        ;;
+#####
+#/!\#
+#####
+    isscreensaver)
+        shift
+        isscreensaver $@
+        ;;
+#####
+#/!\#
+#####            
+    *)
+        if [[ -d "/System/Library/Frameworks/ScreenSaver.framework/Versions/A/Resources/ScreenSaverEngine.app"  ]]; then
+            open -a /System/Library/Frameworks/ScreenSaver.framework/Versions/A/Resources/ScreenSaverEngine.app
+        elif [[ -d "/System/Library/CoreServices/ScreenSaverEngine.app" ]]; then
+             /System/Library/CoreServices/ScreenSaverEngine.app/Contents/MacOS/ScreenSaverEngine
+        else
+            /System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend
+        fi
+    ;;
+esac
+
+# # vim: ts=4 sw=4 softtabstop=4 expandtab

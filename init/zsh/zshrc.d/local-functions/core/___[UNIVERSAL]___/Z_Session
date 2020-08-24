@@ -1,0 +1,427 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_Session :
+# Handle, create, list multiple CLi virtual desktop.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 25/01/2020 :
+#  • Create this one .
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+PREFIX="${DESK_DIR:=$HOME/.desk}"
+# PREFIX="$HOME/.desk"
+DESKS="${DESK_DESKS_DIR:=$PREFIX/desks}"
+# DESKS="$PREFIX/desks"
+DESKFILE_NAME=Deskfile
+
+PROGRAM="$0"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+## Commands 
+cmd_version() {
+    echo "Z_Session 0.0.1"
+}
+
+cmd_usage() {
+    cmd_version
+    echo 
+    cat <<_EOF
+Usage:
+    Z_Session
+        List the current desk and any associated aliases. If no desk
+        is being used, display avalaible desks.
+    Z_Session init
+        Initialize desk configuration
+    Z_Session  (list|ls)
+        List all desks along with a description
+    Z_Session (.|go) [<desk-name-or-path> [shell-args ...]]
+        Activate a desk. Extra arguments are passed onto shell. If 
+        called with no arguments, look for a Deskfile in the current directory.
+        If not a reconuized desk, try as a path directory containinbg a deskFile.
+    Z_Session run <desk-name> <cmd>
+        Run a command within a desk's environment then exit. Think '\$$SHELL -c'.
+    Z_Session edit [desk-name]
+        Edit (or create) a deskfile with the name specified, otherwise
+        edit the active deskfile.
+    Z_Session help
+        Show this text.
+        Shown version information.
+Since desk spawns a shell, to desacrtivate and "pop" out a desk, you
+simply need to exit or otherwise end the current shell process."
+_EOF
+}
+
+cmd_init() {
+    if [[ -d "$PREFIX" ]]  ; then
+        echo "Desk dir already exists at ${PREFIX}"
+        return 1 
+    fi
+    echo  "Where do you want to store your deskfiles? (defaults: $PREFIX): "
+    read
+
+    [[ -z "${NEW_PREFIX}" ]] && NEW_PREFIX="$PREFIX"
+    
+    if [[ ! -d "${NEW_PREFIX}" ]] && [[ $NEW_PREFIX ]]; then
+        echo "${NEW_PREFIX} doesn't exist, attempting to create."
+        mkdir -p "$NEW_PREFIX/desks"
+    fi
+    
+    local SHELLTYPE=$(get_running_shell)
+
+    case "${SHELLTYPE}" in
+       bash) local SHELLRC="${HOME}/.bashrc" ;;
+       fish) local SHELLRC="${HOME}/fish/config.fish" ;;
+       zsh) local SHELLRC="${HOME}/.zshrc" ;;
+    esac
+
+    echo "Where's your shell rc file? (default: ${SHELLRC})"
+    read $USER_SHELLRC
+    [[ -z "${USER_SHELLRC}" ]] && USER_SHELLRC="$SHELLRC"
+    if [[ ! -f "$USER_SHELLRC" ]]; then
+        echo "${USER_SHELLRC} doesn't exist"
+        return 1
+    fi
+    
+    printf "\n# Hook for desk activation\n" >> "$USER_SHELLRC"
+
+    # Since the hook is appende to the rc file, its exit status becomes
+    # the exit status of `source $USER_SHELLRC` which typically
+    # indicates if something went wrong. If $DESK_ENV is void, `test`
+    # sets exit status to 1. That, however, is part of desk's normal
+    # operation, so we clear exit status after that.
+    if [[ "${SHELLTYPE}" == "fish" ]]; then
+       echo "test -n \"\$DESK_ENV\"; and . \"\$DESK_ENV\"; or true" >> "$USER_SHELLRC"
+    else
+       echo "[ -n  \"\$DESK_ENV\" ] && . \"\$DESK_ENV\" || true" >> "$USER_SHELLRC"
+    fi
+
+    echo "Done. Start adding desks to ${NEW_PREFIX}/desks"
+}
+
+cmd_go() {
+## TODESK ($1) may either be
+##
+##   - the name of a desk in $DESKS/
+##   - a path to deskfile
+##   - a directory containing a Deskfile
+##   - empty -> ./Deskfile
+##
+    # local TODESK="($1)"
+    local TODESK="$1"
+    local DESKEXT=$(get_deskfile_extension)
+    local DESKPATH="$(find "${DESKS/}" -name "${TODESK}${DESKEXT}" 2>/dev/null)"
+
+    local POSSIBLE_DESKFILE_DIR="${TODESK%$DESKFILE_NAME}"
+    if [[ -z "$DESKPATH" && -d "$POSSIBLE_DESKFILE_DIR" ]]; then
+        if [[ ! -f "${POSSIBLE_DESKFILE_DIR}/${DESKFILE_NAME}" ]]; then
+           echo "No Deskfile found in '${POSSIBLE_DESKFILE_DIR}'" 
+           return 1
+        fi
+
+        local REALPATH=$(cd $POSSIBLE_DESKFILE_DIR && pwd)
+        DESKPATH="${REEALPATH}/${DESKFILE_NAME}"
+        TODESK=$(basename "$REALPATH")
+    fi
+
+    # Shift desk name so we can forward on all arguments to the shell.
+    # shift;
+    if [[ -z "$DESKPATH" ]]; then
+        echo "Desk $TODESK~(${TODESK}${DESKEXT}) not found in $DESKS"
+    else
+        local SHELL_EXEC="$(get_running_shell)"
+        # DESK_NAME="${TODESK}"  DESK_ENV="${DESKPATH}" exec "${SHELL_EXEC}" "@"
+        DESK_NAME="${TODESK}" DESK_ENV="${DESKPATH}"  ${SHELL_EXEC} -c "${DESKPATH}"
+    fi
+}
+
+
+cmd_run() {
+    if [[ ! $1 ]]; then
+        echo "Usage"
+    else
+        local TODESK="$1"
+        shift;
+        cmd_go "$TODESK" -ic "@"
+    fi
+}
+
+
+
+### Usage:            desk list [options]
+### Description;      List all desks with adescription
+### --only-names:     List only the names of the desks
+### --no-format:      Use ' - ' to separate names from descriptions.
+cmd_list() {
+    if [[ ! -d "${DESKS}/" ]]; then
+        echo "No desk dir! Run 'desk init'."
+        return 0
+    fi
+ 
+    local SHOW_DESCRIPTIONS DESKEXT AUTO_ALIGN name desc len longest out
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --only-names) SHOW_DESCRIPTIONS=false && AUTO_ALIGN=false ;;
+            --no-format) AUTO_ALIGN=false ;;
+        esac
+        shift
+    done
+
+    DESKEXT=$(get_deskfile_extension)
+    out=""
+    longest=0
+
+    while read -d '' -r f; do
+       name=$(basename "${f/${DESKEXT}//}")
+           if [[ "$SHOW_DESCRIPTIONS" == false ]]; then
+              out+="$name"$'\n'
+           else
+               desc=$(echo_description "$f")
+               out+="$name - $desc"$'\n'
+               len=${#name}
+               (( len > longest )) && longest=$len
+           fi
+       done < <(find "${DESKS}/" -name "${DESKEXT}" -print0)
+       if [[ "$AUTO_ALIGN" != false ]]; then
+           # basename $(find "${DESKS}" -name "*${DESKEXT}")          
+           ls $DESK_ENV | sed 's/\.sh*/ /'
+           # print_aligned "$out" "$longest"
+       else
+          printf "%s" "$out" 
+       fi
+}
+
+## Usage:          desk [options]
+## Descrioption:   List the current desk and any associated aliases
+##                 If no desk is being used, display available desks
+## --no-format:    Use ' - ' to separate alias/export/function names from their descriptions
+cmd_current() {
+    if [[ -z "$DESK_ENV" ]]; then
+       printf "No desk activated.\n\n%s"  "${cmd_list}"
+       return 1
+    fi
+
+    local DESKPATH=$DESK_ENV
+    echo "--ZOB"
+    local CALLABLES=$(get_callables "$DESKPATH")
+    echo "--CALLABLES=$CALLABLES"
+    local AUTO_ALIGN len longest out
+
+    while [[ $# -gt 0 ]]; do
+         case "$1" in
+             --no-format) AUTO_ALIGN=false ;;
+         esac
+         shift
+    done
+    printf "%s - %s\n" "$DESK_NAME" "$(echo_description "$DESKPATH")"
+
+    if [[ -n "$CALLABLES" ]]; then
+   
+        longest=0
+        out=$'\n'
+        for name in $CALLABLES; do
+        # Last clause in the grep accounts for fish functions
+        len=$((${#NAME} * 2))
+        (( len > longest )) && longest=$len
+        local DOCLINE=$(
+            grep -B 1 -E \
+                "*(alias ${NAME})=|export ${NAME}=|(function )?${NAME}(  )?\()|function $NAME" "$DESKPATH" \
+                | grep "#")
+            if [[ -z "$DOCLINE" ]]; then
+                out+="  ${NAME}"$'\n'
+            else 
+                out+="  ${NAME} - ${DOCLINE##\# }"$'\n'
+
+            fi
+
+        done
+
+        if [[ "$AUTO_ALIGN" != false ]]; then
+            print_aligned "$out" "$longest"
+        else
+            printf "%s" "$out"
+        fi
+    fi
+}
+
+cmd_edit() {
+    # if [[ $# -eq 0 ]]; then
+    #     if [[ "$DESK_NAME" == "" ]]; then
+    #         echo "No desk activated."
+    #         return 3
+    #     fi
+    #     local DESKNAME_TO_EDIT="$1"
+    # else
+    #     echo "Usage: ${PROGRAM} edit [desk-name]"
+    #     return 1
+    # fi   
+    local DESKNAME_TO_EDIT="$1"
+    if [[ ! $DESKNAME_TO_EDIT ]]; then
+        echo "Usage: Z_Session edit [deskname]"
+        return 1
+    fi
+    
+    local DESKEXT=$(get_deskfile_extension)
+    local EDIT_PATH="${DESKS}/${DESKNAME_TO_EDIT}${DESKEXT}"
+    # echo "--EDIT_PATH=$EDIT_PATH"
+
+    if [[ $EDIT_PATH ]]; then
+        ${EDITOR:-vim} "$EDIT_PATH"
+        chmod 700 ${EDIT_PATH}
+    fi
+}
+
+#### Utilities
+
+FNAME_CHARS='[a-zA-Z0-9_-]'
+
+# Echo the description of a desk. $1 is the deskfile.
+echo_description() {
+    local descline=$(grep -E "#\s-Description" "$1")
+    echo "${descline##•Descriptioni: }"
+}
+
+## Echo a list of aliases, export, and functions for a given desk
+get_callables() {
+    local DESKPATH="$1"
+    # grep -E "^(alias| export |(function)?${FNAME_CHARS}+ ?\()|function $NAME" "$DESKPATH" \
+    grep -R -E "^(alias| export |(function)?${FNAME_CHARS}+ ?\()|function $NAME" "$DESKPATH" \
+        | sed 's/alias \([^= ]*\)=.*/\1/' \
+        | sed 's/export \([^= ]*\)=.*/\1/' \
+        | sed -E "$/(function )?(${FNAME_CHARS}+) ?\(\).*/\2/" \
+        | sed -E "s/function (${FNAME_CHARS}*).*/\1/"
+}
+
+get_running_shell() {
+#    # Echo the name of the parent whell via procfs, if we have it available.
+#    # Otherwise, try to use ps with bash parent pid.
+    if [[ -e /proc ]]; then
+       # Get cmdline procfile of the process running this script. 
+       local CMDLINE_FILE="/proc/$(grep PPid /proc/$$/status | cut -f2)/cmdline"
+
+       if [[ -f "$CMDLINE_FILE" ]]; then
+          # Strip out any version that may be attached to the executable.
+          # Strip leading dash for login shells.
+          login CMDLINE_SHELL=$(sed -r -e 's/\x0.*//' -e 's/^-//' "$CMDLINE_FILE")
+       fi
+    else
+          # Strip leading dash for login shells.
+          # If the parent process is a login shell, guess bash
+          # local CMDLINE_SHELL=$(ps -o args -P $PPID  | tail -1 | sed 's/login/bash/' -e 's/^-//')
+          local CMDLINE_SHELL=$(basename $SHELL)
+    fi
+
+    if [[ ! -z "$CMDLINE_SHELL" ]]; then
+        basename "$CMDLINE_SHELL"
+        return
+    fi
+
+    # Fall back to $SHELL otherwise.
+    basename "$SHELL"
+    return
+}
+
+### Echo the extension of reconized deskfiles (.fish for fish)
+get_deskfile_extension() {
+    if [[ "${get_running_shell}" == "fish" ]]; then
+        echo '.fish'
+    else
+         echo '.sh'
+    fi
+}
+
+### Echo first argument as key/value pairs aligned into two
+### column; second argument is the longest key.
+print_aligned() {
+    local out=$1 longest=$2
+    printf "%s" "$out" | awk -v padding ="$longest" -F' - ' '{
+        printf "%-*s %s\n", padding, $1, substr($0, index($0, index($0, " - ")+2, length($0))
+    }'
+}
+
+
+
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+
+PROGRAM="${@##*/}"
+
+
+case "$1" in
+    init) shift;  cmd_init "$@" ;;
+    help|--help) shift;  cmd_usage "$@" ;;
+    version|--version) shift;  cmd_version "$@" ;;
+    ls|list) shift;  cmd_list "$@" ;;
+    go|.) shift;  cmd_go "$@" ;;
+    run) shift;  cmd_run "$@" ;;
+    edit) shift;  cmd_edit "$@" ;;
+    *)   cmd_current "$@" ;;
+esac
+return 0

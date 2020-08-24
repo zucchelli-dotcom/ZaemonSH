@@ -1,0 +1,69 @@
+# Funktion kwadmin_config{{{
+#
+kwadmin_config() {
+#
+# Konfiguration von main.cf schreiben.
+#
+> $CONF_FILE <<< "# Beginn $CONF_FILE
+#
+# Autor: Kai Wilke <kiste@netzworkk.de>
+#
+# Hauptkonfigurationsdatei fuer kwadmin
+
+# Standard Programm Verzeichnis
+KWTOOLS_PATH=\"$KWTOOLS_PATH\"
+
+# Standard temporaeres Verzeichnis
+TMP_PATH=\"${TMP_PATH/\\\$/\$}\"
+
+# Spracheauswahl (zur Zeit geht nur de=deutsch)
+LANGUAGE=\"$LANGUAGE\"
+
+# Editor (dialog, vim, emacs, joe, ...)
+# dialog ist eine Ausnahme, dabei wird die
+# Dialogbox "editbox" benutzt.
+EDITOR=\"$EDITOR\"
+
+# Pager (less,more,...)
+PAGER=\"$PAGER\"
+
+# Farben der Konsolenmeldungen
+# NORMAL ist Farben zurueck setzen
+NORMAL=\"\$reset_color\"
+
+
+# fette Vordergrund Farben
+# Bsp: B_WHITE ist fett weiss
+B_WHITE=\"\${fg_bold[white]}\"
+B_GREEN=\"\${fg_bold[green]}\"
+B_RED=\"\${fg_bold[red]}\"
+B_BLUE=\"\${fg_bold[blue]}\"
+B_MAGENTA=\"\${fg_bold[mangeta]}\"
+B_YELLOW=\"\${fg_bold[yellow]}\"
+
+# normale Vordergrund Farben
+# Bsp: WHITE ist normal weiss
+WHITE=\"\${fg[white]}\"
+GREEN=\"\${fg[green]}\"
+RED=\"\${fg[red]}\"
+BLUE=\"\${fg[blue]}\"
+MAGENTA=\"\${fg[mangeta]}\"
+YELLOW=\"\${fg[yellow]}\"
+
+# B_ERROR ist fett rot
+# ERROR_BG ist Hintergrund grau
+B_ERROR=\"\$B_RED\"
+ERROR_BG=\"\${bg[grey]}\"
+
+# INFO ist gelb
+INFO=\"\$YELLOW\"
+
+# End $CONF_FILE"
+
+read_file -f $CONF_FILE
+}
+#}}}
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:                                                                               
+### }}}

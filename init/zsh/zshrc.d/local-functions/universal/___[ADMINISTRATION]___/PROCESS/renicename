@@ -1,0 +1,157 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_renicename :
+# Renice the job that matches the specified name.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME user
+
+VERSION="0.0.1"
+FCT_NAME="renicename"
+
+user=""; tty=""; showpid=0; niceval="+1"  # initialize
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+  clear
+  echo "${NC}"  
+  echo " ###################################################################################################"
+  echo " #                                                                                                 #"
+  echo " #     ${GREEN}This is ${RED}$FCT_NAME : ${YEL}$VERSION FOR $OSTYPE ${NC}                                #"
+  echo " #     CopyL®®v 2019, Zucchelli Bryan                                                              #"
+  echo " #                                                                                                 #"
+  echo " #     Unless required by applicable law or agreed to in writing, software                         #"
+  echo " #     distributed under the License is distributed on an "AS IS" BASIS,                             #"
+  echo " #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.                    #"
+  echo " #     See the License for the specific language governing permissions and                         #"
+  echo " #     limitations under the License.                                                              #"
+  echo " #                                                                                                 #"
+  echo " ###################################################################################################"
+  echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+while getopts "n:u:t:p" opt; do
+  case $opt in
+   n ) niceval="$OPTARG";		;;
+   u ) if [ ! -z "$tty" ] ; then
+	 echo "$0: error: -u and -t are mutually exclusive." >&2
+	 return 1
+       fi
+       user=$OPTARG			;;
+   t ) if [ ! -z "$user" ] ; then
+  	 echo "$0: error: -u and -t are mutually exclusive." >&2
+	 return 1
+       fi
+       tty=$OPTARG	     		;;
+   p ) showpid=1;			;;
+   ? ) echo "Usage: $0 [-n niceval] [-u user|-t tty] [-p] pattern" >&2
+       echo "Default niceval change is \"$niceval\" (plus is lower" >&2 
+       echo "priority, minus is higher, but only root can go below 0)" >&2
+       return 1
+  esac
+done
+shift $(($OPTIND - 1))	# eat all the parsed arguments
+
+if [ $# -eq 0 ] ; then
+  echo "${RED}Usage: $0 [-n niceval] [-u user|-t tty] [-p] pattern${NC}" >&2
+  return 1
+fi
+
+if [ ! -z "$tty" ] ; then
+  pid=$(ps cu -t $tty | awk "/ $1/ { print \\$2 }")
+elif [ ! -z "$user" ] ; then
+  pid=$(ps cu -U $user | awk "/ $1/ { print \\$2 }")
+else
+  pid=$(ps cu -U ${USER:-LOGNAME} | awk "/ $1/ { print \$2 }")
+fi
+
+if [ -z "$pid" ] ; then
+  echo "$0: no processes match pattern $1" >&2 ; return 1
+elif [ ! -z "$(echo $pid | grep ' ')" ] ; then
+  echo "$0: more than one process matches pattern ${1}:" 
+  if [ ! -z "$tty" ] ; then
+    runme="ps cu -t $tty"
+  elif [ ! -z "$user" ] ; then
+    runme="ps cu -U $user"
+  else
+    runme="ps cu -U ${USER:-LOGNAME}"
+  fi
+  eval $runme | \
+      awk "/ $1/ { printf \"  user %-8.8s  pid %-6.6s  job %s\n\", \
+      \$1,\$2,\$11 }"
+  echo "Use -u user or -t tty to narrow down your selection criteria."
+elif [ $showpid -eq 1 ] ; then
+  echo $pid
+else
+  # ready to go: let's do it!
+  echo -n "Renicing job \""
+  echo -n $(ps cp $pid | sed 's/ [ ]*/ /g' | tail -1 |  cut -d\  -f5-)
+  echo "\" ($pid)"
+  renice $niceval $pid
+fi
+
+return 0

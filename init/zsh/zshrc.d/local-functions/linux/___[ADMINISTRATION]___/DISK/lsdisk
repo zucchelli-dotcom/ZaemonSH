@@ -1,0 +1,133 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+#  :
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 30/07/2019 :
+#  • Create this one .
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  echo "${RED}"
+  cat<<__EOF__
+    usage: $0 [  ]
+
+    Examples:
+                                                 # .
+
+
+__EOF__
+echo ${NC}
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+ # show labels and uuids of disk devices
+ emulate -L zsh
+ setopt extendedglob
+
+ local -a -U disks
+ local -A mountinfo
+
+ disks=( /dev/disk/by-id/*(N@:A) )
+
+ if (( ${#disks} == 0 )); then
+     printf 'No disks detected.\n'
+     return 1
+ fi
+
+ if [[ -r /proc/mounts ]]; then
+     for cline in "${(f)$(</proc/mounts)[@]}"; do
+         mountinfo["${cline[(w)1]:A}"]="${cline[(w)2,-1]}"
+     done
+ fi
+
+ for dev in "$disks[@]"; do
+     print ${fg_bold[red]}${dev}${reset_color} \
+           /dev/disk/by-label/*(@e/'[[ ${REPLY:A} == $dev ]] && REPLY=${fg[blue]}LABEL=${REPLY:                  t}${reset_color}'/N) \
+           /dev/disk/by-uuid/*(@e/'[[ ${REPLY:A} == $dev ]] && REPLY=${fg[green]}UUID=${REPLY:t}${reset_color}'/ N)
+     if [[ -n "${mountinfo["$dev"]}" ]]; then
+         print -f " Mount: %s -t %s -o %s\n" \
+                  ${mountinfo["$dev"][(w)1]} \
+                  ${mountinfo["$dev"][(w)2]} \
+                  "${mountinfo["$dev"][(w)3,-5]}"
+     fi
+     for sysdevsize in \
+         /sys/block/${dev:t}/size(N) \
+         /sys/block/${${dev:t}%%<->}/${dev:t}/size(N)
+     do
+         print -f "  Size: %.3f GiB (%d Byte)\n" \
+                  $(($(<$sysdevsize)/(2.0*1024.0*1024.0))) \
+                  $(($(<$sysdevsize)*512))
+     done
+
+     print -f "    Id: %s\n" /dev/disk/by-id/*(@e/'[[ ${REPLY:A} == $dev ]]'/N:t)
+ done

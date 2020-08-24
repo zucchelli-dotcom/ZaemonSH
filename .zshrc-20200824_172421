@@ -1,0 +1,205 @@
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates created by :                                                #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                                                                 |   
+#                                - ZAEMONSH -                                     |
+#                                $HOME/.zshrc                                     |
+#                                                                                 |
+# --------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------
+# File:  $HOME/.zshrc
+# This file is always read, even with zsh -f .
+# Therefore this file should contain only directives that cannot be over-
+# ridden with zsh -f
+# --------------------------------------------------------------------------------
+ZAEMONBASENB=4
+ZAEMONSHVERSION=0
+
+#   Uncomment for debug
+#   print "reading /etc/zshenv with $0"
+###/!\### 
+
+
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                           Define the minimal $PATH                              |   
+# --------------------------------------------------------------------------------
+#
+#####
+#/!\#
+#####
+# If you have administrator privileges, you must fix an Apple-introduced problem in Mac OS X 10.5
+# Leopard by executing the following command, or BASH and Zsh will have the wrong PATH when
+# executed non-interactively.
+# sudo chmod ugo-x /usr/libexec/path_helper
+# Unfortunately, path_helper always reads paths from /etc/paths set by Apple then paths from
+# /etc/paths.d set by third party installers, and lastly paths from the PATH environment variable set by
+# the parent process, which ultimately is set by the user with export PATH=... Thus, it reorders path
+# priorities, and user /bin directories meant to override system /bin directories end up at the tail of the
+# array.
+## Another Solution is :
+#   Create the minimal $PATH and $MANPATH assignments:
+
+if [[  $(uname) == Darwin  ]]; then    
+    local LOGINNAM=$(id -p  2>/dev/null | grep login | awk '{print $1}')
+    if [[ -x /usr/libexec/path_helper ]] && [[ $LOGINNAM != "login" ]]; then
+        eval $(/usr/libexec/path_helper -s)
+    elif [[ $LOGINNAM == "login" ]];then
+          LOGINNAME=$(id -p | grep login | awk '{print $2}')
+          UIDNAME=$(id -p | grep uid | awk '{print $2}')
+           #####
+           #/!\# 26112019_8-17 / Not good with su, ranger ..
+           #####               / Always start new su term at home.
+             ## cd $HOME
+           #####
+           #/!\#
+           #####
+          
+        #exec zsh .zshrc
+      #fi
+    fi   
+fi    
+#####
+#/!\#
+#####
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                             Define $ZDOT                                        |   
+# --------------------------------------------------------------------------------
+if [[  $(uname) == Linux  ]]; then
+#   Uncomment to assign $ZDOT as appropriate
+   ZDOT="$HOME/.init/zsh" ; export ZDOT
+   # ZDOT="$HOME/.config/init/zsh" ; export ZDOT
+fi   
+#   ZDOT="$HOME/Library/init/zsh"
+#   otherwise, use the following assignment:
+if [[  $(uname) == Darwin  ]]; then
+    if [[ $LOGINNAME ]]; then
+       ZDOT="/Users/$UIDNAME/Library/init/zsh" ; export ZDOT
+       # cd $HOME
+    elif [[ -z $ZDOT && -d "/Library/init/zsh" ]]; then
+       ZDOT="/Library/init/zsh" ; export ZDOT
+    elif [[ -z $ZDOT && -d "$HOME/Library/init/zsh" ]]; then
+           ZDOT="$HOME/Library/init/zsh" ; export ZDOT
+    elif [[ -d "/etc/zsh/init/zsh" ]]; then
+       ZDOT="/etc/zsh/init/zsh" ; export ZDOT
+    fi
+fi
+##
+# ZDOT_ORIG="$HOME/Library/init/zsh_orig" && export ZDOT_ORIG
+
+
+if [[ $ZDOT ]]; then
+    echo "\e[1m"
+    # print "\e[1m"
+    # ------------------------------------------------------------------------------
+    #                                                                               \
+    # --------------------------------------------------------------------------------
+    #                  ZSHENV.D-SYSTEMWIDE_ENVIRONNEMENT_CONFIGURATION               |   
+    # -------------------------------------------------------------------------------
+
+    #   Put any additional directives for the systemwide zshenv in files within
+    #   ${ZDOT}/zshenv.d
+    #   See ${ZDOT}/zshenv.d/README for additional information. In general, you
+    #   shouldn't need to add in anything.
+    # #
+    #/!\#   Don't comment these lines.
+        
+    if [[ -d "${ZDOT}/zshenv.d" ]]; then
+        foreach file in $(command ls ${ZDOT}/zshenv.d/* | grep -v disabled | grep -v README )
+            #echo $file
+            source $file
+        end
+        unset file
+    else
+        echo "ERROR with ${ZDOT}/zshenv.d/"
+    fi
+    # ------------------------------------------------------------------------------
+    #                                                                               \
+    # --------------------------------------------------------------------------------
+    #                        ZSHRC.D-SYSTEMWIDE_ZSHRC_CONFIGURATION                   |   
+    # --------------------------------------------------------------------------------
+    #   Put any modified directives for the systemwide zshrc in files within
+    #   ${ZDOT}/zshrc.d
+    #   See ${ZDOT}/zshrc.d/README for additional information.
+    #/!\#   Don't comment these lines.
+        
+        if [[  -d "${ZDOT}/zshrc.d" ]]; then
+            foreach file in $(command ls -d ${ZDOT}/zshrc.d/* | grep -v disabled | grep -v README | grep -v environment.xtal | grep -v local-functions | grep -v prompt )
+               #echo $file
+               source $file
+            end
+            unset file
+        else
+            echo "${WB}ERROR with ${ZDOT}/zshrc.d"
+    fi
+    # ------------------------------------------------------------------------------
+    #                                                                               \
+    # --------------------------------------------------------------------------------
+    #                         ZSHRC_LOCAL.D-LOCAL_ZSHRC_CONFIGURATION                 |   
+    # --------------------------------------------------------------------------------
+        # Put any additional functions for the systemwide zshrc in files within
+        # ${P_PERSFCTDIR}/["adm-functions" "dev-functions" "gen-function"
+        # "net-functions"]. This directories is empty when distributed.
+        # Its contents are run after everything in zshenv.d and zshrc.d
+        # See ${P_PERSFCTDIR}/README for additional information.#
+         local cate
+         for cate in  "adm-functions" "dev-functions" "gen-functions" "net-functions";do
+             if [[  -d "${P_PERSFCTDIR}/$cate" ]]; then
+                if ((  $( command ls -1  ${P_PERSFCTDIR}/$cate | wc -l  ) >= 1 )); then
+                    # Add the function directory to the head of $FPATH
+                    FPATH="${P_PERSFCTDIR}/$cate":${FPATH}
+                    export FPATH
+                    typeset -U path manpath fpath
+                    # Autload every function in the site-functions directory
+                    local fxnAFfile
+                    foreach fxnAFfile in $(command ls ${P_PERSFCTDIR}/$cate/* | grep -v README | grep -v .DS_Store)
+                        # echo "$(basename $fxnAFfile)"
+                        autoload -U $(basename $fxnAFfile)
+                    end
+                 unset fxnAFfile
+                fi
+             fi
+         done
+         unset cate
+fi
+#____________________________________________________________________________________________________
+#____________________________________________________________________________________________________
+unset file
+Z_Banner
+
+## Hook for desk activation
+#[[ -n  "$DESK_ENV" ]] && "$DESK_ENV" || true
+##
+## 
+#DESK_ENV="$HOME/.desk/desks"
+

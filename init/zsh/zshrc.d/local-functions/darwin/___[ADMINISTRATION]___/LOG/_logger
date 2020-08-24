@@ -1,0 +1,106 @@
+#compdef logger
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+#  _logger :
+
+#  Completion script for logger (from bsdutils). System to control logging of events.
+#
+#  Last updated: 26.02.2013
+#
+# Authors
+# -------
+#
+#  * Valodim ( https://github.com/Valodim )
+#
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify completion presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+_logger_priority() {
+    local expl
+
+    if compset -P '*.'; then
+        # hidden aliases.. not quite sure how this is supposed to work :\
+        # compadd -n panic warning error
+
+        # just this one tag
+        _wanted priority expl "Priority" \
+            compadd -- debug info notice warn err crit alert emerg
+        return 0
+    fi
+
+    _wanted facility expl "Facility" \
+        compadd -S '.' -- kern    user    mail     daemon  auth    syslog   lpr      news  \
+                          uucp    cron    security ftp     ntp     logaudit logalert clock \
+                          local0  local1  local2   local3  local4  local5   local6   local7
+    return 0
+
+}
+
+_logger() {
+
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
+
+    _arguments -C -S -s \
+      {-d,--udp}'[use UDP (TCP is default)]' \
+      {-i,--id}'[log the process ID too]' \
+      {-f,--file}'[log the contents of this file]:Logfile:_files' \
+      '(-)'{-h,--help}'[display this help text and exit]' \
+      {-n,--server}'[write to this remote syslog server]:Server:_hosts' \
+      {-P,--port}'[use this UDP port]:UDP Port' \
+      {-p,--priority}'[mark given message with this priority]:Priority:_logger_priority' \
+      {-s,--stderr}'[output message to standard error as well]' \
+      {-t,--tag}'[mark every line with this tag]:Tag' \
+      {-u,--socket}'[write to this Unix socket]:Socket:_files -W *(=)' \
+      '(-)'{-V,--version}'[output version information and exit]' \
+      '*:Message:' && return 0
+
+}
+
+#----------------------------------------------------------------------------------------#
+#                                      COMPLETION
+#----------------------------------------------------------------------------------------#
+_logger "$@"

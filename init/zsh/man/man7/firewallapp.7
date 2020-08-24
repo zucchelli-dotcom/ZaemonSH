@@ -1,0 +1,39 @@
+.\" Manpage for firewallapp.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH firewallapp 7 "06 Feb 2020" "ZaemonSH MacOS" "MacOS ZaemonSH customization"
+.SH NAME
+firewallapp \- firewallapp is used to control Application Firewall socket filter.
+.SH SYNOPSIS
+firewallapp [ globalstate | setblockall | getblockall | list | add | remove | help ]
+.SH DESCRIPTION
+firewallapp \- firewallapp is used to control Application Firewall socket filter.
+.SH OPTIONS
+
+.IP "firewallapp [globalstate]"
+.B Show status of firewallapp.
+
+.IP "firewallapp [globalstate] [ON|OFF]"
+.B Enable/Disabled firewallapp.
+
+.IP "firewallapp [setblockall] [ON|OFF]"
+.B Set block all non-essential incoming connections : enable or disable.'
+
+.IP "firewallapp [getblockall]"
+.B Get status of block all non-essential incoming connections.'
+
+.IP "firewallapp [list]"
+.B List applications handled by firewallapp.
+
+.IP "firewallapp [add] </path/to/file>"
+.B Add app to firewallapp.
+
+.IP "firewallapp [remove] </path/to/file>"
+.B Remove app from firewallapp.
+
+.IP "firewallapp [help]"
+.B Obtain script help.
+      
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

@@ -1,0 +1,1189 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_FunctionsUtil v7b38 : Function ZaemonSH browser.
+
+#-------------------------------------------------------------------------------------------#
+#                                               NOTES
+#-------------------------------------------------------------------------------------------#
+
+## Extract list of function config on corresponding file. 
+# cat $P_DARWFCTFIL | perl -0777 -ne 'print "$1\n" while /FCTLIST_DARWGEN=((.*?))foreach/gs'
+
+## Add new function to the corresponding function list on corresponding configuration file. (boo !!)
+# FCTLIST_SUDARW+=[FUNCTIONNAME]
+
+## List of possible sub-categories.
+# cat $[P_CONFIG] | grep 'FCTLIST_[a-z_A-Z]*=(' | sed 's/=.*//'
+# clr ; perl -0777 -ne 'print "$1\n" while /FCTLIST(.*?)foreach/gs' $P_DARWFCTFIL | grep -v "#" | grep -v "autoload -U" | grep -v "=\"" | grep -v "\bfi\b" | grep -v "\bdone\b" | grep -v "\bdo\b" | sed 's/FCTLIST/ /g'
+# foreach wfctlst in $(cat $P_CORFCTFIL | grep 'FCTLIST_[a-z_A-Z]*=(' | sed 's/=.*//' | tr '\n' ' '); do echo $wfctlst; done
+# or
+# echo -e $(cat $P_CORFCTFIL | grep "=(" | sed 's/=.*//')
+#	$ FCTLIST_CORELINU
+#	$ FCTLIST_DARWCORE
+#	$ FCTLIST_UNICORE
+	
+# clr ; perl -0777 -ne 'print "$1\n" while /FCTLIST(.*?)foreach/gs' $P_DARWFCTFIL | grep -v "#" | grep -v "autoload -U" | grep -v "=\"" | grep -v "\bfi\b" | grep -v "\bdone\b" | grep -v "\bdo\b" | sed 's/FCTLIST/ /g'
+
+
+	# $        FCTLIST_UNI=(XPath Z_addvirtual Z_archivedir \
+	# $                Z_ftpsyncup Z_getlinks Z_getstats Z_locate Z_mklocatedb \
+	# $                Z_remotebackup Z_renicename Z_sftpsync Z_ssync Z_unpacker \
+	# $                Z_validfloat Z_validint Z_verifycron Z_watch-and-nice Z_webaccess \
+	# $                Z_weberrors Z_webspell Z_xferlog archall_v9.sh ask buf cd_ cdmk \
+	# $                clock compildis compilena cpu_infos curlito.v1b1 cuttail dbackup \
+	# $                fe ff  nd_dups flags fstr get-ict gg git-author-rewrite git-credit \
+	# $                git-nuke git-promote git-unpushed-stat git-up googetimages googl google \
+	# $                goomp gosec gsearch gunall headers hex hgrep ii image_crawler isroot \
+	# $                joinpdf jsonval.sh kalimetre_v3.zsh killit killps lcheck ldirs lgrep \
+	# $                plap pp ppath prettyping rcommand renice_grep repeat rfc rmthemall.sh\
+	# $                tidyxml title-tab txtgrep unarchall_v7 unflags uopen up whichre keep \
+	# $                zoneinfo zshf)
+
+
+#echo $FCTLIST_DARWCORE | grep Z_UpdateOSX
+#	$ Z_UpdateOSX Z_NotesUpdateCommandlinefu_v1 ...
+## Function  list that need root or admin rights of category darwin.
+# grep -rn "sudo" $P_SYSFCTDIR/darwin | sed 's/:.*//' | sed 's/.*\///' | sort -u
+
+
+# FCTNADDIPATH="$ZDOT/zshrc.d/031_functions.additional.zsh"
+# FCTADDIDARW="$ZDOT/zshrc.d/032_functions.darwin-specific.additional.zsh"
+# FCTADDILIN="$ZDOT/zshrc.d/033_functions.linux-specific.additional.zsh"
+
+# ## CATEGORIES LIST FUNCTIONS
+
+# $ find $ZDOT/zshrc.d/local-functions/core -maxdepth 1 -type d | grep "___" | sed 's/.*\_\_\_\[//' | sed 's/].*//'
+#
+# CROSSPLATFORM
+# LINUX
+# OSX
+# "
+
+# ## ALL SUB-CATEGORIES LIST FUNCTIONS
+# find $ZDOT/zshrc.d/local-functions/core -type d -mindepth 2 | sed 's/.*\///'
+
+# ## CATEGORY SUB-CATEGORIES LIST
+# 
+# 
+
+#####
+#/!\# ## Ask which possible FCTLIST_ List choice :
+##### 
+## Verifie if he's root or admin for FCTSU
+## test if function existence and activity (load/unload)
+
+## $1 == FCTNAME 
+## verify sudo sudo 
+## Z_Correctsymlink
+## WARNING THIS TAKE EFFECT AFTER YOU OPEN NEW TERMINAL WINDOWS
+## grep $1 $P_CORFCTFIL | grep -v -e $1 -e '=(' 
+## Where is ${@} on $ALLCORE_FCTLST
+# cat $pfil | perl -0777 -ne 'print "$1\n" while /FCTLIST_DARWGEN=((.*?))foreach/gs'
+# cat $P_DARWFCTFIL | perl -0777 -ne 'print "$1\n" while /FCTLIST_DARW=(.*?)foreach/gs' | sed 's/.*(//' | sed 's/.*)//' | sed 's/[\]//g'
+# echo -e $(cat $P_DARWFCTFIL | perl -0777 -ne 'print "$1\n" while /FCTLIST_DARW=(.*?)foreach/gs' | sed 's/.*(//' | sed 's/.*)//' | sed 's/[\]//g')
+# grep "{@}" $P_CORFCTFIL | grep -v "#"
+
+# ALLCORE_FCTLST=($(cat $P_CORFCTFIL | grep 'FCTLIST_[a-z_A-Z]*=(' | sed 's/=.*//' | tr '\n' ' '))
+# #ALLCORE_FCTLST=($(cat $P_CORFCTFIL | grep 'FCTLIST_[a-z_A-Z]*=(' | sed 's/=.*//' | tr '\n' ' '))
+
+#Which $SYSTEMTYPE is in.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 27/11/2017 :
+#  • Add description.
+#  • Reinit completion ==> no compl >>>> no completion on menu script.
+#  • Message for empty folder or no file.
+#  • Message en cas de permissions non accordées.
+#  • Configurations file (zshrc.d + 031 + 032 + 033).
+#  • erase variable values.
+#  - FunctionAction :
+#  	• Load/unload functions need to change : 	 
+#  	  if [ $(echo -e $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[core] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep "$1 " | sed 's/(.*//') ]; then
+#  	  Problem if  FCTLIST_...=(functionname...anotherfunctionname) and not with Problem if  FCTLIST_...=(functionname...anotherfunctionname )
+# . Scan ALL ACTIVES FUNCTIONS to know if no one already exist.	  
+
+ 
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 10/10/2017 :
+#  • Modifying Script presentation.
+# 25/10/2017 :
+#  • Change BOO variable with portable -depth options on find.
+# 26/10/2017 :
+#  • Correctixon of level, category, sub-category and sub-sub-category.
+# 06/11/2017 :
+#  - fileaction function divide into two functions : 
+#  - FunctionAction : for function.
+#  	 • Temporally remove move options. 
+#  - CompletionAction : for completion. Compinit automate completion loading.
+#  	 • Temporally remove move rename options.	  
+#  • Give better variables name for this :
+#    CATEGORY TO SYSTEMTYPE
+#    SUBCATEGORY TO CATEGOTY
+#    SUBSUBCATEGORY TO SUB_CATEGORY
+# 08/11/2017 to 09/11/2017 :   
+#  - FunctionAction :
+#  	 • Unload options.
+#  	 • Basename need option -a to be portable in load and unload FunctionAction options :
+#      for cat in $(echo $(basename $(find "$ZDOT/zshrc.d/local-functions/$SYSTEMTYPE" -mindepth 1 -maxdepth 1 -type d | more))); do
+# 13/11/2017 :
+#  - FoldAction :  
+#  	 • Temporally remove move options.
+#  - FunctionAction :  
+#  	 • load/unload options partially done.
+#  	 • erase options done.
+# 15/11/2017 :
+#  - FunctionAction :
+#    • rename options done.
+#  • Add routine to verify they are no level superior to 4 before launch script.					
+# 15/11/2017 :
+#  - FunctionAction :
+#    • load, unload options :
+#      Add emptying $cat and $sys variables. 
+#    • Add declaration and loading state in options help
+# 16/11/2017 :
+#  - FunctionAction :
+#    • infos, load, unload, erase, rename options :
+#      Correct problem of same base name function in configfile with replacing grep "$1 " by grep -w "$1" in :
+#      $(echo -e $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[$sys] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$1" | sed 's/(.*//')
+# 17/11/2017 : 
+#  - FoldAction :
+#    • create, erase, rename options done.
+# 27/11/2017 :
+#  - FoldAction :
+#    • Better and portable Helplist options. 
+#    • Add empty folder warning to next options. 
+# 28/07/2019 :
+#    • Change MAGENTA=B{MAGENTA} ; according to new color momenclature in 013_environement_variables.additionnal. 
+# 2020-07-21 :
+#    • Add filter for zwc (compiled functions) file.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local VERSION NAME UID_ROOT E_XCD E_NONROOT E_MAUVAISARGS ROOT_DIR LEVEL SYSTEMTYPE SUBCATEGORY MAGENTA
+###
+#
+VERSION="v7b38"
+FCT_NAME="$(echo $0)"
+###
+#S
+UID_ROOT=0     # Seuls les utilisateurs avec un $UID valant 0 ont les droits de root.
+###
+# PROGRAM
+E_XCD=66       # On ne peut pas changer de répertoire ?
+E_NONROOT=67   # Code de sortie si non root.
+E_MAUVAISARGS=65  # Argument non numérique (mauvais format de l'argument)
+###
+#
+ROOT_DIR="$ZDOT/zshrc.d/local-functions"
+# localROOTA_DIR="$ZDOT/zshrc.d/local-functions/"
+LEVEL="0"
+
+#CATEGORY=""
+SYSTEMTYPE=""
+
+#SUBCATEGORY="-"
+CATEGORY="-"
+
+#SUBSUBCATEGORY="-"
+SUBCATEGORY="-"
+#LISTE_REP="Quitter $(ls -lA / | awk '{print $9}')"
+
+## Color patch
+MAGENTA=${BMAGENTA}
+
+
+###
+#-------------------------------------------------------------------------------------------#
+
+#                                             FUNCTIONS
+#-------------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+# Cette fonction reçoit en argument le nom d'un fichier, et
+# propose les différentes actions possibles.
+FunctionAction () {
+	local reponse
+	local saisie
+	clear
+	banner
+	local ACTUALPATH=$(pwd)/$1
+	local OLDPATH=$(pwd)
+	echo "${LINEE}"
+	local ACTUALPATH=$(pwd)/$1
+	echo "${GREEN}Function action on${NC} :${RED}"$ACTUALPATH"${NC}"
+	echo "${LINEE}"
+	select reponse in Infos Load Unload Erase Edit Rename Back; do  ##	select reponse in Infos Load Unload Move Erase Edit Rename Back; do
+			case $reponse in
+			Infos)
+				echo "${NC}"
+				echo "${LINEE}"
+				if [ $(echo -e $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[$SYSTEMTYPE] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$1" | sed 's/(.*//') ]; then
+                echo ""   
+                echo "--- DECLARATION AND ACTIVITY ---"
+                echo ""
+                echo "${MAGENTA}$1 ${GREEN}exist, it's already declared on list: ${MAGENTA}$(echo $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[$SYSTEMTYPE] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$1" | sed 's/(.*//') ${GREEN}and loaded.${NC}"						# for zob in $(echo -e $(cat $P_CORFCTFIL | grep "=(" | sed 's/=.*//')); do 
+				else
+					echo "${RED} $1 ${NC} exist but ${RED}undeclared and unloaded${NC}."
+				fi
+                echo ""
+                echo "--- MAN PAGE ---${GREY}"
+                Z_Help_template_functions "^$1"
+                echo ""
+                echo "--- FILE INFORMATIONS ---${NC}"
+				echo
+                ls -l "$1"
+				#####
+				#/! #
+				##### 28/02/2017 file -I options --> problem with linux
+				#file -pkLI $1
+               file -pkL "$1"
+                echo ""
+	            echo "${LINEE}${NC}"
+				;;
+			
+			Load)
+				sys=''
+				cat=''
+				while [[ $SYSTEMTYPE == "core" ]]; do
+					if [ $(echo -e $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[core] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$1" | sed 's/(.*//') ]; then
+						echo "${NC}"
+						echo "${LINEE}"
+					    echo "  • Function ${MAGENTA} $1 ${GREEN}exist, it's already declared on list: ${MAGENTA}$(echo $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[core] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$1" | sed 's/(.*//') ${GREEN}and loaded.${NC}"						# for zob in $(echo -e $(cat $P_CORFCTFIL | grep "=(" | sed 's/=.*//')); do 
+						echo "  • ${RED}Nothing to do !${NC}"
+						echo "${LINEE}"
+						echo "${NC}"
+			 		else
+   						echo "${NC}"						
+	 					echo "${LINEE}"
+						echo "  • Function ${RED} $1 ${NC} exist but ${RED}undeclared and unloaded${NC}."
+						echo "+++ We loaded ${MAGENTA}$1${NC}..."
+						rm /tmp/$(basename $configfilebysystem[core]) 2>/dev/null
+ 						sed "s/$corfctlistbycategory[$CATEGORY]=(/$corfctlistbycategory[$CATEGORY]=( $1/g" $configfilebysystem[core] 1> /tmp/$(basename $configfilebysystem[core])
+ 						rm $configfilebysystem[core] && mv /tmp/$(basename $configfilebysystem[core]) $configfilebysystem[core]
+ 						sleep 2
+ 						echo "  • Function ${MAGENTA}$1${NC} declared on ${GREEN}$corfctlistbycategory[$CATEGORY]${NC} ${GREEN}and loaded now${NC}."
+						echo "${LINEE}"
+ 	 					echo "${NC}"
+					fi
+				break
+				done
+
+				for sys in ${(k)configfilebysystem}; do
+					while [[ $SYSTEMTYPE == "$sys" ]] && [[ "$sys" != "core" ]]; do
+						if [ $(echo -e $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[$sys] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$1" | sed 's/(.*//') ]; then
+							echo "${NC}"
+							echo "${LINEE}"
+						    echo "  • Function ${MAGENTA} $1 ${GREEN}exist, it's already declared on list: ${MAGENTA}$(echo $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[$sys] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$1" | sed 's/(.*//') ${GREEN}and loaded.${NC}"						# for zob in $(echo -e $(cat $P_CORFCTFIL | grep "=(" | sed 's/=.*//')); do 
+							echo "  • ${RED}Nothing to do !${NC}"
+							echo "${LINEE}"
+							echo "${NC}"
+						else
+							for cat in $(basename -a $(find "$ZDOT/zshrc.d/local-functions/$SYSTEMTYPE" -mindepth 1 -maxdepth 1 -type d | more)); do
+									while  [[ "$CATEGORY" ==  "$cat" ]]; do
+										# ## declare associative array of declaration name list by category
+				   						echo "${NC}"						
+					 					echo "${LINEE}"
+										echo "  • Function ${RED} $1 ${NC} exist but ${RED}undeclared and unloaded${NC}."
+										echo "+++ We loaded ${MAGENTA}$1${NC}..."
+										rm /tmp/$(basename $configfilebysystem[$sys]) 2>/dev/null
+										sed "s/$sysfctlistbycategory[$cat]$systemsuffixlist[$sys]=(/$sysfctlistbycategory[$cat]$systemsuffixlist[$sys]=( $1/g" $configfilebysystem[$sys] 1> /tmp/$(basename $configfilebysystem[$sys])
+										rm $configfilebysystem[$sys] && mv /tmp/$(basename $configfilebysystem[$sys]) $configfilebysystem[$sys]
+										sleep 2
+										echo "  • Function ${MAGENTA}$1${NC} declared on ${GREEN}$sysfctlistbycategory[$cat]$systemsuffixlist[$sys]${NC} ${GREEN}and loaded now${NC}."
+										echo "${LINEE}"
+					 					echo "${NC}"
+					 				 	break
+					 				done
+							done
+						fi
+					break
+					done
+				done
+				;;
+
+			Unload)
+				sys=''
+				cat=''
+				##################################################################################
+				# # # ## FUNCTIONS UNLOADING
+				##################################################################################
+				for sys in ${(k)configfilebysystem}; do
+					 while [[ $SYSTEMTYPE == "$sys" ]]; do
+						if [ $(echo -e $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[$sys] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$1" | sed 's/(.*//') ]; then
+								echo "${NC}"
+								echo "${LINEE}"
+							    echo "  • Function ${MAGENTA} $1 ${RED}exist, it's declared on list: ${MAGENTA}$(echo $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[$sys] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$1" | sed 's/(.*//') ${RED}and loaded${NC}."						# for zob in $(echo -e $(cat $P_CORFCTFIL | grep "=(" | sed 's/=.*//')); do 
+								for cat in $(echo $(basename -a $(find "$ZDOT/zshrc.d/local-functions/$SYSTEMTYPE" -mindepth 1 -maxdepth 1 -type d | more))); do
+									while  [[ "$CATEGORY" ==  "$cat" ]]; do
+												echo "+++ We unloaded ${MAGENTA}$1${NC}..."
+												rm /tmp/$(basename $configfilebysystem[$sys]) 2>/dev/null
+												sed "s/$1 //g" $configfilebysystem[$sys] 1> /tmp/$(basename $configfilebysystem[$sys])
+										 		rm $configfilebysystem[$sys] && mv /tmp/$(basename $configfilebysystem[$sys]) $configfilebysystem[$sys]
+										 		sleep 2
+												echo "  • Function ${MAGENTA}$1${NC} is ${GREEN}undeclared and unloaded now${NC}."	
+									break
+									done
+								done
+								echo "${LINEE}"
+								echo "${NC}"
+						else
+							    echo "${NC}"
+								echo "${LINEE}"
+							    echo "  • Function ${MAGENTA} $1 ${GREEN}exist, it's already undeclared and unloaded${NC}."						# for zob in $(echo -e $(cat $P_CORFCTFIL | grep "=(" | sed 's/=.*//')); do 
+								echo "  • ${RED}Nothing to do !${NC}"
+								echo "${LINEE}"
+								echo "${NC}"
+						fi
+					break
+					done				
+				done
+				# ## END OF FUNCTIONS UNLOADING ####################################################
+				;;
+
+			# Move)
+			# 	 echo -n "New place for $1 ? "
+			# 	 if ! read saisie ; then continue ; fi
+			# 	 mv $1 $saisie
+			# 	 break
+			# 	;;
+				
+			Erase)
+				echo "${NC}"
+				echo "${LINEE}"
+				echo "${LINEE}"
+				###
+				## Erase the functions.		
+				echo "  >> Step 1 : We erase $1."
+				echo "${LINEE}"
+				echo "+++ We erased ${MAGENTA}$1${NC}..."
+				rm $ACTUALPATH
+				echo "${LINEE}"
+				echo "  ${GREEN}>> Step 1 done.${NC}"
+				echo "${NC}"
+				wait
+				
+				###
+				## Correct symlinks.
+				echo "${NC}"
+				echo "  >> Step 2 : We correct symlinks functions."
+				echo "${LINEE}"
+				echo "+++ We recreate symlinks functions ${MAGENTA}$1${NC}..."
+				find $P_SYSFCTDIR/$SYSTEMTYPE -type l -exec rm {} \;
+				for zad in $(find $P_SYSFCTDIR/$SYSTEMTYPE -type f | grep -v "DS_Store" | grep -v "___000_README.txt"); do
+					ln -s "$zad" $P_SYSFCTDIR/$SYSTEMTYPE
+				done
+				echo "${GREEN}  • $SYSTEMTYPE symlinks functions are corrected.${NC}"
+
+				echo "${LINEE}"
+				echo "  ${GREEN}>> Step 2 done. Functions symlinks recreated.${NC}"
+				echo "${NC}"
+  				
+				###
+				## if it's already declared 
+				## Need unloaded and undeclared.
+				# configfilebysystem=(core $P_CORFCTFIL darwin $P_DARWFCTFIL universal $P_UNIFCTFIL linux $P_LINUFCTFIL)
+				for sys in ${(k)configfilebysystem}; do
+					 while [[ $SYSTEMTYPE == "$sys" ]]; do
+						if [ $(echo -e $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[$sys] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$1" | sed 's/(.*//') ]; then
+								echo "${NC}"
+								echo "  >> Step 3 : We undeclared and unloaded $1."
+								echo "${LINEE}"
+							    echo "  • Function ${MAGENTA} $1 ${RED}exist, it's declared on list: ${MAGENTA}$(echo $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[$sys] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$1" | sed 's/(.*//') ${RED}and loaded${NC}."						# for zob in $(echo -e $(cat $P_CORFCTFIL | grep "=(" | sed 's/=.*//')); do 
+								for cat in $(echo $(basename -a $(find "$ZDOT/zshrc.d/local-functions/$SYSTEMTYPE" -mindepth 1 -maxdepth 1 -type d | more))); do
+									while  [[ "$CATEGORY" ==  "$cat" ]]; do
+												echo "+++ We unloaded ${MAGENTA}$1${NC}..."
+												rm /tmp/$(basename $configfilebysystem[$sys]) 2>/dev/null
+												sed "s/$1 //g" $configfilebysystem[$sys] 1> /tmp/$(basename $configfilebysystem[$sys])
+										 		rm $configfilebysystem[$sys] && mv /tmp/$(basename $configfilebysystem[$sys]) $configfilebysystem[$sys]
+										 		sleep 2
+												echo "  • Function ${MAGENTA}$1${NC}${GREEN} is undeclared and unloaded now${NC}."
+									break
+									done
+								done
+								echo "${LINEE}"
+								echo "  ${GREEN}>> Step 3 done. "	
+								echo "${NC}"
+						else
+								echo "${NC}"
+								echo "  >> Step 3 : We undeclared and unloaded $1."
+								echo "${LINEE}"
+							    echo "  • Function ${MAGENTA} $1 ${GREEN}, it's already undeclared and unloaded${NC}."						# for zob in $(echo -e $(cat $P_CORFCTFIL | grep "=(" | sed 's/=.*//')); do 
+								echo "  • ${RED}Nothing to do !${NC}"
+								echo "${LINEE}"
+								echo "  >> ${GREEN}Step 3 done.${NC}"
+								echo "${NC}"				 		
+						fi
+					break
+					done
+				done
+				echo "${NC}"
+				echo "  ${GREEN}>> All Steps done. ${MAGENTA}$1${NC}${GREEN} is erased.${NC}"
+				echo "${LINEE}"
+				echo "${LINEE}"
+				echo "${NC}"
+
+				###
+				cd $OLDPATH
+				while dirFold_Listing ; do : ; break ; done
+				break
+				;;
+
+			Edit)
+				 echo $1
+				 local FILENAME=$1
+				 local FILEXT=${FILENAME#*.}
+				 case fileXT in
+					*)
+						#if nano -w $1 ; then continue; fi
+						if vi -b "$1" ; then continue; fi
+					;;
+				 esac
+				;;
+
+			Rename)
+				###	Rename
+				echo "${NC}"
+				echo "${LINEE}"
+				echo "${LINEE}"
+				###
+				## Erase the functions.		
+				echo "  >> Step 1 : We rename $1."
+				## Replace function old name by new.
+				echo "${LINEE}"				
+				echo -n "Type new name for ${MAGENTA}$1${NC}."
+				if ! read newname ; then continue ; fi
+				#/!\# Verify if that name function not already exist.	
+				mv "${ACTUALPATH}" "$(dirname "${ACTUALPATH}")/$newname"
+				echo "${LINEE}"				
+				echo "  ${GREEN}>> Step 1 done.${NC}"
+				echo "${NC}"
+
+				
+				##
+				# Correct symlinks
+				echo "${NC}"
+				echo "  >> Step 2 : We correct all ZeamonSH symlinks functions."
+				echo "${LINEE}"
+				echo "+++ We recreate symlinks functions ${MAGENTA}$newname${NC}..."
+				#for systype in core darwin universal linux; do
+				find $P_SYSFCTDIR/$SYSTEMTYPE -type l -exec rm {} \;
+				for zad in $(find $P_SYSFCTDIR/$SYSTEMTYPE -type f | grep -v "DS_Store" | grep -v "___000_README.txt"); do
+					ln -s "$zad" $P_SYSFCTDIR/$SYSTEMTYPE
+				done
+				echo "${GREEN}  • $SYSTEMTYPE symlinks functions are corrected.${NC}"
+				#done
+				echo "${LINEE}"
+				echo "  ${GREEN}>> Step 2 done. All ZeamonSH functions symlinks recreated.${NC}"
+				echo "${NC}"
+
+				##
+				# - if it's already declared 
+				#   Replace old name by new in good system category of declaration file.
+				# - if its not already declared 
+				#   Dewclared her in good system category of declaration file.
+				echo "${NC}"
+				echo "  >> Step 3 : We declared and loaded $newname if its need."
+				echo "${LINEE}"						
+				while [[ $SYSTEMTYPE == "core" ]]; do
+					if [ $(echo -e $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[core] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$1" | sed 's/(.*//') ]; then
+						echo "  • Function ${MAGENTA}$1${NC} exist and ${GREEN}already loaded${NC}."
+						echo "+++ We replace ${MAGENTA}$1${NC} declaration by ${MAGENTA}$newname${NC} declaration..."
+						rm /tmp/$(basename $configfilebysystem[$SYSTEMTYPE]) 2>/dev/null
+ 						sed "s/$1/$newname/g" $configfilebysystem[$SYSTEMTYPE] 1> /tmp/$(basename $configfilebysystem[$SYSTEMTYPE])
+ 						rm $configfilebysystem[$SYSTEMTYPE] && mv /tmp/$(basename $configfilebysystem[$SYSTEMTYPE]) $configfilebysystem[$SYSTEMTYPE]
+ 						sleep 2
+ 						echo "  • Function ${MAGENTA}$newname${NC} declared on ${GREEN}$corfctlistbycategory[$CATEGORY]${NC} ${GREEN}and loaded now${NC}."
+			 		else
+						echo "  • Function ${RED} $1 ${NC} exist but ${RED}undeclared and unloaded${NC}."
+						echo "+++ We loaded ${MAGENTA}$newname${NC}..."
+						rm /tmp/$(basename $configfilebysystem[$SYSTEMTYPE]) 2>/dev/null
+ 					 	sed "s/$corfctlistbycategory[$CATEGORY]=(/$corfctlistbycategory[$CATEGORY]=( $newname/g" $configfilebysystem[$SYSTEMTYPE] 1> /tmp/$(basename $configfilebysystem[$SYSTEMTYPE])
+ 					 	#sed "s/$corfctlistbycategory[$cat]=(/$corfctlistbycategory[$cat]=( $newname /g" $configfilebysystem[$SYSTEMTYPE] 1> /tmp/$(basename $configfilebysystem[$SYSTEMTYPE])
+ 					 	rm $configfilebysystem[$SYSTEMTYPE] && mv /tmp/$(basename $configfilebysystem[$SYSTEMTYPE]) $configfilebysystem[core]
+ 					 	sleep 2
+ 						echo "  • Function ${MAGENTA}$newname${NC} declared on ${GREEN}$corfctlistbycategory[$CATEGORY]${NC} ${GREEN}and loaded now${NC}."
+					fi
+				break
+				done
+
+				for sys in ${(k)configfilebysystem}; do
+					while [[ $SYSTEMTYPE == "$sys" ]] && [[ "$sys" != "core" ]]; do
+						if [ $(echo -e $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[$sys] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$1" | sed 's/(.*//') ]; then
+							for cat in $(basename -a $(find "$ZDOT/zshrc.d/local-functions/$SYSTEMTYPE" -mindepth 1 -maxdepth 1 -type d | more)); do
+									while  [[ "$CATEGORY" ==  "$cat" ]]; do
+										echo "  • Function ${MAGENTA}$1${NC} exist and ${GREEN}already loaded${NC}."
+										echo "+++ We replace ${MAGENTA}$1${NC} declaration by ${MAGENTA}$newname${NC} declaration..."
+										rm /tmp/$(basename $configfilebysystem[$sys]) 2>/dev/null
+				 						sed "s/$1/$newname/g" $configfilebysystem[$sys] 1> /tmp/$(basename $configfilebysystem[$sys])
+										rm $configfilebysystem[$sys] && mv /tmp/$(basename $configfilebysystem[$sys]) $configfilebysystem[$sys]
+										sleep 2
+										echo "  • Function ${MAGENTA}$newname${NC} declared on ${GREEN}$sysfctlistbycategory[$cat]$systemsuffixlist[$sys]${NC} ${GREEN}and loaded now${NC}."
+					 				 	break
+					 				done
+							done
+
+						else
+							for cat in $(basename -a $(find "$ZDOT/zshrc.d/local-functions/$SYSTEMTYPE" -mindepth 1 -maxdepth 1 -type d | more)); do
+									while  [[ "$CATEGORY" ==  "$cat" ]]; do
+										# ## declare associative array of declaration name list by category
+				   						echo "${NC}"						
+					 					echo "${LINEE}"
+										echo "  • Function ${RED} $1 ${NC} exist but ${RED}undeclared and unloaded${NC}."
+										echo "+++ We loaded ${MAGENTA}$newname${NC}..."
+										rm /tmp/$(basename $configfilebysystem[$sys]) 2>/dev/null
+										sed "s/$sysfctlistbycategory[$cat]$systemsuffixlist[$sys]=(/$sysfctlistbycategory[$cat]$systemsuffixlist[$sys]=( $newname/g" $configfilebysystem[$sys] 1> /tmp/$(basename $configfilebysystem[$sys])
+										rm $configfilebysystem[$sys] && mv /tmp/$(basename $configfilebysystem[$sys]) $configfilebysystem[$sys]
+										sleep 2
+										echo "  • Function ${MAGENTA}$1${NC} declared on ${GREEN}$sysfctlistbycategory[$cat]$systemsuffixlist[$sys]${NC} ${GREEN}and loaded now${NC}."
+										echo "${LINEE}"
+					 					echo "${NC}"
+					 				 	break
+					 				done
+							done
+
+						fi
+					break
+					done
+				done
+				echo "${LINEE}"
+				echo "  >> ${GREEN}Step 3 done.${NC}"
+				echo "${NC}"
+				echo "  ${GREEN}>> All Steps done. ${MAGENTA}$1${NC}${GREEN} renamed to ${MAGENTA}$newname${NC}.${NC}"
+				echo "${LINEE}"
+				echo "${LINEE}"
+				echo "${NC}"
+				echo "${NC}"
+				sleep 4
+
+				###
+				cd $OLDPATH
+				while dirFold_Listing ; do : ; break ; done
+				break
+				;;
+
+
+			Back)
+				##clear		 
+				cd $OLDPATH
+				while dirFold_Listing ; do : ; break ; done
+				break
+				;;
+			*) 
+				if [ "$REPLY" = "0" ] ; then break ; fi	
+				echo "${RED}$REPLY, invalid answer!${NC}"
+				echo
+				;;
+			esac
+		done
+}
+
+CompletionAction () {
+	local reponse
+	local saisie
+	clear
+	banner
+	local ACTUALPATH=$(pwd)/$1
+	local OLDPATH=$(pwd)
+	echo "${LINEE}"
+	local ACTUALPATH=$(pwd)/$1
+	echo "${GREEN}Completion action on${NC} :${RED}"$ACTUALPATH"${NC}"
+	echo "${LINEE}"
+	select reponse in Infos Erase Edit Back; do ##	select reponse in Infos Move Erase Edit Rename Back; do
+			case $reponse in
+			Infos)
+				#####
+				#/! #
+				#####
+				# Z_Help_template_functions $1
+				echo "${GREY}"
+				Z_Help_template_functions "^$1"
+				echo "${NC}"
+				ls -l "$1"
+				#####
+				#/! #
+				##### 28/02/2017 file -I options --> problem with linux
+				#file -pkLI $1
+				file -pkL "$1"
+				echo
+				;;
+			# Move)
+			# 	 echo -n "New place for $1 ? "
+			# 	 if ! read saisie ; then continue ; fi
+			# 	 mv $1 $saisie
+			# 	 break
+			# 	;;
+			Erase)
+				 if rm -i $ACTUALPATH ; then break; fi
+				;;
+			Edit)
+				 echo $1
+				 local FILENAME=$1
+				 local FILEXT=${FILENAME#*.}
+				 case fileXT in
+					*)
+						#if nano -w $1 ; then continue; fi
+						if vi -b "$1" ; then continue; fi
+					;;
+				 esac
+				;;
+			# Rename)
+			# 	if echo "ZBOOB" ; then continue; fi
+			# 	;;
+			Back)
+				 ##clear		 
+				 cd $OLDPATH
+				 while dirFold_Listing ; do : ; break ; done
+				 break
+				;;
+			*) 
+				if [ "$REPLY" = "0" ] ; then break ; fi	
+				echo "${RED}$REPLY, invalid answer!${NC}"
+				echo
+				;;
+			esac
+	done
+}
+###
+# Cette fonction reçoit en argument le nom d'un fichier, et
+# propose les différentes actions possibles.
+FoldAction () {
+	clear
+	banner
+	LEVEL=$(($LEVEL+1))
+	echo "${LINEE}"
+	ACTUALPATH=$(pwd)/$1
+	OLDPATH=$(pwd)
+	echo "${GREEN}Folder action on ${NC}${RED}"$ACTUALPATH"${NC}"
+	if (( $LEVEL == 2 )); then
+		echo "${GREEN}System type : ${RED}$SYSTEMTYPE${NC}"
+		echo "${GREEN}Category : ${RED}$(basename $ACTUALPATH)${NC}"
+	fi
+	if (( $LEVEL == 3 )); then
+		echo "${GREEN}System type: ${RED}$SYSTEMTYPE${NC}"
+		echo "${GREEN}Category : ${RED}$CATEGORY${NC}"					
+		echo "${GREEN}Sub-category : ${RED}$(basename $ACTUALPATH)${NC}"					
+	fi
+	echo "${GREEN}LEVEL : ${RED}$LEVEL${NC}"
+
+	echo "${LINEE}"
+	local TEST_ACTDOS=$(/bin/ls -A $ACTUALPATH 2>/dev/null)
+	select reponse in Helplist Create Erase Rename Next Back  ##	select reponse in Helplist Create Move Erase Rename Next Back
+		do
+			case $reponse in
+			Helplist)
+				# foreach func in $(find "$ACTUALPATH" -type f 2>/dev/null | sed 's/.*\///' | grep -v ".DS_Store" | grep -v "README" ); do
+				foreach func in $(find "$ACTUALPATH" -type f 2>/dev/null | sed 's/.*\///' | grep -v ".DS_Store\|.txt\|.zip\|.zwc" ); do
+					local FCTHP=$(Z_Help_template_functions $func 2>/dev/null | grep "^$func(7)" )
+					if [ $FCTHP ] ; then echo ${GREEN}$FCTHP${NC}; else echo "${RED}help for ${GREY}$func${NC} not yet implemented${NC}";  fi
+				done
+				;;
+			Create)				
+				echo "${NC}"
+				echo "${LINEE}"	
+				
+				if (( $LEVEL == 2 )); then
+					echo "  • ${GREEN}We create a sub-category folder on ${MAGENTA}$(basename $ACTUALPATH)${GREEN} category of ${MAGENTA}$SYSTEMTYPE${GREEN} system${NC}."
+					echo -n "+++ Enter a new sub-category name.\n"
+					if ! read newsub ; then continue ; fi
+					#/!\# 17/11/2017
+					# Verify if newsub is not empty.
+					# Verify newsub name contains only UPPERCASE and no number.
+					if [[ -n "$ACTUALPATH/$newsub" ]] && [[ -d "$ACTUALPATH/$newsub" ]]; then
+					    echo "  • ${MAGENTA}$newsub${NC} ${RED}directory already exist, choose another name.${NC}"						
+					else 
+						echo "+++ We create ${MAGENTA}$newsub${NC} sub-category..."
+						mkdir "$ACTUALPATH/$newsub"
+						echo "  • ${MAGENTA}$newsub${GREEN} sub-category creation on $(basename $ACTUALPATH)${GREEN} category of ${MAGENTA}$SYSTEMTYPE${GREEN}, done${NC}."
+					fi
+					echo "${LINEE}"
+					echo "${NC}"
+					#####
+					# cd $ACTUALPATH/$newsub
+					#####
+					continue					 
+				fi
+
+
+				if (( $LEVEL == 3 )); then				
+					echo "  • ${GREEN}We create a ${RED}$SYSTEMTYPE${GREEN} function-completion on ${RED}$(basename $ACTUALPATH)${GREEN} sub-category of ${RED}$CATEGORY${GREEN} category${NC}."
+					echo -n "+++ Enter a function-completion name.\n>>>"
+#					if ! read newfctcomp ; then continue ; fi
+					if ! read newfctcomp ; then continue ; fi
+						#/!\# 17/11/2017					
+						# Verify if newfctcomp is not empty.
+						# Verify newsub name contains only LOWERcase and no number.
+						# Verify if newfctcomp is a completion or a function (_newfctcomp or newfctcomp)
+						#/!\#
+					if [[ -n "$ACTUALPATH/$newfctcomp" ]] && [[ -f "$ACTUALPATH/$newfctcomp" ]]; then
+						echo "  • ${MAGENTA}$newfctcomp${NC} ${RED}fonction-completion already exist, choose another name.${NC}"						
+					elif [[ $newfctcomp == "" ]] ;then
+					 	echo "  • ${RED}You give an empty name...Mission failure${NC}." 
+					else 
+						echo "+++ We create ${MAGENTA}$newfctcomp${NC} function-completion..."
+						sed "s/FCT_NAME=/FCT_NAME=$newfctcomp/g" $P_SYSFCTDIR/etc/skel/functionSkel 1> $ACTUALPATH/$newfctcomp
+						find $P_SYSFCTDIR/$SYSTEMTYPE -type l -exec rm {} \;
+						for zad in $(find $P_SYSFCTDIR/$SYSTEMTYPE -type f | grep -v "DS_Store" | grep -v "___000_README.txt"); do
+							ln -s "$zad" $P_SYSFCTDIR/$SYSTEMTYPE
+						done
+						#/!\# 17/11/2017
+						# Verify if the function is well formated.
+						# Declared and loaded.
+						#/!\#
+						echo "  • ${MAGENTA}$newfctcomp${GREEN} function-completion creation on ${MAGENTA}$(basename $ACTUALPATH)${GREEN} sub-category of ${MAGENTA}$SYSTEMTYPE${GREEN}, done${NC}."
+					fi
+					echo "${LINEE}"
+					echo "${NC}"
+			    	continue 
+				fi
+
+				if (( $LEVEL < 3 )); then				
+					echo "  • ${RED}You can't create anything on level superior to 3${NC}."
+					echo "${LINEE}"
+					echo "${NC}"
+			    	continue 
+				fi
+				;;
+
+			# Move)
+			# 	echo -n "Nouvel emplacement pour $1 ? "
+			# 	if ! read saisie ; then continue ; fi
+			# 	mv $1 $saisie
+			# 	break
+			# 	;;
+
+			Erase)
+				echo "${NC}"
+				echo "${LINEE}"	
+				echo "${LINEE}"	
+				#####
+				if (( $LEVEL < 3 )); then				
+					echo "  • ${RED}You can't erase anything on level inferior to 3${NC}."
+					echo "${LINEE}"
+					echo "${NC}"
+			    	continue 
+				fi
+
+				if (( $LEVEL == 3 )) && [[ -d $ACTUALPATH ]]; then
+					echo "  • ${GREEN}We erase ${MAGENTA}$(basename $ACTUALPATH)${NC}${GREEN} sub-category folder on ${MAGENTA}$CATEGORY${NC} category of ${MAGENTA}$SYSTEMTYPE${GREEN} system${NC}."
+					## Step 1 : Make a list of function present in that sub-directory
+					#  and undeclared functions.
+					for fctpres in $(basename $(find "$ACTUALPATH" -type f));do 
+						# echo $fctpres
+						sys=''
+						cat=''
+						#################################################################################
+						# # ## FUNCTIONS UNLOADING
+						#################################################################################
+						for sys in ${(k)configfilebysystem}; do
+							 while [[ $SYSTEMTYPE == "$sys" ]]; do
+								if [ $(echo -e $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[$sys] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$fctpres" | sed 's/(.*//') ]; then
+										echo "${NC}"
+										echo "${LINEE}"
+									    echo "  • Function ${MAGENTA} $fctpres ${RED}exist, it's declared on list: ${MAGENTA}$(echo $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[$sys] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$fctpres" | sed 's/(.*//') ${RED}and loaded${NC}."						# for zob in $(echo -e $(cat $P_CORFCTFIL | grep "=(" | sed 's/=.*//')); do 
+										for cat in $(echo $(basename -a $(find "$ZDOT/zshrc.d/local-functions/$SYSTEMTYPE" -mindepth 1 -maxdepth 1 -type d | more))); do
+											while  [[ "$CATEGORY" ==  "$cat" ]]; do
+														echo "+++ We unloaded ${MAGENTA}$fctpres${NC}..."
+														rm /tmp/$(basename $configfilebysystem[$sys]) 2>/dev/null
+														sed "s/$fctpres //g" $configfilebysystem[$sys] 1> /tmp/$(basename $configfilebysystem[$sys])
+												 		rm $configfilebysystem[$sys] && mv /tmp/$(basename $configfilebysystem[$sys]) $configfilebysystem[$sys]
+												 		sleep 2
+														echo "  • Function ${MAGENTA}$fctpres${NC} is ${GREEN}undeclared and unloaded now${NC}."	
+											break
+											done
+										done
+										echo "${LINEE}"
+										echo "${NC}"
+								else
+									    echo "${NC}"
+										echo "${LINEE}"
+									    echo "  • Function ${MAGENTA} $fctpres ${GREEN}exist, it's already undeclared and unloaded${NC}."						# for zob in $(echo -e $(cat $P_CORFCTFIL | grep "=(" | sed 's/=.*//')); do 
+										echo "  • ${RED}Nothing to do !${NC}"
+										echo "${LINEE}"
+										echo "${NC}"
+								fi
+							break
+							done				
+						done 
+					done
+					##	Step 2 Erasing.				
+					rm -Rf $ACTUALPATH
+
+					##	Step 3.remake symlinks.
+					find $P_SYSFCTDIR/$SYSTEMTYPE -type l -exec rm {} \;
+					for zad in $(find $P_SYSFCTDIR/$SYSTEMTYPE -type f | grep -v "DS_Store" | grep -v "___000_README.txt"); do
+						ln -s "$zad" $P_SYSFCTDIR/$SYSTEMTYPE
+					done
+					##
+					echo "${LINEE}"	
+					echo "${LINEE}"
+					echo "${NC}"
+					###
+					LEVEL=$(($LEVEL - 1))
+					cd $OLDPATH
+					while dirFold_Listing ; do : ; break ; done
+					break					 
+				fi
+				
+				if (( $LEVEL > 3 )); then				
+					echo "  • ${RED}You can't erase anything on level superior to 3${NC}."
+					echo "${LINEE}"
+					echo "${NC}"
+			    	continue 
+				fi
+
+				# if (( $LEVEL == 4 )); then				
+				# 	echo "  • ${GREEN}We erase a ${RED}$SYSTEMTYPE${GREEN} function-completion on ${RED}$(basename $ACTUALPATH)${GREEN} sub-category of ${RED}$CATEGORY${GREEN} category${NC}."
+				# fi
+				;;
+
+			Rename)
+				echo "${NC}"
+				echo "${LINEE}"	
+				echo "${LINEE}"	
+				#####
+				if (( $LEVEL < 3 )); then
+					echo "  • ${RED}You can't rename anything on level inferior to 3${NC}."
+					echo "${LINEE}"
+					echo "${LINEE}"
+					echo "${NC}"
+			    	continue 
+				fi
+
+				if (( $LEVEL == 3 )) && [[ -d $ACTUALPATH ]]; then
+					echo "  • ${GREEN}We rename ${MAGENTA}$(basename $ACTUALPATH)${NC}${GREEN} sub-category folder on ${MAGENTA}$CATEGORY${NC} category of ${MAGENTA}$SYSTEMTYPE${GREEN} system${NC}."
+					##
+					echo -n "+++ We renamed $(basename $ACTUALPATH).Enter a new sub-category name.\n"
+					if ! read newsub ; then continue ; fi
+				    mv $ACTUALPATH "$(dirname $ACTUALPATH)/$newsub"
+					echo "  • ${MAGENTA}$(basename $ACTUALPATH)${GREEN} sub-category folder renamed to ${MAGENTA}$newsub${NC}."
+
+					echo "${LINEE}"
+					echo "${LINEE}"
+					echo "${NC}"
+					##
+					sleep 4
+					LEVEL=$(($LEVEL - 1))
+					cd $OLDPATH
+					while dirFold_Listing ; do : ; break ; done
+					break
+				fi
+				if (( $LEVEL > 3 )); then
+					echo "  • ${RED}You can't rename anything on level superior to 3${NC}."
+					echo "${LINEE}"
+					echo "${LINEE}"
+					echo "${NC}"
+			    	continue 
+				fi
+				;;
+
+			Next)
+				# echo '-----'
+				# echo $LOG_TARGET
+				# echo '+++'
+				# echo $LOT_TGT
+				# echo '-----'
+			 	# Teste de répertoire vide
+			 	if [ $TEST_ACTDOS ]; then
+	 		    	clear
+	 		    	######
+	 		    	#/!\!# Tester le level pour établir une valeur correcte d $ACTUALPATH
+	 		    	######
+	 		    	cd $ACTUALPATH
+	 				while dirFold_Listing ; do : ; break ; done
+	 		    	break			 		
+
+			    else
+	    	    	echo "${RED}le repertoire ${MAGENTA}$(basename $ACTUALPATH)${RED} est vide.${NC}"
+	    	    	sleep 4
+	    			cd $OLDPATH
+	    			while dirFold_Listing ; do : ; break ; done
+	    			break
+			    fi
+			  	;;
+
+			Back) 
+				clear
+				cd $OLDPATH
+				#/!\#
+				LEVEL=$(($LEVEL-1))
+				#/!\#
+				while dirFold_Listing ; do : ; break ; done
+				break
+				;;
+
+			*) 
+				if [ "$REPLY" = "0" ] ; then break ; fi	
+				echo "$REPLY not a answer."
+				echo
+				;;
+
+			esac
+		done
+}
+###
+# Cette routine affiche la liste des fichiers présents dans
+# le répertoire, et invoque la fonction FunctionAction si la
+# saisie est correcte. Elle se termine si on sélectionne "0"
+dirFold_Listing () {
+	###
+	clear
+	banner
+    echo $DB ZBOOOOB
+	#local P_SYSFCTDIR="$ZDOT/zshrc.d/local-functions"
+	local ACTUALPATH=$(pwd)/$1
+	local MYPWD=$(pwd)
+	echo "${LINEE}"
+	echo "${GREEN}Actual path : ${NC}${RED} $ACTUALPATH ${NC}"
+	echo "${GREEN}Function for : ${NC}${RED}$SYSTEMTYPE ${GREEN}system.${NC}"
+	while (( $LEVEL == 2 )); do
+		CATEGORY="$(basename $ACTUALPATH)"
+		break
+	done
+	while (( $LEVEL > 2 )); do
+		SUBCATEGORY="$(basename $ACTUALPATH)"
+		break
+	done
+	echo "${GREEN}Category : ${NC}${RED}$CATEGORY${NC}"
+	echo "${GREEN}Sub-Category : ${NC}${RED}$SUBCATEGORY${NC}"
+	echo "${GREEN}Level : ${NC}${RED}$LEVEL${NC}"
+	echo "${LINEE}"
+	echo ""
+	echo "${RED}Q${NC}) Back to system types choices."
+	echo "${RED}R${NC}) Back to last selection."	
+	PS3='Enter your choice:  '
+
+	 # Problem with find and depth 0 options after and before -type l 
+	##ORIG# BOO=($(find * ! -type l  -depth 0 | tr '\n' ' '))
+	#BOO=($(find * ! -type l | grep "___$"| tr '\n' ' '))
+	# if (( $LEVEL < 3 )); then
+		local BOO=($(find * -mindepth 0 -maxdepth 0 \( -type f -or -type d \) | grep -v ".txt\|.zip\|.zwc" | tr '\n' ' '))
+		# local BOO=($(find * -mindepth 0 -maxdepth 0 \( -type f -or -type d \) | grep -v "README" | grep -v ".zip" | tr '\n' ' '))
+	# else
+	# 	local BOO=($(find * -mindepth 0 -maxdepth 0 \( -type f -or -type d \) | grep -v "README" | grep -v ".zip" | grep -v '^_' | tr '\n' ' '))
+	# fi
+
+	select fichier in $BOO
+	do
+		local OLDPOT=$(basename ${ACTUALPATH})
+		local RECTIPATH=${OLDPATH%%$OLDPOT}
+		echo "==> Enter ${RED} [Q] ${NC} Back to system types choices."
+		echo "==> Enter ${RED} [R] ${NC} to Back to last selection."
+			if [ ! -z "$fichier" ]; then
+		    		echo '-----'
+					echo $LOG_TARGET
+					echo '+++'
+					echo $LOT_TGT
+					echo '-----'
+		    	if [ -d $fichier ]; then 
+		    		FoldAction "$fichier"
+		    		return 0
+		    	elif [ $(echo "$fichier" | grep  "^_") ];then
+		    		CompletionAction "$fichier"
+		    		return 0
+		    	else
+		    		FunctionAction "$fichier"
+		    		return 0
+		    	fi
+				return 0
+			fi
+			
+			if [ "$REPLY" = "Q" ] ; then
+				LEVEL=0
+				CATEGORY="-"
+				SUBCATEGORY="-"
+				return 1
+			fi
+			
+			if [ "$REPLY" = "R" ] ; then
+			echo "+++++++++++++++++++++++++++++++++++++++"
+			echo "P_SYSFCTDIR : "$P_SYSFCTDIR
+			echo "pwd vaut : "$MYPWD
+			echo "Ancien répertoire : "$OLDPATH
+			echo "Répertoire actuel : "$ACTUALPATH
+			echo "Path recifié : "$RECTIPATH
+			echo "OLDPOT : " $OLDPOT
+			echo "LOG_TARGET : "$LOG_TARGET
+			echo "LOT_TGT : "$LOT_TGT
+			echo "+++++++++++++++++++++++++++++++++++++++"
+				LEVEL=$(($LEVEL - 1))
+				echo "YOU TYPE R"
+				if [[ "$RECTIPATH" == "$P_SYSFCTDIR" ]]; then
+					echo "a"
+					return 1
+				fi
+				if [[ "$RECTIPATH" == "$P_SYSFCTDIR/" ]]; then
+					echo "b"
+					return 1
+				fi
+
+				if [[ "$RECTIPATH" == "$ROOTA_DIR" ]]; then
+					echo "c"
+					return 1
+				fi
+
+				if [[ "$OLDPATH" == "$P_SYSFCTDIR" ]]; then
+					echo "d"
+					return 1
+				fi
+
+				if [[ "$ACTUALPATH" ==  "//" ]]; then
+					echo "e"
+					return 1
+				fi
+
+				if [[ "$ACTUALPATH" ==  "$P_SYSFCTDIR/" ]]; then
+					echo "f"
+					LEVEL=0
+					return 1
+				fi
+				while [[ "$MYPWD" == "$OLDPATH" ]]; do  
+					if [[ "$MYPWD" == "$P_SYSFCTDIR" ]]; then
+						LOG_TARGET=""
+						echo $LOG_TARGET
+						return 1
+					elif [[ "$RECTIPATH" ==  "/" ]]; then
+                		return 1
+                		OLDPATH="$RECTIPATH" 
+						break
+					else
+						 ZOB=$(dirname $(echo ${ACTUALPATH%%/}))
+						 #cd  $ZOB
+						 echo ZOB
+						 echo $ZOB
+						 OLDPATH=$ZOB
+						 break
+					fi
+				done
+				# echo "&&&&&&&&&&&&&&&&&&&&&&&&&"
+				# echo "$OLDPATH"
+				# echo "&&&&&&&&&&&&&&&&&&&&&&&&&"
+				echo "foo"
+				#/!\#
+				cd "$OLDPATH"
+				while (($LEVEL == 2)); do
+					SUBCATEGORY="-"
+					break
+				done
+				#/!\#
+				while (($LEVEL < 2)); do
+					CATEGORY="-"
+					break
+				done
+
+				while dirFold_Listing; do 
+					: 
+					break
+				done
+				break
+				return 0
+			fi
+			echo "${RED}Réponse non valide.${NC}"
+	done
+}
+# Exemple de bo+ucle tant qu'une fonction réussit.
+# Le deux-points dans la boucle signifie "ne rien faire"
+#while dirFold_Listing ; do : ; done
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+#  Routine to verify they are no level superior to 4 else move all function in level 5 to 4
+for j in $(find $P_SYSFCTDIR -mindepth 5 -maxdepth 5 | grep -v audio | grep -v etc); do mv $j $(dirname $(dirname $j)); done
+PS3='Enter your choice ' # Invite de sélection.
+until [[ "$REPERTOIRE" == "Quit" ]]; do
+		clear
+		banner
+		echo "${GREEN}Functions and completions are organized by system type."
+		echo "Select which one you want to work with : ${NC}" >&2
+		#LISTE_RP=("Quitter" $(find "$ROOT_DIR" -type d -mindepth 1 -maxdepth 1 | grep -v "/audio" | grep -v "/etc" | grep -v "/opt" | grep -v "/xtal" | sed 's/.*\///' | tr '\n' ' '))
+		local LISTE_RP=("Quit" $(find "$ROOT_DIR" -mindepth 1 -maxdepth 1 -type d  | grep -v "/audio" | grep -v "/etc" | grep -v "/opt" |  grep -v "/xtal" |  grep -v "README" | sed 's/.*\///' | tr '\n' ' '))
+		#local LISTE_REP="Quit $LISTE_RP"
+		select REPERTOIRE in $LISTE_RP; do
+			if [[ "$REPERTOIRE" = "Quit" ]]; then
+				echo "${RED}Categories analyse terminated.${NC}"
+				sleep 2  && clear && cd && Z_Restart #  
+				## return 0 ### /!\
+				echo $?
+			elif [[ -n "$REPERTOIRE" ]]; then
+			   	local LOG_TARGET=$ROOT_DIR/$REPERTOIRE
+		        local LOT_TGT=$ROOT_DIR/$REPERTOIRE"/"
+				# echo '-----'
+				# echo $LOG_TARGET
+				# echo '+++'
+				# echo $LOT_TGT
+				# echo '-----'
+				echo "You choose number ${RED}$REPLY${NC},"\
+					    "${RED}$REPERTOIRE${NC} analyse..."
+					if [[ -f "$LOG_TARGET" ]]; then
+						FunctionAction $LOG_TARGET
+						wait
+						clear
+						break
+					elif [[ -d "$LOG_TARGET" ]]; then
+						clear
+						SYSTEMTYPE="$REPERTOIRE"
+						LEVEL=1 #/!\#
+						cd $LOG_TARGET
+						while dirFold_Listing ; do : ; break ; done
+						wait
+						clear
+						break
+					fi
+			else
+				echo "${RED}Bad Selection !${NC}"
+				sleep 4
+			fi # Fin du traitement du choix de l'utilisateur.
+		break
+		done # Fin de la sélection d'un répertoire
+done
+#return 0
+

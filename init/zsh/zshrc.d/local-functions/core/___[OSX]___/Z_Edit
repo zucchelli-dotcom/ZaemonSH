@@ -1,0 +1,275 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_Edit :
+#  Z_Edit function, version 2.0.1
+#  October 17, 2006
+#  Complete re-write of the cumbersome version 1.x.y
+#  Revised July 9, 2007 to fix a major bug
+#  Find out what the user prefers to use for various editing tasks
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="2.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+# Assign the unix command utilities for common OS X editors, checking first to
+# be sure it has been installed:
+function assignEditorUtility {
+	if [[ "$MyEditor[3]" == "Sublime Text"   ]]; then
+		editor_utility="sublime"
+	elif [[ "$MyEditor[3]" == "TextMate"   ]]; then
+		editor_utility="mate"		
+	elif [[ "$MyEditor[3]" == "Smultron"   ]]; then
+		editor_utility="smultron"
+	elif [[ "$MyEditor[3]" == "BBEdit"   ]]; then
+		editor_utility="bbedit"
+	elif [[ "$MyEditor[3]" == "SubEthaEdit"   ]]; then
+		editor_utility="see"	
+	elif [[ "$MyEditor[3]" == "TextWrangler"   ]]; then
+		editor_utility="edit"     # mine came first
+	elif [[ "$MyEditor[3]" == "TextEdit"   ]]; then
+		editor_utility="usetextedit"      # There is none
+	elif [[ -z "$MyEditor[3]" && "$MyEditor[1]" == "$MyEditor"   ]]; then
+		editor_utility="$MyEditor[@]"  # should cover unix command-line editors
+	else
+		editor_utility="vim"  # when in doubt, use vim
+	 fi	
+	
+	##
+	#export $editor_utility
+	#editor_utility="sublime"
+}
+
+#Define the four principle editor commands as functions
+function asciiEditorCommand {
+	assignEditorUtility
+	if [[ $editor_utility == "usetextedit" ]];then
+		command open -e "$@"
+	elif [[ $editor_utility == "sublime" ]];then
+		command open -a "Sublime Text" "$@"	
+	elif [[ -z "$editor_utility" ]]; then
+		autoload -U vim
+		vim ${@}
+	elif [[ -x "/usr/bin/$editor_utility" || -x "/usr/local/bin/$editor_utility" || -x $(which $editor_utility) ]];then
+	    command "$editor_utility[@]" "$@"
+    fi	
+}
+
+function  imageEditorCommmand {
+	if [[ -n "$ImageEditor[3]" ]]; then
+		command "$ImageEditor[@]" "$@"
+	elif [[ -z "$ImageEditor[3]" && -n "$ImageEditor[1]" ]]; then
+		command "$ImageEditor[@]" "$@"
+	else
+		open "$@"
+	fi
+}
+
+function  htmlEditorCommand {
+	if [[ "$HTML_Editor[3]" == (SeaMonkey|Netscape|Mozilla) ]]; then
+		if [[ $# == 1 ]];then
+			# The "composer" function currently can only handle one file at a time
+			# This works around that limitation
+			autoload -U composer
+			composer "$@"
+		else
+			asciiEditorCommand "$@"
+		fi
+	elif [[ -z "$HTML_Editor[3]" && -n "$HTML_Editor[1]" ]]; then
+		 "$HTML_Editor[@]" "$@"
+	else
+		 asciiEditorCommand "$@"
+	fi
+}
+
+function  pdfEditorCommand {
+	if [[ -n "$PDFdisplay[3]" && "$PDFdisplay[3]" != Preview ]]; then
+		$PDFdisplay "$@"
+	elif [[ -z "$PDFdisplay[3]" && -n "$PDFdisplay[1]" ]]; then
+		"$PDFdisplay[@]" "$@"
+	else
+		 command open -a Preview "$@"
+	fi
+}
+
+# Check each argument suppled to th command "edit" to see what type of file
+# we need to edit
+function fileLooper {
+	htmlfilearray=()
+	imgfilearray=()
+	pdffilearray=()
+	otherbinaryfilearray=()
+	xtaldatafilearray=()
+	cnseditfilearray=()
+	genericfilearray=()
+
+	LIMIT=$# 
+	for ((i = 1; i <= $LIMIT; i++ )) do
+		eval file="\$$i"
+		if [[ $file:e == (html|htm|xhtml|xhtm) ]];then
+			htmlfilearray+=( $file )
+		elif [[ $file:e == (png|jpg|jpeg|psd|tiff|tif|gif) ]]; then
+			imgfilearray+=( $file )
+		elif [[ $file:e == (pdf|ps|eps) ]]; then
+			pdffilearray+=( $file )
+		elif [[ $file:e == (doc|xls|rtf|key|pages|ai) ]]; then
+			otherbinaryfilearray+=( $file )
+		elif [[ $file:e == (map|mtz|o|pse|ccp4|cns|phs) ]]; then
+			xtaldatafilearray+=( $file )
+		elif [[ $file:e == (inp|def) ]]; then
+			cnseditfilearray+=( $file )
+		else
+			genericfilearray+=( $file )
+		fi
+	done
+}
+
+## Function to edit each file using the appropriate designated application
+function editAllFiles {
+	#echo ${@}
+	fileLooper "$@"
+
+	if [[ -n $genericfilearray ]];then
+		asciiEditorCommand "$genericfilearray[@]"
+	fi	 
+	
+	if [[ -n "$htmlfilearray" ]];then
+		htmlEditorCommand "$htmlfilearray[@]"
+	fi
+
+	if [[ -n "$imgfilearray" ]]; then	
+		imageEditorCommmand "$imgfilearray[@]"
+	fi
+
+	if [[ -n "$pdffilearray"  ]]; then
+		pdfEditorCommand  "$pdffilearray[@]"
+	fi
+
+	if [[ -n "$otherbinaryfilearray" ]]; then
+		print skipping "$otherbinaryfilearray"
+	fi
+  
+	if [[ -n "$xtaldatafilearray" ]]; then
+		print skipping "$xtaldatafilearray"
+	fi
+ 
+	if [[ -n "$cnseditfilearray" ]]; then
+		autoload -U cns_edit
+		cns_edit "$cnseditfilearray[@]"
+	fi
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+# set -x
+if [[ -f "$HOME/.zsh/my_edit_rc" ]]; then
+	source $HOME/.zsh/my_edit_rc
+else
+	print ""
+	echo "${RED}"
+	print "No $HOME/.zsh/my_edit_rc file found.  Please run the following command to select appropriate editing Applications"
+	print "autoload -U Z_My_prefs_edit; Z_My_prefs_edit"
+	echo "$NC"
+	print ""
+	sleep 2
+	# Try to pick some reasonable defaults
+	
+	##MyEditor=(open -a "TextEdit")
+	MyEditor=(open -a "Sublime Text")
+	
+	##HTML_Editor=(open -a "Safari")
+	HTML_Editor=(open -a "Firefox")
+	
+	##ImageEditor=(open -a "Preview")
+	ImageEditor=(open -a "Adobe Bridge CS5")
+	
+	##PDFdisplay=(open -a "Preview")	
+	PDFdisplay=(open -a "Adobe Acrobat Pro")
+
+fi
+
+# If any individual assignments are missing, fill in
+# with these default values
+if [[ -z "$MyEditor" ||  "$MyEditor" == "open -a" ]]; then
+	#MyEditor=(open -a "TextEdit" )
+	MyEditor=(open -a "Sublime Text" )
+fi
+if [[ -z "$HTML_Editor" || "$HTML_Editor" == "open -a" ]]; then
+	HTML_Editor=(open -a "Sublime Text")
+fi
+if [[ -z "$ImageEditor" || "$ImageEditor" == "open -a" ]]; then
+	ImageEditor=(open -a "Preview")
+fi
+if [[ -z "$PDFdisplay" || "$PDFdisplay" == "open -a" ]]; then
+	PDFdisplay=(open -a "Preview")
+fi
+	
+# Now run the program:
+editAllFiles  "$@"

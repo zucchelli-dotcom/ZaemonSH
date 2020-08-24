@@ -1,0 +1,107 @@
+#compdef airbase-ng
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# airbase-ng  :
+# zsh completions for 'airbase-ng'
+# automatically generated with http://github.com/RobSis/zsh-completion-generator
+# 
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 06/08/2020 :
+#  • Create this one.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local arguments
+
+arguments=(
+    '-a[: set Access Point MAC address]'
+    '-i[: capture packets from this interface]'
+    '-w[key       : use this WEP key to en-/decrypt packets]'
+    '-h[: source mac for MITM mode]'
+    '-f[: disallow specified client MACs (default: allow)]'
+    '-W[1           : \[dont\] set WEP flag in beacons 0|1 (default: auto)]'
+    '-q[: quiet (do not print statistics)]'
+    '-v[: verbose (print more messages)]'
+    '-A[: Ad-Hoc Mode (allows other clients to peer)]'
+    '-Y[: external packet processing]'
+    '-c[: sets the channel the AP is running on]'
+    '-X[: hidden ESSID]'
+    '-s[: force shared key authentication (default: auto)]'
+    '-S[: set shared key challenge length (default: 128)]'
+    '-L[: Caffe-Latte WEP attack (use if driver cant send frags)]'
+    '-N[: cfrag WEP attack (recommended)]'
+    '-x[: number of packets per second (default: 100)]'
+    '-y[: disables responses to broadcast probes]'
+    '-0[: set all WPA,WEP,open tags. cant be used with -z & -Z]'
+    '-z[: sets WPA1 tags. 1=WEP40 2=TKIP 3=WRAP 4=CCMP 5=WEP104]'
+    '-Z[: same as -z, but for WPA2]'
+    '-V[: fake EAPOL 1=MD5 2=SHA1 3=auto]'
+    '-F[: write all sent and received frames into pcap file]'
+    '-P[: respond to all probes, even when specifying ESSIDs]'
+    '-I[: sets the beacon interval value in ms]'
+    '-C[: enables beaconing of probed ESSID values (requires -P)]'
+    '--bssid[: BSSID to filter/use]'
+    '--bssids[: read a list of BSSIDs out of that file]'
+    '--client[: MAC of client to filter]'
+    '--clients[: read a list of MACs out of that file]'
+    '--essid[: specify a single ESSID (default: default)]'
+    '--essids[: read a list of ESSIDs out of that file]'
+    '--help[: Displays this usage screen]'
+    '*:filename:_files'
+)
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                     COMPLETION
+#----------------------------------------------------------------------------------------#
+_arguments -s $arguments
+
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:
+### }}}
+
+
+
+
+
+
+

@@ -1,0 +1,218 @@
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# 			ZSH VERSION 5.0.5 ON OSX
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+add-zsh-hook 								: loaded
+age 										: not loaded
+allopt										: not loaded
+backward-kill-word-match 					: not loaded
+backward-word-match 						: not loaded
+bashcompinit                                : not loaded
+calendar 									: not loaded
+calendar_add  								: not loaded			
+calendar_edit 								: not loaded
+calendar_lockfiles						    : not loaded
+calendar_parse								: not loaded
+calendar_read								: not loaded
+calendar_scandate							: not loaded
+calendar_show 								: not loaded
+calendar_showdate 							: not loaded
+calendar_sort 								: not loaded
+capitalize-word-match 						: not loaded
+catch   									: not loaded
+cdr 										: not loaded
+checkmail 									: not loaded
+chpwd_recent_add 						   	: not loaded	
+chpwd_recent_dirs 							: not loaded
+chpwd_recent_filehandler 					: not loaded
+colors
+compaudit
+compdump
+compinit
+compinstall
+copy-earlier-word
+cycle-completion-positions
+define-composed-chars
+delete-whole-word-match
+down-case-word-match
+down-line-or-beginning-search
+edit-command-line
+forward-word-match
+getjobs
+harden
+history-beginning-search-menu
+history-pattern-search
+history-search-end
+incarg
+incremental-complete-word
+insert-composed-char
+insert-files
+insert-unicode-char
+is-at-least
+keeper
+keymap+widget
+kill-word-match
+match-word-context
+match-words-by-style
+mere
+modify-current-argument
+move-line-in-buffer
+narrow-to-region
+narrow-to-region-invisible
+nslookup
+pick-web-browser
+predict-on
+prompt_adam1_setup
+prompt_adam2_setup
+prompt_bart_setup
+prompt_bigfade_setup
+prompt_bz_setup
+prompt_bzold_setup
+prompt_clint_setup
+prompt_elite2_setup
+prompt_elite_setup
+prompt_fade_setup
+prompt_fire_setup
+prompt_off_setup
+prompt_oliver_setup
+prompt_pws_setup
+prompt_redhat_setup
+prompt_special_chars
+prompt_suse_setup
+prompt_walters_setup
+prompt_zefram_setup
+promptinit
+promptnl
+quote-and-complete-word
+read-from-minibuffer
+regexp-replace
+relative
+replace-string
+replace-string-again
+run-help
+run-help-git
+run-help-openssl
+run-help-p4
+run-help-sudo
+run-help-svk
+run-help-svn
+select-word-style
+send-invisible
+smart-insert-last-word
+split-shell-arguments
+sticky-note
+tcp_alias
+tcp_close
+tcp_command
+tcp_expect
+tcp_fd_handler
+tcp_log
+tcp_open
+tcp_output
+tcp_point
+tcp_proxy
+tcp_read
+tcp_rename
+tcp_send
+tcp_sess
+tcp_shoot
+tcp_spam
+tcp_talk
+tcp_wait
+tetris
+throw
+transpose-lines
+transpose-words-match
+up-case-word-match
+up-line-or-beginning-search
+url-quote-magic
+vcs_info
+VCS_INFO_adjust
+VCS_INFO_bydir_detect
+VCS_INFO_check_com
+VCS_INFO_detect_bzr
+VCS_INFO_detect_cdv
+VCS_INFO_detect_cvs
+VCS_INFO_detect_darcs
+VCS_INFO_detect_fossil
+VCS_INFO_detect_git
+VCS_INFO_detect_hg
+VCS_INFO_detect_mtn
+VCS_INFO_detect_p4
+VCS_INFO_detect_svk
+VCS_INFO_detect_svn
+VCS_INFO_detect_tla
+VCS_INFO_formats
+VCS_INFO_get_cmd
+VCS_INFO_get_data_bzr
+VCS_INFO_get_data_cdv
+VCS_INFO_get_data_cvs
+VCS_INFO_get_data_darcs
+VCS_INFO_get_data_fossil
+VCS_INFO_get_data_git
+VCS_INFO_get_data_hg
+VCS_INFO_get_data_mtn
+VCS_INFO_get_data_p4
+VCS_INFO_get_data_svk
+VCS_INFO_get_data_svn
+VCS_INFO_get_data_tla
+VCS_INFO_hook
+vcs_info_hookadd
+vcs_info_hookdel
+vcs_info_lastmsg
+VCS_INFO_maxexports
+VCS_INFO_nvcsformats
+vcs_info_printsys
+VCS_INFO_quilt
+VCS_INFO_realpath
+VCS_INFO_reposub
+VCS_INFO_set
+vcs_info_setsys
+which-command
+xtermctl
+zargs
+zcalc
+zed
+zed-set-file-name
+zfanon
+zfautocheck
+zfcd
+zfcd_match
+zfcget
+zfclose
+zfcput
+zfdir
+zffcache
+zfgcp
+zfget
+zfget_match
+zfgoto
+zfhere
+zfinit
+zfls
+zfmark
+zfopen
+zfparams
+zfpcp
+zfput
+zfrglob
+zfrtime
+zfsession
+zfstat
+zftp_chpwd
+zftp_progress
+zftransfer
+zftype
+zfuget
+zfuput
+zkbd
+zmathfuncdef
+zmv
+zrecompile
+zsh-mime-contexts
+zsh-mime-handler
+zsh-mime-setup
+zsh-newuser-install
+zsh_directory_name_cdr
+zstyle+
+ztodo

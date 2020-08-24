@@ -1,0 +1,33 @@
+### freebsd / zeesh! plugin
+
+fpath=( ~/.zsh/plugins/osx/func $fpath )
+autoload -U ~/.zsh/plugins/osx/func/*(:t)
+
+## exports
+export LSCOLORS=ExfxcxdxbxegedabagAcEx
+export PATH=~/.bin:~/.ellipsis/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin
+
+## alias
+alias ls='ls -AGF'
+
+## comp
+compctl -K list_sysctls sysctl
+compctl -c man
+compctl -c info
+compctl -c which
+# no core dumps
+limit core 0
+
+ps() {
+    if [ $1 ]; then
+        /bin/ps $@
+    else
+        /bin/ps ux
+    fi
+}
+
+last-modified() {
+    stat -f '%m' $1
+}
+
+# vim: ft=zsh

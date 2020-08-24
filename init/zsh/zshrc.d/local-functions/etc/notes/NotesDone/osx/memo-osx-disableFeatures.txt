@@ -1,0 +1,406 @@
+
+
+2```
+ 2    ╚⊙ ⊙╝
+ 2  ╚═(███)═╝
+ 2 ╚═(███)═╝
+ 2╚═(███)═╝
+ 2 ╚═(███)═╝
+ 2  ╚═(███)═╝
+ 2   ╚═(███)═╝
+2```
+
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                  NEW TO ODER                        		      |
+# --------------------------------------------------------------------------------
+# Disable IPv6
+sudo networksetup -setv6off Ethernet
+sudo networksetup -setv6off Wi-Fi
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                     NETBIOS                        		     |
+# --------------------------------------------------------------------------------
+# Disable netbios
+sudo lauchctl unload -w /system/Library/LaunchDaemons/com.apple.netbiosd.plist
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                      CUPS                        		         |
+# --------------------------------------------------------------------------------
+# Disable cups 2.0
+sudo sh -c 'echo "Sandboxing Off" >> /etc/cups/cups-files.conf'
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                     BLUETOOTH                        		     |
+# --------------------------------------------------------------------------------
+# Similar to remove Bluetooth PAN on the System Preferences Network control panel
+sudo networksetup -removenetworkservice "Bluetooth PAN"
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                     DSSTORE                        		     |
+# --------------------------------------------------------------------------------
+# Stop DS_Store file creation on network connections
+# restart Finder afterwards
+defaults write com.apple.desktopservices DSDontWriteNetworkStores true && killall Finder
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                     AUTOLOGOUT                        		 |
+# --------------------------------------------------------------------------------
+### DISABLING AUTOLOGOUT
+/usr/bin/defaults write "$targetVolume/Library/Preferences/.GlobalPreferences com.apple.autologout.AutoLogOutDelay" -int 0
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                     IRRECEIVER                        		 |
+# --------------------------------------------------------------------------------
+### Detects if IR Receiver is present on system bus, and if detected, disables the receiver
+ IRPortDetect=`system_profiler SPUSBDataType | egrep "IR Receiver" -c`
+ if [ "$IRPortDetect" = "0" ]
+ then
+ echo "No IR port detected"
+ exit 0
+ else
+ echo "IR port detected - disabling"
+ defaults write /Library/Preferences/com.apple.driver.AppleIRController DeviceEnabled -bool false
+ fi
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                     BLUETOOTH                                  |
+# --------------------------------------------------------------------------------
+
+### Disables Bluetooth sharing for the current logged-in user on the current host
+hardwareUUID=$(/usr/sbin/system_profiler SPHardwareDataType | grep "Hardware
+UUID" | awk -F ": " '{print $2}' | xargs)
+
+currentUser=`ls -l /dev/console | cut -d " " -f4`
+
+/usr/libexec/PlistBuddy -c "Delete :PrefKeyServicesEnabled"  /Users/$currentUser/Library/Preferences/ByHost/com.apple.Bluetooth.$hardwareUUID.plist
+/usr/libexec/PlistBuddy -c "Add :PrefKeyServicesEnabled bool false"  /Users/$currentUser/Library/Preferences/ByHost/com.apple.Bluetooth.$hardwareUUID.plist
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                      VNC                        		         |
+# --------------------------------------------------------------------------------
+
+### enable/disable VNC on Mac OSX (testing with OSX 10.9)
+ def show_current_status
+   if system "sudo launchctl list | grep com.apple.screensharing > /dev/null" and
+   system "sudo defaults read /var/db/launchd.db/com.apple.launchd/overrides.plist com.apple.screensharing -dict Disabled | grep    'Disabled = 0' > /dev/null"
+     puts "VNC: enabled"
+   else
+     puts "VNC: disabled"
+   end
+ end
+
+ def show_help
+   app_name = File.basename $0
+   STDERR.puts "% #{app_name} start  # enable VNC"
+   STDERR.puts "% #{app_name} stop   # disable VNC"
+   show_current_status
+ end
+
+ if ARGV.empty?
+   show_help
+   exit 1
+ end
+
+ enable = case ARGV.shift
+          when "start" then true
+          when "stop" then false
+          else
+            show_help
+            exit 1
+          end
+
+ system "sudo defaults write /var/db/launchd.db/com.apple.launchd/overrides.plist com.apple.screensharing -dict Disabled -bool #{!  enable}"
+
+ if enable
+   system "sudo launchctl load /System/Library/LaunchDaemons/com.apple.screensharing.plist"
+ else
+   system "sudo launchctl unload /System/Library/LaunchDaemons/com.apple.screensharing.plist"
+ end
+
+ show_current_status
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                             TIME MACHINE SNAPSHOTS                             |
+# --------------------------------------------------------------------------------
+# Disable local Time Machine snapshots
+tmutil disablelocal
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                  SPOTLIGHT                       		          |
+# --------------------------------------------------------------------------------
+#
+
+# Remove spotlight menu bar icon
+sudo chmod 0 /System/Library/Coreservices/Spotlight
+
+################################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                MDNSRESPONDER                        		     |
+# --------------------------------------------------------------------------------
+# Disabling Bonjour service advertising without disabling the dns
+mDNSResponder service has been renamed to discoveryd located at /System/Library/LaunchDaemons/com.apple.discoveryd.plist
+you have to replace the <key>ProgramArguments</key> in the plist by :
+<key>ProgramArguments</key>
+<array>
+	<string>/usr/libexec/discoveryd</string>
+	<string>--udsocket</string>
+	<string>standard</string>
+	<string>--loglevel</string>
+	<string>Basic</string>
+	<string>--logclass</string>
+	<string>Everything</string>
+	<string>--logto</string>
+	<string>asl</string>
+	<string>--no-multicast</string>
+</array>
+and restart
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                  DASHBOARD                        		      |
+# --------------------------------------------------------------------------------
+# Disable / Enable Dashboard
+# Settings / Mission control / Dashboard (selector) - Off
+# or
+# Completely disable:
+defaults write com.apple.dashboard mcx-disabled -boolean YES; killall Dock
+# Enable again:
+#defaults write com.apple.dashboard mcx-disabled -boolean NO; killall Dock
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                  CRASHREPORT	                        	      |
+# --------------------------------------------------------------------------------
+# Disable sending of crash reports to Apple (SubmitDiagInfo)
+sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.SubmitDiagInfo.plist
+# Disable Crash Reporter
+defaults write com.apple.CrashReporter DialogType -string 'none'
+# Show Crash Reporter in Notifications
+defaults write com.apple.CrashReporter UseUNC -bool true
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                 PHOTOLIBRARY                        	         |
+# --------------------------------------------------------------------------------
+# disable photolibraryd
+# com.apple.photomoments.xpc tries to access the internet without any reason and authorisation
+# photos.app stops working after this
+sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.photolibraryd
+sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.cloudphotosd
+# after restart they show up here
+sudo launchctl unload -w /System/Library/LaunchAgents/com.apple.photolibraryd.plist
+sudo launchctl unload -w /System/Library/LaunchAgents/com.apple.cloudphotosd.plist
+
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                              APPLEPUSHNOTIFICATION                        	 |
+# --------------------------------------------------------------------------------
+# disable Apple Push Notification Service (apsd)
+# FaceTime could complain
+sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.apsd.plist
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                  CALENDARAGENT                            	 |
+# --------------------------------------------------------------------------------
+
+# Disable Calendar agent
+sudo launchctl unload -w /System/Library/LaunchAgents/com.apple.apsd.plist
+
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                               NOTIFICATIONCENTER                        	     |
+# --------------------------------------------------------------------------------
+# Disable Notification center
+sudo launchctl unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui KeepAlive -bool false
+sudo killall NotificationCenter
+
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                      GAMED                          	         |
+# --------------------------------------------------------------------------------
+## Disable gamed
+#  make sure to log out from game center
+sudo defaults write /System/Library/LaunchAgents/com.apple.gamed Disabled -bool true
+
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                    FRONT ROW                         	         |
+# --------------------------------------------------------------------------------
+mv /System/Library/CoreServices/Front\\ Row.app /System/Library/CoreServices/Front_Row_disabled.app
+
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                     ISIGHT                         	         |
+# --------------------------------------------------------------------------------
+## Disable Isight in Facetime
+sudo mv /Library/Quicktime/QuickTimeUSBVDCDigitizer.component /Library/Quicktime/QuickTimeUSBVDCDigitizer.component.disabled
+
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                     AIRPORT                      	             |
+# --------------------------------------------------------------------------------
+mv "$targetVolume/System/Library/Extensions/IO80211Family"* "$targetVolume/Library/Application Support/JAMF/DisabledExtensions/"
+
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                         	          AIRDROP 		      					     |
+# --------------------------------------------------------------------------------
+# Disable Airdrop
+sudo ifconfig adw10 down
+OR
+sudo defaults write com.apple.NetworkBrowser BrowseAllInterfaces 0 ( 1 to enable )
+OR
+sudo defaults write System/Library/User\ Template/French.lpropj/Preferences/com.apple.NetworkBrowser DisableAirDrop -bool YES
+
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                     AIRPLAY                       	          |
+# --------------------------------------------------------------------------------
+#####
+## Disable Airplay mrroring
+sudo mv /System/Library/CoreServices/AirPlayUIAgent.app/Contents/MacOS/AirPlayUIAgent /System/Library/CoreServices/AirPlayUIAgent.app/Contents/MacOS/AirPlayUIAgent.disabled
+sudo chmod 000 /System/Library/CoreServices/AirPlayUIAgent.app/Contents/MacOS/AirPlayUIAgent.disabled
+## Reeneable
+sudo chmod 755 /System/Library/CoreServices/AirPlayUIAgent.app/Contents/MacOS/AirPlayUIAgent.disabled
+sudo mv /System/Library/CoreServices/AirPlayUIAgent.app/Contents/MacOS/AirPlayUIAgent.disabled /System/Library/CoreServices/AirPlayUIAgent.app/Contents/MacOS/AirPlayUIAgent
+
+
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                      SAMBA                        	         |
+# --------------------------------------------------------------------------------
+#####
+## Disable Samba Client on OS X
+
+# 3. The following command will copy the Preferances file to the admin user's Documents folder (in this example the admin username is
+#    'tech'). You want to save this file in case you want to turn the service back on.
+
+# 4. The next command removes the smb service from the “EnabledServices” list.
+sudo defaults delete /Library/Preferences/SystemConfiguration/com.apple.smb.server EnabledServices
+
+# 5.The following six commands turn off the service dæmons related to the smb client service. Execute them one at a time. (Note: this
+# documents may wrap the text, these commands should each be one line.)
+sudo launchctl unload -w /System/Library/LaunchDaemons/nmbd.plist
+sudo launchctl unload -w /System/Library/LaunchDaemons/smbd.plist
+sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.smb.server.preferences.plist
+sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.smb.sharepoints.plist
+sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.smbfs_load_kext.plist
+sudo launchctl unload -w /System/Library/LaunchDaemons/org.samba.winbindd.plist
+# 6. Restart the computer.
+
+#####
+## Re-Enable the Samba service
+#  Re-enabling the service uses nearly the same commands.
+# 1. Replace the plist file using the following command:
+sudo cp /Users/tech/Documents/com.apple.smb.server.xml /Library/Preferences/SystemConfiguration/com.apple.smb.server.plist
+
+# 2. The next command replaces the smb service from the “EnabledServices” list.
+sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server EnabledServices
+
+# 3. The next six commands turn on the service dæmons related to the smb client service.
+sudo launchctl load -F /System/Library/LaunchDaemons/nmbd.plist
+sudo launchctl load -F /System/Library/LaunchDaemons/smbd.plist
+sudo launchctl load -F /System/Library/LaunchDaemons/com.apple.smb.server.preferences.plist
+sudo launchctl load -F /System/Library/LaunchDaemons/com.apple.smb.sharepoints.plist
+sudo launchctl load -F /System/Library/LaunchDaemons/com.apple.smbfs_load_kext.plist
+sudo launchctl load -F /System/Library/LaunchDaemons/org.samba.winbindd.plist
+
+# 4. Restart the computer.
+
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                ADOBEAUTOUPDATE                        	      |
+# --------------------------------------------------------------------------------
+# remove adobe auto update helper (i only have acrobat installed, so running this on adobe cc instalation could damage it)
+# not tested
+cd /Library/LaunchDaemons && launchctl remove `basename com.adobe.ARM* .plist`
+sudo rm com.adobe.ARM*
+cd /Library/LaunchAgents && launchctl remove `basename com.adobe.ARM* .plist`
+sudo rm com.adobe.ARM*
+
+###############################################################################
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                   GATEKEEPER                        	         |
+# --------------------------------------------------------------------------------
+# Disabling OS X Gate Keeper
+# (You'll be able to install any app you want from here on, not just Mac App Store apps)
+sudo spctl --master-disable
+sudo defaults write /var/db/SystemPolicy-prefs.plist enabled -string no
+defaults write com.apple.LaunchServices LSQuarantine -bool false

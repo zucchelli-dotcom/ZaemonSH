@@ -1,0 +1,86 @@
+#autoload     
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+#  _init_open_tiger :
+# Completion function and definition for command  "open -a" and "launch"
+#
+# Use this fuction with OS X v. 10.4.x and above
+# as it depends upon SpotLight
+#############################################################################
+#  Improve the behavior of the _open function:
+#############################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify completion presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+# The following style enables one to type (eg) "open -a wor"  and complete to 
+#  "open -a Microsoft\ Word"
+zstyle ':completion:*:*:open:*' matcher 'm:{a-z}={A-Z} r: ||[^ ]=**'
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+function _tiger_mac_applications () {
+    _mac_apps=${(f)"$( mdfind -onlyin /Applications -onlyin /Developer "kMDItemContentType == 'com.apple.application-*'" | perl -p -e 's|.app||g' )"}
+
+    if [[ $OPEN_PASHUA == 'yes' ]]; then
+        comp_list=()
+        title="open -a"
+        label="Select application to open:"
+        comp_list=( ${(oi)${(f)_mac_apps}[@]:t} )
+        _completion_gui
+    else
+        _wanted commands expl 'Mac OS X application' compadd "${${(f)_mac_apps}[@]:t}"        
+    fi
+}
+
+#----------------------------------------------------------------------------------------#
+#                                      COMPLETION
+#----------------------------------------------------------------------------------------#
+#set -x   # uncomment to debug
+# Now invoke the completion function:        
+# _tiger_mac_applications "$@"
+
+  
+    
+
+
+ 

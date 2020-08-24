@@ -1,0 +1,591 @@
+32bitSafePerl(7)         - A wrapper for Perl scripts which will force them to be run by the 32-bit Perl binary since MacPerl is not 64-bit compatible
+CDataType(7)             - Enumerate C data type and values
+DirCmp(7)                - Compare the files in two directories
+KextLondoncalling(7)     - Activate/deactivate MacOS kext extensions
+LaunchLondoncalling(7)   - Disable/enable launch MacOS services
+MacOSDefaults(7)         - To handle defaults database to configure MacOS system
+MacOSDoctor(7)           - Run some osx maintenance
+MacOSHarden(7)           - MacOS Hardening script
+MacRm(7)                 - MacRm emulates the Gnu FileUtils rm
+VirtualBox_Uninstall(7)  - VirtualBox Uninstaller script
+X11(7)                   - Command for X11 or Xorg or Xquartz Desktop
+XPath(7)                 - XPath
+Z_Addagenda(7)           - A reminder for your events
+Z_Agenda(7)              - Scan through the user's agenda file
+Z_AliasAllList(7)        - List All alias found in ZaemonSH config, therefore they are inactive
+Z_AliasWhereis(7)        - Locate and view zaemonSH aliases
+Z_Backup(7)              - Create ZaemonSH backup
+Z_Banner(7)              - Show banner at ZeamonSH starting
+Z_Caches_cleaner(7)      - Clean caches for zsh users to force updating
+Z_CleanOSXSHIT(7)        - Remove Osx annoying files on linux.Remove hidden DS.Store, .localized files
+Z_CmdLineFUpdate(7)      - Update commandlinefu.md (all commandlinefu commands in one text file) to view with Z_Notes
+Z_Colors(7)              - Declare these variables to easily have different color and format output
+Z_CompFctList(7)         - Get a full list of commands with associated completions
+Z_CompletionEdit(7)      - Manipulate and edit ZaemonSH completion
+Z_CompletionWhereis(7)   - Locate and view completions
+Z_Configure_zaemonsh_templates(7) - invokes the Z_Configure_zaemonsh_templates gui function to assist in configuring the zsh shell customization templates
+Z_Configure_zaemonsh_templates_ascli(7) - It invokes the shellscript CLI version
+Z_Configure_zaemonsh_templates_asgui(7) - It invokes the Applescript GUI version useful for small displays
+Z_Configure_zaemonsh_templates_pashua(7) - invoked by Z_Configure_zaemonsh_templates
+Z_Configure_zaemonsh_templates_zenity(7) - Small panel zeamonsh linux installation script
+Z_CorrectSymlinksFunction(7) - Refresh ZaemonSH symlinks functions
+Z_Correctdate(7)         - Update date on ZaemonSH config's files
+Z_Customize_x11(7)       - Assist the user in changing (improving) the behavior of Apple's X11.app
+Z_Customize_x11_10.4(7), Z_Customize_x11_10.4.7(7) - Assist the user in changing (improving) the behavior of Apple's X11.app
+Z_Customize_x11_10.5(7), Z_Customize_x11_10.5.7(7) - Assist the user in changing (improving) the behavior of Apple's X11.app
+Z_Customize_x11_gui(7)   - Assist the user in changing (improving) the behavior of Apple's X11.app -- GUI version
+Z_Customize_x11_gui_10.4(7) - Apple's X11 underwent a major change between OS X v. 10.4 and v. 10.5 This is the X11_GUI customization function on OS X v. 10.4
+Z_Customize_x11_gui_10.5(7) - Apple's X11 underwent a major change between OS X v. 10.4 and v. 10.5 This is the X11_GUI customization function on OS X v. 10.5
+Z_Customize_xquartz_gui(7) - Assist the user in changing (improving) the behavior of XQuartz.app -- GUI version
+Z_Debug(7)               - Enable/disable debug mode on zsh
+Z_Edit(7)                - attempts to open editable files in an appropriate application
+Z_Enable_faster_open(7)  - Assist the user in improving the speed of open -a completions
+Z_FunctionAdd(7)         - Create, load, activate, function from ZaemonSH
+Z_FunctionBySubcat(7)    - List ZaemonSH function by system and category
+Z_FunctionDel(7)         - Unload, deactivate, erase function from ZaemonSH
+Z_FunctionEdit(7)        - Manipulate and edit ZaemonSH function
+Z_FunctionPluginsExtraLoop(7) - Loop through extra ZaemonSh plug-ins to view their contents
+Z_FunctionUtil(7)        - Function ZaemonSH browser
+Z_FunctionWhereis(7)     - Locate and view Zaemonsh functions
+Z_Grml(7)                - Activate/desactivate grml script on zaemonsh
+Z_Guidirs_pashua(7)      - helper function for gdirs used if pashua is present
+Z_Help_template_functions(7) - function to obtain simple one-line help for individual functions
+Z_Help_zsh_templates(7), help_zsh_templates(7) - function to open the zsh_templates web site in your default browser
+Z_Host_setup(7)          - Customize completions that use the _hosts completion with a GUI assistant
+Z_Host_setup_ascli(7)    - Customize completions that use the _hosts completion with a CLI assistant
+Z_Host_user_completion_settings(7), _Z_Host_user_completion_settings(7) - Z_Host_setup, Z_Host_setup_cli, Z_User_setup, Z_User_setup_cli variables declaration
+Z_How-many-commands(7)   - A simple script to count how many executable commands are in your current PATH
+Z_Inpath(7)              - inpath - verify that a specified program is either valid as-is, or can be found in the PATH directory list
+Z_Keep(7)                - function to capture standard output in the global variable kept
+Z_My_mac_applications(7) - helper function for _Z_Open, i.e., "Z_Open -a" completions
+Z_My_prefs_edit(7)       - function to define default gui editors for use in the edit and hydra functions Z_My_prefs_edit helper function for local edit and hydra functions; assists in setting default apps
+Z_Note(7)                - Create, handle notes easily
+Z_Notes(7)               - handle notes
+Z_Notes-problems(7)      - This script will attempt to show you each version and let you choose the "correct" version. It is interactive, so you can just run the script any time
+Z_Notes-tag-helper(7)    - This script gives you a wrapper around the `openmeta` program
+Z_Open(7), open(7)       - command-line equivalent of double-clicking to open OS X applications, files, urls, x-windows unix programs, preference panes and directories.  This is an enhanced version (a superset) of Apple's open command, and (unlike Apple's version) uses a powerful and nuanced customizable command completion mechanism for the open command
+Z_OptList(7)             - List of actives/inactives distributed zsh functions
+Z_Osa_choose_list(7)     - returns the path matching the file chosen with the GUI
+Z_Osa_direc_browser(7)   - returns the path matching the directory chosen with the GUI
+Z_Osa_display_dialog(7)  - displays a dialog box with between one and three buttons
+Z_Osa_file_browser(7)    - returns the path matching the file chosen with the GUI
+Z_OsxVersTest(7)         - Test compability osx versions script
+Z_Pashua_run(7)          - helper function for gdirs pashua variant
+Z_Reporter(7)            - "Z_Reporter" prints your current environment variables
+Z_Restart(7)             - Restart ZeamonSH
+Z_Search(7)              - Completion for Z_Search to Search for patterns on $ZDOT, $P_NATFCTDIR or on $P_ZDOTCONFDIR folder
+Z_Selectfile(7), selectfile(7) - opens a finder window in the directory of the specified file, and selects that file as if it were single-clicked in the Finder
+Z_Session(7)             - Save your session and manipulate multiple desktop with CLI
+Z_Set_title_tab(7)       - This is designed to put by default the computer name and whole directory path into the title bar (and if availble) the $PWD and penultimate directory in the tab
+Z_Settings(7)            - Show all ZaemonSH settings
+Z_Showfile(7)            - Show the contents of a file, including additional useful info
+Z_SkelC(7)               - Launch a skel of completion to edit
+Z_SkelF(7)               - Launch a skel of function to edit
+Z_Sudo_open(7), open(7)  - command-line equivalent of double-clicking to open OS X applications, files, urls, x-windows unix programs, preference panes and directories.  This is an enhanced version (a superset) of Apple's open command, and (unlike Apple's version) uses a powerful and nuanced customizable command completion mechanism for the open command
+Z_Switch_prompt(7)       - Function to permit the user to switch the prompt easily
+Z_Switch_prompt_ascli(7) - Function to permit the user to switch the prompt easily
+Z_SyntaxLight(7)         - Enable/disable syntax hightlighting plug-in
+Z_Testsplit(7)           - function to test if sh_splitting is on or off
+Z_Update(7)              - Update part of ZaemonSH (dotfiles pashua awsomevim  zshlovers grml Syntaxhightlidght binaries)
+Z_User_setup(7)          - Customize completions that use the _users completion with GUI
+Z_User_setup_ascli(7)    - Customize completions that use the _users completion with CLI
+Z_Whatsnew(7)            - Compare ZaemonSH directory with template to view news
+Z_Which(7)               - List ZaemonSH Completions and functions
+_7z(7)                   - zsh completions for the 7z command line application. A file archiver with highest compression ratio
+_LaunchLondoncalling(7)  - Completion to give options for LaunchLondoncalling. Disable/enable launch MacOS services
+_VBoxManage(7)           - Completion for VBoxManage; Oracle VM VirtualBox Command Line Management Interface
+_X11(7)                  - Completion for X11; Command for X11 or Xorg or Xquartz Desktop
+_Z_AliasWhereis(7)       - Completion to list available aliases
+_Z_Banner(7)             - Completion to give options for Z_Banner
+_Z_CompletionEdit(7)     - Give completions functions listing
+_Z_Debug(7)              - Completiion to give Z_Debug options
+_Z_Edit(7)               - completion function for the function edit Z_My_prefs_edit function to define default gui editors for use in the edit and hydra functions Z_My_prefs_edit helper function for local edit and hydra functions; assists in setting default apps _cns_edit completion function for cns_edit cns_edit function to edit cns files using web browser interface (crystallography)
+_Z_FunctionAllList(7)    - Completion to list All alias found in ZaemonSH config, therefore they are inactive
+_Z_FunctionBySubcat(7)   - Z_FunctionlistBySubcat completion to list ZaemonSH function by system and category
+_Z_FunctionEdit(7)       - Z_FunctionEdit completion
+_Z_FunctionWhereis(7)    - Completion for Z_FunctionWhereis; Locate and view functions
+_Z_Grml(7)               - Completion to give options for Z_Grml
+_Z_Guidirs(7)            - helper function for the command gdirs _Z_Guidirs.zsh helper script for the command gdirs in pashua mode _Z_Guidirs_pashua helper script for the command gdirs in pashua mode _Z_Guidirs function wrapped by gdirs (use gdirs to call it)
+_Z_Help_template_functions(7) - Completion for Z_Help_template_functions; list the argument(s) of a supplied function
+_Z_Notes(7)              - Z_Notes completion to handle notes
+_Z_Open(7)               - helper function for _Z_Open _init_open helper function for the open function _mac_applications helper function for _Z_Open and open functions _mac_files_for_application helper function for _Z_Open and open functions _Z_Open completion function for the function open (replaces command open) _open-x11 completion function for the function open-x11 (replaces command open-x11) Z_Enable_faster_open function to enable faster "open -a" completions by establishing a cache before the first call to _Z_Open Z_My_mac_applications helper function for _Z_Open, i.e., "open -a" completions Z_Sudo_open function to start an application as a root user
+_Z_Search(7)             - Completion for Z_Search to Search for patterns on $ZDOT, $P_NATFCTDIR or on $P_ZDOTCONFDIR folder
+_Z_Session(7)            - Completion for Z_Session multiple CLi virtual desktop
+_Z_Users(7)              - _Z_Users completion for passwd groups userdel chage chfn chsh functions
+_Z_unsetopt(7)           - Completion to unsetopt
+_a2preview(7)            - Completion for a2preview; a wrapper for a2ps that makes an ascii text file into a pretty pdf
+_airbase-ng(7)           - zsh completions for 'airbase-ng'
+_aircrack-ng(7)          - Completion for command aircrack-ng
+_aireplay-ng(7)          - zsh completions for 'aireplay-ng'
+_airodump-ng(7)          - Completion for command airodump-ng
+_apropos(7)              - Completion for command apropos; search the whatis database for strings
+_bluetooth(7)            - Completion for bluetooth. Get status, enable, disable bluetooth
+_boot(7)                 - Completion for boot. Get status, enable, disable verbose and boot
+_brew_cask(7)            - Zsh Autocompletion script for Homebrew Cask
+_breww(7)                - Completion script for brew
+_cask(7)                 - Completion script for cask
+_cc(7)                   - completion function for gcc and cc
+_ccat(7)                 - Completion for command ccat. Colorize FILE(s), or standard input, to standard output
+_cdd(7)                  - completion function for the cdd function
+_chflags(7)              - Completion for command chflags; change file flags
+_class-dump(7)           - Completion for class-dump developer command
+_cns_edit(7)             - completion function for cns_edit
+_comp_appgetter(7)       - helper function for open function and command
+_completion_gui(7), completion_gui(7) - Completion for Z_Pashua_run
+_coot(7)                 - completion function for the coot function (doesn't work properly with the command coot)
+_ctags(7)                - universal-ctags-zsh-completion
+_curl(7)                 - curl zsh completion; transfer a URL
+_darwinup(7)             - Completion for darwinup Install, uninstall, and manage roots
+_dashboard(7)            - Completion function for dashboard
+_defaults(7)             - completion function for the function defaults
+_disk(7)                 - Completion for disk wrapper diskutil script to do essantial disk task on darwin
+_diskutil(7)             - Completion for command diskutil; modify, verify and repair local disks
+_display(7)              - Completion for display ; show display information
+_dock(7)                 - Completion for dock; control Dock parameters with ZeamonSH
+_docker(7)               - zsh completion for docker.A self-sufficient runtime for containers
+_docker-compose(7)       - Completion script for Docker Compose. Define and run multi-container applications with Docker
+_docker-machine(7)       - zsh completion for docker-machine. Create and manage machines running Docker
+_domains_plist(7)        - Completion for domains_plist ; list all property list files on hard drive and at home directory
+_dot(7)                  - zsh completions for the dot command line applications
+_dtrac(7)                - Completion for dtrac; wrapper dtrace command
+_dyldinfo(7)             - Completion for developer dyldinfo command; displays information used by dyld in an executable
+_edit(7)                 - completion function for the function edit Z_My_prefs_edit function to define default gui editors for use in the edit and hydra functions Z_My_prefs_edit helper function for local edit and hydra functions; assists in setting default apps _cns_edit completion function for cns_edit cns_edit function to edit cns files using web browser interface (crystallography)
+_expand_word_and_keep(7) - completion function for the keep command
+_fdupes(7)               - Completion for command fdupes; finds duplicate files in a given set of directories
+_files_only(7)           - hacked version of _files to prevent directories from being listed
+_finder(7)               - Completion function for finder set and control Finder
+_fink(7)                 - completion function for the function replacing the command fink _fink_web completion function for the function fink_web
+_fink_web(7)             - completion function for the function fink_web
+_firewallapp(7)          - Completion for firewallapp. firewallapp is used to control Application Firewall socket filter
+_frameworkviz(7)         - Completion for frameworkviz; visualize framework dependencies
+_gatekeeper(7)           - Completion for gatekeeper which is wrapper script to control gatekeeper on darwin
+_genstrings(7)           - Completion for genstrings
+_get_running_apps(7)     - helper function for _open
+_group(7)                - Completion for group script. Create/ delete group, add/ remove user from/to group, list group and get info for specific group know if one user is member of a group
+_guidirs.zsh(7)          - helper script for the command gdirs in pashua mode
+_guidirs_pashua(7)       - helper script for the command gdirs in pashua mode
+_hdiutil(7)              - completion function for the function hdiutil
+_htmlsuffix(7)           - completion function for html files
+_init_open(7)            - helper function for the open function
+_init_open_tiger(7)      - helper function for the open function for Tiger and before
+_insert_kept(7)          - helper function for Z_Keep command
+_instruments(7)          - Completion for developer command instruments. Runs an Instruments template from the command line
+_iprofiler(7)            - Completion for iprofiler; Measure an application's performance without launching Instruments.app and then visualize the measurements at a later time in Instruments.app
+_json_pp(7)              - Completion for command json_pp. JSON::PP command utility
+_kextviz(7)              - Completion for kextviz command; visualize kext dependency
+_keychain(7)             - Completion function for keychain;  Configure, list and manipulate keychains
+_launchctl(7)            - zsh completion for OSX's launchctl
+_llvm-dwarfdump(7)       - Completion for command llvm-dwarfdump; pretty-print DWARF debug information in object files and debug info archives
+_llvm-objdump(7)         - Completion for command llvm_objdump; llvm object file dumper
+_log(7)                  - Completion Function for log command to access system wide log messages created by os_log, os_trace and other logging systems
+_logger(7)               - Completion script for logger (from bsdutils). System to control logging of events
+_loginitem(7)            - Completion for loginitem; manage login items from the command line
+_lwp-download(7)         - Completion for lwp-download. Fetch large files from the web
+_lwp-dump(7)             - Completion for lwp-dump. See what headers and content is returned for a URL
+_lwp-mirror(7)           - Completion for lwp-mirror. Simple mirror utility
+_lwp-request(7)          - Completion for lwp-request. Simple command line user agent
+_mac_applications(7)     - helper function for _open and open functions Z_My_mac_applications helper function for _open, i.e., "open -a" completions
+_mac_files_for_application(7) - helper function for _open and open functions
+_macmail(7)              - completion function for the function mail
+_main_complete(7)        - corrected version of supplied _main_complete function
+_mdattr(7)               - _mdattr is a completion function for mdattr. Create or revise an existing Apple-type metadata AttributeName of the form kMDItemAttributeName
+_mdfind(7)               - Completion for mdfind
+_mdfind_pashua(7)        - A completion function for mdfind that utilizes Pashua
+_mdls(7)                 - mdls lists the metadata attributes for the specified file completion
+_mdutil(7)               - manage the metadata stores used by Spotlight completion
+_mtzsuffix(7)            - completion function for commands requiring mtz suffix files
+_network(7)              - Completion for network; handle and give some netork informations
+_networksetup(7)         - Completion for networksetup; configuration tool for network settings in System Preferences
+_notification(7)         - Completion for notification. Get status, enable and disable notification center
+_open-x11(7)             - completion function for the function open-x11 (replaces command open-x11)
+_openssl(7)              - Completion for openssl; a cryptography toolkit
+_pdbsuffix(7)            - completion function for commands requiring pdb suffix files
+_pdfsuffix(7)            - completion function for pdf files
+_pip(7)                  - Completion script for command pip
+_port(7)                 - Completion script for MacPorts
+_portviz(7)              - Completion for command portviz
+_printer(7)              - Completion for printer. Control printer with CLI
+_pymol(7)                - completion function for pymol
+_quit(7)                 - completion function for the quit command _retrieve_mac_apps helper function for _quit
+_rcommand(7)             - Executes a single command on a remote host and returns stdout
+_retrieve_mac_apps(7)    - helper function for _quit
+_sca2mtz(7)              - completion function for sca2mtz
+_sd(7)                   - Completion for sd; change the CodeTek Virtual Desktop Display to the indicated Desktop
+_service(7)              - Set and control service completion
+_setopt(7)               - corrected version of supplied _setopt completion function
+_shutdown(7)             - Completion script for shutdown - Shut down the system
+_softwareupdate(7)       - Completion function for softwareupdate; MacOS system software update tool
+_spotlight(7)            - Completion of spotlight. Control spotlight config with CLI
+_srm(7)                  - Completion script for srm
+_sw_vers(7)              - completion to print Mac OS X operating system version information
+_swift(7)                - Completion for developer command swift. Safe, fast, and expressive general-purpose programming language
+_swift-demangle(7)       - Completion for developer command swift-demangle
+_switch_users(7)         - completion function for the function switch_users (command-line fast user switching)
+_systemsetup(7)          - zsh completion for OSX's systemsetup
+_termWindow(7)           - Completion function for termWindow; put in fullscreen, maximize, vertically and horizontally split iterm window
+_timezone_handle(7)      - Completion for timezone_handle. Get, set and list available timezone(s)
+_tmpj(7)                 - Completion for TextMate
+_tmutil(7)               - zsh completion for OSX's tmutil
+_unsetopt(7)             - corrected version of supplied _unsetopt completion function
+_update(7)               - Completion for update. Update MacOS
+_user(7)                 - Completion for user. Manage user from CLI
+_users(7)                - completion function for the function switch_users (command-line fast user switching) _users completion function for only the real users in /Users directory switch_users function to do fast user switching from the command line (eg: switch_users nixon )
+_vmware-vdiskmanager(7)  - Completion for vmware-vdiskmanager; VMware Virtual Disk Manager
+_vmware-vmx(7)           - Completion for vmware-vmx
+_volatility(7)           - zsh completion for _volatility; a memory forensics analysis platform
+_volume(7)               - Completion for volume; set volume from CLI
+_vpn(7)                  - Completion for vpn. Play VPN on CLI
+_wifi(7)                 - wifi completion to handle wifi settings and give wifi informations
+_xattr(7)                - zsh completion for OSX's xattr; display and manipulate extended attributes
+_xcode-select(7)         - Completion for xcode-select; Manages the active developer directory for Xcode and BSD tools
+_xcodebuild(7)           - Completion for xcodebuild
+_xcrun(7)                - Completion for developer command xcrun; Run or locate development tools and properties
+a2preview(7)             - a2preview is a wrapper for a2ps that makes an ascii text file into a pretty pdf
+acl(7)                   - An acl nuclear option to give access to user $1 to the directory tree rooted at $2
+addIcon(7)               - Uses /usr/bin/sips --addIcon  but preserves the original file creation date
+add_user(7)              - Add a user to the Directory Service database and create the user's account
+addgroup(7)              - Add a user group to the Directory Service database
+adduser2group(7)         - Add an existing user (or many users) to an existing group to the Directory Service database
+addvirtual(7)            - Add a virtual host to an Apache configuration file
+aeon(7)                  - toggle AppleEvent logging on or off
+apache(7)                - Apache HTTP Server utility script
+archall(7)               - Archive all files that one directory contains
+archivedir(7)            - Create a compressed archive of the specified directory
+arduinoBuild(7)          - Build Arduino sketch from the CLI
+arduinoToAVRPinNames(7)  - Convert arduino pin names to avr one, with graphic
+ask(7)                   - Ask yes or no. continue for yes, exit for no
+avrPortFunctionMultiplexing(7) - Atmega 328p multiplexing function graphic
+battery(7)               - MacOS X/Darwin command line tool showing battery status
+bbown(7)                 - function to change file ownership to bbedit
+bluetooth(7)             - Get status, enable, disable bluetooth
+bonjour(7)               - Disables DNS auto-discovery service required for Bonjour
+boot(7)                  - Show, enable or disable verbose and safe boot
+breww(7)                 - Homebrew utility
+buf(7)                   - Date file prefix annotations
+canonicalize_pdb(7)      - function to put nucleic acid pdb files in canonical format (crystallography)
+ccp4_patches(7)          - function to check for new patches available from the ccp4 website
+ccp4help(7)              - function to open browser to named ccp4 document (eg: ccp4help mlphare) (crystallography)
+cd_(7)                   - Get the numbered string position in the last line and cd to it (or it's directory)
+cdd(7)                   - cd to new directory and then change the frontmost finder window to it
+cdf(7)                   - change the terminal pwd to match that of the frontmost finder window
+cdmk(7)                  - Make a directory and change to it
+cds(7)                   - change the terminal pwd to match that of the frontmost Safari window
+cdt(7)                   - change the current working directory to that corresponding to the file displayed in TextMate's frontmost window
+change-extension(7)      - Change file extensions recursively in current directory
+checkexternal(7)         - Traverse all internal URLs on a Web site to build a list of external references, then check each one to ascertain which might be dead or otherwise broken
+checklinks(7)            - Traverse all internal URLs on a Web site, reporting any errors in the "traverse.errors" file
+checkmail(7)             - function to check for new mail using Apple's Mail.app
+chpwd(7)                 - function required to update Terminal.app, xterm, and iTerm.app title bar and iTerm tab
+clipcat(7)               - Concatenate and print Text Clippings
+clock(7)                 - Display the hours
+cns(7)                   - function to run the crystallography and NMR program cns_solve (crystallography)
+cns_edit(7)              - Wrapper function for the cns_edit script distributed with cns to edit cns input files using web browser interface (crystallography)
+cns_solve(7)             - function to run the crystallography and NMR program cns_solve (crystallography)
+compildis(7)             - Disable C compilation program for security
+compilena(7)             - Enable C compilation program for security
+composer(7)              - opens Mozilla Composer or Netscape Composer (a free WYSIWYG HTML editor)
+coot(7)                  - function to run coot, allowing files to be added as arguments without flags (crystallography)
+cpath(1)                 - Copies current working directory path to the MacOS clipboard
+cpath(7)                 - Copy path to clipboard
+cpbcp(7)                 - copy the full path of a command to the pastboard
+cpos(7)                  - copies the path matching that of the frontmost finder window
+cpu_infos(7)             - Give CPU name and characteristics
+curlito(7)               - Download file by extentions
+cuttail(7)               - Cut last n lines in file, 10 by default
+da2preview(7)            - Invokes the a2preview function in double-column output mode
+dashboard(7)             - Manipulate dashboard from CLI
+decToBin(7)              - Convert decimal numbers to binary
+decToHex(7)              - Convert decimal to hexadecimal
+delete_group(7)          - Delete a group from the Directory Service database
+delete_user(7)           - Delete a user from the Directory Service database and archive's the user's account
+dhcp(7)                  - Function to renew a dynamically allocated IP address via BOOTP or DHCP
+dir(7)                   - Script to facilitate working with directory
+dirdump(7)               - Use this in conjunction with the local functions called chpwd and dirstack. In an attempt to have a shared directory stack (i.e., shared between different shell sessions)
+dirstack(1), gdirs(1)    - display directory stack as gui menu
+dirstack(7)              - Command to update and then print out the shared directory stack aliases a series of cd-type commands corresponding to the line number in the directory stack printout
+disk(7)                  - Wrapper diskutil script to do essantial disk task on darwin
+diskhogs(7)              - Disk quota analysis tool for Unix
+diskspace(7)             - Summarize available disk space and present in a logical and readable fashion
+display(7)               - Show display information
+dns(7)                   - Flush and show dns cache on darwin system
+dock(7)                  - Control Dock parameters with ZeamonSH
+docron(7)                - Simple script to run the daily, weekly and monthly system cron jobs on a system
+domains(7)               - List all property list files on hard drive and at home directoty
+domains_plist(7)         - list all property list files on hard drive and at home directory
+dotgrep(7)               - function to grep stuff from dot files
+dtrac(7)                 - Wrapper dtrace command
+dusize(7)                - function to get filesizes with du and sum them in awk
+e(7)                     - Quick shortcut to an editor
+eds(7)                   - edit the web page on your server that is displayed in Safari
+eject(7)                 - Eject volume from CLI
+emk(7)                   - kill emacs daemon
+eml(7)                   - List emacs daemons running
+envgrep(7)               - grep the output of set
+errnum(7)                - function to decode error numbers from MacErrors.h
+escape(7)                - UTF-8-encode a string of Unicode symbols
+exportfs(7)              - export NFS filesystems listed in /etc/exports and/or the NetInfo database
+extract(7)               - extracts archived files / mounts disk images
+fdc(7)                   - change the frontmost finder window to the terminal pwd
+fds(7)                   - function to issue find / -name "${1}" -print 2>/dev/null
+fdsa(7)                  - function to issue fds for all files
+ff(7)                    - Find a file in actual pwd with a pattern in name
+fidentify(8)             - Determine file type using PhotoRec database
+finder(7)                - Set and control finder
+finder_update(7)         - refresh a Finder.app window's display and contents
+findman(7)               - given a pattern and a man section, show all the matches for that pattern from within all relevant man pages
+findsuid(7)              - Find all SUID files or programs on the system
+findus(7)                - A multi options augmented search command
+fink(7)                  - function fink to accompany and fully enable completion function _fink
+finkMakeListCache(7)     - Function to accompany completion function _fink
+fink_web(7)              - search the fink package website database
+firefox_window(7)        - Open firefox new window from the command line
+firewall(7)              - Configure in kernel firewall (pfctl)
+firewallapp(7)           - firewallapp is used to control Application Firewall socket filter
+fix_namot(7)             - function to fix the buggy pdb files output by namot (nucleic acid modelling program)
+flags(7)                 - Flag file or folder
+flush_osx_cache(7)       - Flush Directory Service cache
+font-smoothing(7)        - Set Apple font smoothing whith CLI
+forklift(7)              - Open ForkLift in specified directory or in $PWD
+formatdir(7)             - Output a directory listing in a friendly and useful format
+fquota(7)                - Disk quota analysis tool for Unix
+frameerrnum(7)           - function that greps all of the framework header files for numbers associated with error messages
+fs(7)                    - Determine size of a file or total size of a directory
+fstr(7)                  - Find string in files
+ftpsyncdown(7)           - Given a source directory on a remote FTP server, download all the files therein into the current directory
+ftpsyncup(7)             - Given a target directory on an ftp server, make sure that all new or modified files are uploaded to the remote system. Uses a timestamp file ingeniously called .timestamp to keep track
+function_key_toggle(7)   - Activate or inactivate the function keys
+gatekeeper(7)            - Wrapper script to control gatekeeper on darwin
+gdirs(7)                 - display directory stack as gui menu
+get-ict(7)               - Queries imap servers for capabilities; real simple. no imaps
+getbid(7)                - Show application corresponding plist prefences
+getcertnames(7)          - Show all the names (CNs and SANs) listed in the SSL certificate for a given domain
+getlinks(7)              - given a URL, return all of its internal and external links
+getpdb(7)                - function to download PDB file from database using assession code
+getstats(7)              - Every 'n' minutes, grab netstats values (via crontab)
+getvolume(1)             - Gets global Mac OS X sound output volume
+ggl(7)                   - Multi cli search engine
+gitx(7)                  - The stupid content tracker utility
+gnotify(7)               - invokes growlnotify
+go(7)                    - function issues command osascript -e 'open location "$1"'
+googetimages(7)          - Google images from CLI
+google(7)                - Automatic Google search from the command line
+goomp(7)                 - Scraping pictures from google
+gosec(7)                 - Google serach command
+group(7)                 - Create/ delete group, add/ remove user from/to group, list group and get info for specific group know if one user is member of a group
+gsearch(7)               - Search for a pattern with command line
+gunall(7)                - function to invoke command ls $* | xargs -n 1 tar -zxvf
+gvim(7)                  - function to augment behavior of the command gvim with sudo
+headers(7)               - Grab headers from web pages
+hex(7)                   - Print hex value of a number
+hexToBin(7)              - Convert hexadecimal numbers to binary
+hgrep(7)                 - function to grep a named command from the history list
+host_name(7)             - Set new hostname or get the current hostname information
+httpcompression(7)       - Provides the content encoding the specified resources are served with
+hydra(7), edit(7)        - attempts to open editable files in an appropriate application
+ii(7)                    - Get current host related info
+image(7)                 - Generate icons for iOS
+image_crawler(7)         - Image crawler
+invisible(7)             - Wrapper script to set file/folder visibility
+isightcap(7)             - Make isight capture from the command line
+islogin(7)               - Tell if user is graphically log
+isroot(7)                - Verify if user have root right
+itunelist(7)             - list your iTunes library in a succinct and attractive manner
+joinpdf(7)               - function to catenate pdf files, produces a file called merged.pdf as output
+jtool(1)                 - object file display, manipulation, and reverse-engineering tool
+kalimetre(7)             - Cheap CLI file browser
+keychain(7)              - Configure, list and manipulate keychains
+killit(7)                - obsolete. Use "killall"
+killps(7)                - Kill by process name
+lamp(7)                  - Function to handle lamp serveur
+lcheck(7)                - Find out which libs define a symbol
+ldirs(7)                 - function to issue command ls -AFlh ${1} | grep "^d"
+ldot(7)                  - list the dot files in a directory
+left(7)                  - Go to left space
+lf(7)                    - function to invoke command ls -lh ${*} | egrep "^d"
+lgrep(7)                 - function to grep the output of locate to match only the file part of the path
+lion-hacks(7)            - Hacks for Mac OS X lion versions
+ll(7)                    - ls -l
+llock(7)                 - List all locked files in subdirectories of the argument
+locate_pat(7)            - Search the locate database for the specified pattern
+locwd(7)                 - Locate files that match exactly
+loginitem(7)             - Manage login items from the command line
+logout_user(7), logout(7) - Script to logout session
+lowercase(7)             - Move filenames to lowercase
+macmail(7)               - uses the Apple Mail.app interface as a drop-in replacement for sending mail via the unix mail command
+macosinfo(7)             - Give general info about your mac OS X system
+magento(7)               - Magento Utility
+mailit(7)                - function to mail a file using Apple's mail
+make_app(7)              - Create an application with an executable with CLI
+make_transparent(7)      - uses ImageMagick
+man(7)                   - Augmented man command that includes run-help and info in addtion to command man
+manmac(7)                - restrict man command to manpath /usr/share/man
+manzsh(7)                - All-in-one zsh man pages
+mapcover(7)              - requires CCP4 to be installed
+mapcoverdiff(7)          - requires CCP4 to be installed
+mate(7)                  - If editing a single html file in TextMate, open it in both Safari and TextMate simultaneously
+maverick-hacks(7)        - Hacks for Mac OS X maverick versions
+mcd(7)                   - Make directory and change into it
+mdattr(7)                - Create or revise an existing Apple-type metadata AttributeName of the form kMDItemAttributeName
+menusage(7)              - Memory overview
+mkalias(1)               - Create MacOS Finder aliases
+mkicns(7)                - Functions to create icons
+mklocatedb(7)            - Build the locate database using find. Must be root to run this
+mlocate(7)               - invokes mdfind to locate a file
+mos2fobs(7)              - function to process mosflm mtz file in ccp4 scala, producing Fobs in mtz and cns formats (crystallography)
+mustacheme(7)            - Takes a .gif, splits it into constituent frames, mustaches each, restitches the gif, and uploads to cloudapp
+my_ip(7)                 - Give ip address information
+my_ps(7)                 - Give your process status
+mybom(7)                 - lsbom the listed package with the given arguments, i.e., lsbom -p sfMUG /Library/Receipts/*"$1"*.pkg/Contents/Archive.bom
+myip(7)                  - get the ip address of the computer (or with [-r] the router)
+network(7)               - Handle and give some netork informations
+nfs(7)                   - Manage nfs filesystem
+nfs_niloader(7)          - load NFS filesystems listed in /etc/fstab into the NetInfo database
+nonasciiedit(7), edit(7) - attempts to open editable files in an appropriate application
+notification(7)          - Get status, enable and disable notification center
+nsurlstorage(7)          - Kills software updating service that consumes large amounts of bandwidth
+ntab(7)                  - open a new iTerm tabbed window, optionally with a new directory specified
+ntp(7)                   - Set Network timme (NTP) from CLI
+ntrm(7)                  - open a new iTerm terminal window, optionally with a new directory specified
+numcpu(7), mumcpu(7)     - Show the numbers of cpu
+ogrep(7)                 - Find patterns in actual path  and open them
+ono(7)                   - function to start O and display the process in the iTerm tab (crystallography)
+open-x11(7)              - function that replaces Apple's open-x11 with one that works better
+osa_notification(7)      - Make notification from the CLI
+overlay(7)               - function to overlay pdf files (made for crystallographic Patterson maps but may be more generally useful)
+pbcp(7)                  - copy the output of a command to the clipboard and to stdout
+pd_dot(7)                - Generate draw graph(s) from a DOT file
+pdb_contents(7)          - function to give some pdb file statistics (crystallography -- requires ccp4)
+permissions(7)           - Octal to symbolic permissions conversion
+pgep(7)                  - function to grep from ps output in violation of the Heisenberg Uncertainty Principle
+photorec(8)              - Recover lost files from harddisk, digital camera and cdrom
+phpserver(7)             - Start a PHP server from a directory, optionally specifying the port
+pidof(7)                 - function like pgep but returns only the PID number
+plist(7)                 - List all property list files on hard drive
+portAuto(7)              - Script collection to manage MacPorts
+posd(7)                  - returns the path matching that of the frontmost finder window
+posfind(7)               - runs find in the path matching that of the frontmost finder window
+posgrep(7)               - greps stuff from files in the path matching that of the frontmost finder window
+powermate_control(7)     - Customize powermate
+ppath(7)                 - function to list the Perl #INC path
+printer(7)               - Control printer with CLI
+procexp(1)               - go over the top(1)
+prompt_ResetAll_setup(7), prompt_prompt_ResetAll_setup(7) - Very simple prompt theme
+prompt_asyd_setup(7)     - Asyd zsh prompt theme
+prompt_bz_setup(7)       - Laptop oriented zsh theme prompt
+prompt_dotphiles_setup(7) - A theme based on Steve Losh's prompt with VCS_INFO integration Tweaked with solarized and zenburn colors for 256/16 color modes
+prompt_eriner_setup(7)   - Eriner's Theme - fork of agnoster. A Powerline-inspired theme for ZSH
+prompt_gitster_setup(7)  - Gitster prompt theme
+prompt_kerbaugh_setup(7) - function defining Gary Kerbaugh's colorful and highly functional prompt
+prompt_liquidprompt_setup(7) - liquidprompt zsh prompt theme
+prompt_magicmace_setup(7) - magicmace zsh prompt theme
+prompt_nicoulaj_setup(7) - Nicoulaj theme prompt
+prompt_pure_setup(7)     - Pure Zaemonsh prompt theme
+prompt_simple_setup(7)   - function defining a very simple prompt (zsh-% in boldface)
+prompt_sorin_setup(7)    - A simple theme that only shows relevant information
+prompt_steeef_setup(7)   - A theme based on Steve Losh's prompt with VCS_INFO integration
+pymol(7)                 - function to run pymol and display process in an iTerm tab (crystallography)
+qphotorec(8)             - Recover lost files from harddisk, digital camera and cdrom
+quit(7)                  - quits the named application
+rcommand(7)              - executes a single command on a remote host and returns stdout
+remotebackup(7)          - This script takes a list of files and directories, builds a single archive, compressed, then emails it off to a remote archive site for safekeeping
+remove_user_from_group(7) - Remove an existing user from an existing group (or all groups) in the Directory Service database
+renew_dhcp(7)            - Function to renew a dynamically allocated IP address via BOOTP or DHCP
+renice_grep(7)           - function to renice by string
+renicename(7)            - Renice the job that matches the specified name
+repeato(7)               - Repeat n times command
+restart(7)               - Wrapper script to restart your Darwin/MacOS system
+rfc(7)                   - Search and read (local) RFCs
+right(7)                 - Go to right space
+rmall(7)                 - Erase all file not folder in current tree directory
+rmm(7)                   - emulates unix rm but uses the OS X Trash
+roll(7)                  - Creates an archive
+run-help(7)              - function to get help on zsh functions and builtins (fixed for multiple helpdir entries) man function to augment man command to use info and zsh command run-help in addition to command man
+sca2mtz(7)               - function to process hklview sca files to mtz and cns Fobs (crystallography)
+screenn(7)               - Function to settab to show the named process running and then reset with settab for command screen
+screensaver(7)           - Launch screensaver with the CLI
+scrollspeed(7)           - set the scroll wheel speed on a mouse using the System Preferences contol panel
+sd(7)                    - change the CodeTek Virtual Desktop Display to the indicated Desktop
+service(7)               - Manipulate LaunchService on Darwin
+setfflags(1)             - Set the MacOS Finder flags of files
+settab(7)                - function to update iTerm.app tab to current $PWD after cd
+settitle(7)              - function to update xterm, Terminal.app or iTerm.app title bar to current $PWD after cd
+setvolume(1)             - Sets global Mac OS X sound output volume
+sftpsync(7)              - Given a target directory on an sftp server, make sure that all new or modified files are uploaded to the remote system. Uses a timestamp file ingeniously called .timestamp to keep track
+sgrep(7)                 - function to grep the output of set
+short_pwd(7)             - Shortens the pwd for use in prompt
+shutdown(7)              - Shutdown computer on Darwin
+sleeep(7)                - Put your computer into sleep mode
+snotify(7)               - invokes growlnotify
+spath(7)                 - find the server-based path that corresponds to the page displayed in the frontmost Safari window
+spotlight(7)             - Control spotlight config with CLI
+ssh_key_manager(7)       - Start ssh key manager
+ssl-cert-create(7)       - Create ssl certificate
+sss(7)                   - Start the Screen Saver
+ssync(7)                 - If anything's changed, Create a tarball and sync a remote directory via sftp using sftpsync
+stoppedjobs(7)           - function to print a list of stopped jobs
+sudo(7)                  - invokes sudo
+sudo_open(7), open(7)    - command-line equivalent of double-clicking to open OS X applications, files, urls, x-windows unix programs, preference panes and directories.  This is an enhanced version (a superset) of Apple's open command, and (unlike Apple's version) uses a powerful and nuanced customizable command completion mechanism for the open command
+sudovi(7)                - Function to invoke sudo vi if it is needed to edit a protected file
+sudovim(7)               - Function to invoke sudo vim with a .vimrc file if it is needed to edit a protected file
+supraudit(1)             - Do what praudit does, only way better, and actually useful
+swap(7)                  - Swap 2 filenames around, if they exist (from Uzi's bashrc)
+switch_users(7)          - enables fast user switching from the command line.  An optional argument of another User's username will switch to that user.  If the optional argument is not supplied, the display is rotated to the login window
+switcher(7)              - Activate, or open space, replace by Mission control on newer MacOS version
+sync_fink(7)             - syncronize the /sw folder on a remote computer with that of the host computer
+tab(7)                   - Open new terminal tab with command or not
+tar-ssh-from(7)          - Archive file or directory over ssh
+targz(7)                 - Create a .tar.gz archive, using `zopfli`, `pigz` or `gzip` for compression
+tcmd(7)                  - iTerm function
+tcpflow(1)               - TCP flow recorder
+template(7), FUNCTION_NAME(7) - invokes FUNCTION_NAME
+termMultiTab(7)          - Launch several tab with to associate command
+termWindow(7)            - Put in fullscreen, maximize, vertically and horizontally split iterm window
+testdisk(8)              - Scan and repair disk partitions
+tidyxml(7)               - function to in-place convert HTML to well-formed XHTML using tidy
+timestamp(7)             - Reinitialize timestamp_timeout between 0 to 5 min in /etc/sudoers
+timezone_handle(7)       - Get, set and list available timezone(s)
+title-tab(7)             - This is designed to put by default the computer name and whole directory path into the title bar (and if availble) the $PWD and penultimate directory in the tab
+tmpj(7)                  - TextMate auxiliary function
+tmuxmulti(7)             - Launch multiple tmux session with commands
+toggle_spaces(7)         - Turn space on/off
+trash(1)                 - Moves files to the Trash
+trash(7)                 - handle trash on Darwin
+txtgrep(7)               - fuction to grep only from ascii text files
+unarchall(7)             - Decompress all archives in specified directory
+unflags(7)               - Unflag file or folder
+unidecode(7)             - Decode x{ABCD}-style Unicode escape sequences
+unixify_rootfiles(7)     - Is a function that makes the directories /usr /bin /sbin /private /etc /var /tmp visible in the finder
+unpacker(7)              - Given an input stream with a uuencoded archive from the remotebackup script, this unpacks and installs the archive
+uopen(7)                 - Test if network is up or down
+update(7)                - update MacOS
+update_supervisor(7)     - Create a copy of iTerm called iTermVisor which will run in background on login, only uses visor
+user(7)                  - Manage users with CLI
+usf_installer(7)         - function to download and  install USF programs (X-ray crystallography)
+validfloat(7)            - Test whether a number is a valid floating point value
+validint(7)              - Validate integer input, allow negative ints too
+verifycron(7)            - Script checks a crontab file to ensure that it's formatted properly
+vi(7)                    - function to enable vi(m) to edit files using sudo vi(m) if required
+vim(7)                   - function to enable vi(m) to edit files using sudo vi(m) if required
+virt-ip(7)               - SSH from a libvirt domain
+volume(7)                - Set volume from CLI
+vpn(7)                   - Play VPN on CLI
+wallpaper(7)             - Set wallpaper of your choice with CLI
+web_dev(7)               - Web Development Utilities
+webaccess(7)             - Analyze an Apache-format access_log file, extracting useful and interesting statistics
+weberrors(7)             - Scan through an Apache error_log file and report the most important errors, then list additional entries
+webspell(7)              - Use the 'aspell' feature + lynx to spell check either a Web page URL or a file
+whatsnew(7)              - function to tell you what has been updated in newer ZaemonSH release when installed with fink
+whichfunctions(7)        - function to list all the autoloaded functions whichfunctions function to list all loaded functions and completion functions
+whichre(7)               - function to augment the command which with regular expressions
+wifi(7)                  - Interact with your wifi configuration and informations
+wiki(1)                  - search Wikipedia from the command line
+xcode(7)                 - Cleanup Xcode Developer folder
+xdldataman(7)            - requires CCP4
+xdlmapman(7)             - requires CCP4
+xferlog(7)               - Analyze and summarize the FTP transfer log
+zaemonJail(7)            - Create a ZaemonSH jail environnement
+zaemonsh-templates(7)    - Template files for zsh customization
+zipit(7)                 - invokes zipit
+zoneinfo(7)              - Show the current time in the specified timezone or geographic zone
+zsh_cache_cleaner(7)     - function to remove zsh cashes. Do this after updating these distributed functions
+zshf(7)                  - function to cd /Library/init/zsh

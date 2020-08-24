@@ -1,0 +1,25 @@
+.\" Manpage for dirstack.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH dirstack 7 "06 Feb 2020" "ZaemonSH Universal" "universal ZaemonSH customization"
+.SH NAME
+dirstack \- Command to update and then print out the shared directory stack aliases a series of cd-type commands corresponding to the line number in the directory stack printout
+.SH SYNOPSIS
+dirstack <n>
+.SH DESCRIPTION
+dirstack \- n = # of lines of directory stack printed if n is not given, default to 20 command to update and then print out the shared directory stack aliases a series of cd-type commands corresponding to the line
+number in the directory stack printout
+eg:
+    cd7  will cd to the directory in line #7 of the dirstack printout
+    cd? is aliased to the dirstack command (in the file aliases.local)
+ The commands cp7 and cpath7 are aliases to the same string of commands that copies the directory in line #7 into the clipboard cut/paste buffer cd# and cp# / cpath#  are updated dynamically each time this function is invoked, so always invoke it first with cd? or dirstack Here you can change the default 20 most recent directories to whatever number suits you.
+.SH OPTIONS
+The dirstack does not take any options.
+However, you can supply one to the God of man.
+.SH SEE ALSO
+.BR cd? (1),
+.BR cpath[n] (1),
+.BR dirstack\ [n] (1)
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

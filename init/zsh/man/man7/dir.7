@@ -1,0 +1,38 @@
+.\" Manpage for dir.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH dir 7 "06 Feb 2020" "ZaemonSH MacOS" "MacOS ZaemonSH customization"
+.SH NAME
+dir \- Script to facilitate working with directory.
+.SH SYNOPSIS
+dir [ tree | size | delete | help ]
+.SH DESCRIPTION
+dir \- Script to facilitate working with directory.
+.SH OPTIONS
+dir tree                  
+# Tree view of folders in the current path.
+
+.IP "dir [tree] </path>"
+.B Tree view of folders in a specific path.
+
+.IP "dir [delete] [empty]"
+.B Delete empty folders recursively in the current path.
+
+.IP "dir [delete] [empty] </path>"
+.B Delete empty folders recursively in a specific path.
+
+.IP "dir [delete] [dsfiles]"
+.B Delete .DS_Store files recursively in the current path.
+
+.IP "dir [delete] [dsfiles] </path>"
+.B Delete .DS_Store files recursively in a specific path.
+
+.IP "dir [size]"
+# Calculate current folder size.
+
+.IP "dir [size] </path>"
+.B Calculate folder size in a specific path.
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

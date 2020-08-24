@@ -1,0 +1,132 @@
+#compdef cdd
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+#  _cdd :
+# just a mindless copy of _cd
+# Handling of cd.
+#  - Normally just completes directories.  Uses cdpath if that's set
+#    and the string doesn't begin with ~, /, ./ or ../.
+#  - In the second argument to cd for the form `cd old new', completes
+#    possible `new' strings by examining `old' and $PWD.
+#  - After - or +, _directory_stack completes numbers, but the listing
+#    gives you the list of directories to complete.  This turns on
+#    menu-completion and lists the possibilities automatically, otherwise
+#    it's not a lot of use.  If you don't type the + or - it will
+#    complete directories as normal.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 03/01/2018 :
+#  • Modify completion presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+setopt localoptions nonomatch
+
+local expl ret=1
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+
+
+#----------------------------------------------------------------------------------------#
+#                                      COMPLETION
+#----------------------------------------------------------------------------------------#
+if [[ CURRENT -eq 3 ]]; then
+  # cd old new: look for old in $PWD and see what can replace it
+  local rep
+  # Get possible completions using word in position 2
+  rep=(${~PWD/$words[2]/*}~$PWD(-/))
+  # Now remove all the common parts of $PWD and the completions from this
+  rep=(${${rep#${PWD%%$words[2]*}}%${PWD#*$words[2]}})
+  (( $#rep )) && _wanted -C replacement strings expl replacement compadd -a rep
+else
+  # Complete directory stack entries with ~ or when not in command position
+  # (the rest of this test is optimization for the _tilde call below)
+  if [[ "$PREFIX" == (#b)(\~|)[^/]# &&
+      ( -n "$match[1]" || ( CURRENT -gt 1 && ! -o cdablevars ) ) ]]; then
+    _directory_stack && ret=0
+  fi
+
+  if [[ $PREFIX != (\~|/|./|../)* ]]; then
+    local tmpcdpath alt
+
+    alt=()
+
+    tmpcdpath=(${${(@)cdpath:#.}:#$PWD})
+
+    (( $#tmpcdpath )) &&
+      alt=( 'path-directories:directory in cdpath:_path_files -W tmpcdpath -/' )
+
+    # With cdablevars, we can complete foo as if ~foo/
+    if [[ -o cdablevars && -n "$PREFIX" && "$PREFIX" != <-> ]]; then
+      if [[ "$PREFIX" != */* ]]; then
+        alt=( "$alt[@]" 'named-directories: : _tilde' )
+      else
+        local oipre="$IPREFIX" opre="$PREFIX" dirpre dir
+
+	# Note we need a tilde because cdablevars also allows user home
+	# directories, hence nonomatch (above) to suppress error messages.
+
+        dirpre="${PREFIX%%/*}/"
+        IPREFIX="$IPREFIX$dirpre"
+        eval "dir=( ~$dirpre )"
+        PREFIX="${PREFIX#*/}"
+
+        [[ $#dir -eq 1 && "$dir[1]" != "~$dirpre" ]] &&
+          _wanted named-directories expl 'directory after cdablevar' \
+	      _path_files -W dir -/ && ret=0
+
+        PREFIX="$opre"
+        IPREFIX="$oipre"
+      fi
+    fi
+    # Don't complete local directories in command position, that's
+    # already handled by _command_names (see _autocd)
+
+    [[ CURRENT -ne 1 || ( -z "$path[(r).]" && $PREFIX != */* ) ]] &&
+        alt=( "${cdpath+local-}directories:${cdpath+local }directory:_path_files -/" "$alt[@]" )
+
+    _alternative "$alt[@]" && ret=0
+
+    return ret
+  fi
+  [[ CURRENT -ne 1 ]] && _wanted directories expl directory \
+      _path_files -/ && ret=0
+
+  return ret
+fi

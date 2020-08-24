@@ -1,0 +1,57 @@
+.\" Manpage for finder.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH man 7 "06 Feb 2020" "MacOS" "MacOS Darwin ZaemonSH customization"
+.SH NAME
+finder \- Set and control finder
+.SH SYNOPSIS
+finder [
+.B quitmenu | hiddenfiles | extensions | desktop | view | fullpath | print | quit | help
+]
+.SH DESCRIPTION
+finder: 
+Wrapper script to control and set finder with CLI on Darwin.
+.SH OPTIONS
+
+.IP "quitmenu"
+.B Get the current status of quit item.
+.IP "quitmenu [YES/NO]"
+.B Active/Disable quit item.
+
+.IP "hiddenfiles"
+.B Get the current status of hidden files.
+.IP "hiddenfiles [YES/NO]"
+.B Active/Disable hidden files.
+
+.IP "extensions"
+.B Get the current status of extensions.
+.IP "extensions [YES/NO]"
+.B show/hide extensions.
+
+.IP "desktop"
+.B Get the current desktop status.
+.IP "desktop [YES/NO]"
+.B Active/Disable hidden files.
+
+.IP "view [column/list/icon]"
+.B Set the Finder view to column, list or icon.
+
+.IP "fullpath"
+.B Get the full path in Finder title barstatus.
+.IP "fullpath [YES/NO]"
+.B Active/Disable Finder full path title bar.
+
+.IP "print"
+.B Print files selected in Finder.
+
+.IP "quit".
+.B         Quit Finder.
+
+.IP "help".
+.B Obtain program help info.
+
+.SH SEE ALSO
+finder_update(7)
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli bryan (zucchelli.bryan@gmail.com)

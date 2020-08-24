@@ -1,0 +1,6 @@
+calc() {
+    zmodload zsh/mathfunc
+    echo $(( $@ ))
+}
+
+# vim: ft=zsh

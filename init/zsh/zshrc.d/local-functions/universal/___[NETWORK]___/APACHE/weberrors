@@ -1,0 +1,168 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# weberrors :
+#    Scan through an Apache error_log file and report the 
+#    most important errors, then list additional entries.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME tmp htdocs myhome cgibin sedstr screen length trap
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+temp="/tmp/$(basename $0).$$"
+
+# the following three lines will need to be customized for your own
+# installation for this script to work best.
+
+htdocs="/usr/local/etc/httpd/htdocs/"
+myhome="/usr/home/taylor/"
+cgibin="/usr/local/etc/httpd/cgi-bin/"
+
+sedstr="s/^/  /g;s|$htdocs|[htdocs]  |;s|$myhome|[homedir] |;s|$cgibin|[cgi-bin] |"
+
+screen="(File does not exist|Invalid error redirect|premature EOF|Premature end of script|script not found)" 
+
+length=5                # entries per category to display
+
+trap "/bin/rm -f $temp" 0
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+  clear
+  echo "${NC}"  
+  echo " ###################################################################################################"
+  echo " #                                                                                                 #"
+  echo " #     ${GREEN}This is ${RED}$FCT_NAME : ${YEL}$VERSION FOR $OSTYPE ${NC}                                #"
+  echo " #     CopyL®®v 2019, Zucchelli Bryan                                                              #"
+  echo " #                                                                                                 #"
+  echo " #     Unless required by applicable law or agreed to in writing, software                         #"
+  echo " #     distributed under the License is distributed on an "AS IS" BASIS,                             #"
+  echo " #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.                    #"
+  echo " #     See the License for the specific language governing permissions and                         #"
+  echo " #     limitations under the License.                                                              #"
+  echo " #                                                                                                 #"
+  echo " ###################################################################################################"
+  echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+checkfor() 
+{
+  grep "${2}:" "$1" | awk '{print $NF}' |\
+    sort | uniq -c | sort -rn | head -$length | sed "$sedstr" > $temp
+
+  if [ $(wc -l < $temp) -gt 0 ] ; then
+    echo ""
+    echo "$2 errors:"
+    cat $temp
+  fi
+}
+
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+
+
+if [ "$1" = "-l" ] ; then
+  length=$2; shift 2
+fi
+
+if [ $# -ne 1 -o ! -r "$1" ] ; then
+  echo "Usage: $(basename $0) [-l len] error_log" >&2
+  return 1
+fi
+
+echo Input file $1 has $(wc -l < "$1") entries.
+
+start="$(grep -E '\[.*:.*:.*\]' "$1" | head -1 | awk '{print $1" "$2" "$3" "$4" "$5 }')"
+end="$(grep -E '\[.*:.*:.*\]' "$1" | tail -1 | awk '{print $1" "$2" "$3" "$4" "$5 }')"
+echo -n "Entries from $start to $end"
+
+echo ""
+
+### Check for various common and well-known errors:
+
+checkfor "$1" "File does not exist"
+checkfor "$1" "Invalid error redirection directive"
+checkfor "$1" "premature EOF"
+checkfor "$1" "script not found or unable to stat" 
+checkfor "$1" "Premature end of script headers" 
+
+grep -vE "$screen" "$1" | grep "\[error\]" | grep "\[client " | \
+  sed 's/\[error\]/\`/' | cut -d\`  -f2 | cut -d\  -f4- | \
+  sort | uniq -c | sort -rn | sed 's/^/  /' | head -$length > $temp
+
+if [ $(wc -l < $temp) -gt 0 ] ; then
+  echo ""
+  echo "Additional error messages in log file:"
+  cat $temp
+fi
+
+echo ""
+echo "And non-error messages occurring in the log file:"
+
+grep -vE "$screen" "$1" | grep -v "\[error\]" | \
+  sort | uniq -c | sort -rn | \
+  sed 's/^/  /' | head -$length
+
+return 0

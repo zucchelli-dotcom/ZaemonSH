@@ -1,0 +1,20 @@
+.\" Manpage for checkexternal.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH checkexternal 7 "06 Feb 2020" "ZaemonSH Universal" "Universal ZaemonSH customization"
+.SH NAME
+checkexternal \- Traverse all internal URLs on a Web site to build a list of external references, then check each one to ascertain which might be dead or otherwise broken
+.SH SYNOPSIS
+checkexternal [-a] URL
+.SH DESCRIPTION
+checkexternal \-  Traverse all internal URLs on a Web site to build a list of external references, then check each one to ascertain which might be dead or otherwise broken. The -a flag forces the script to list all matches, whether they're accessible or not: by default only unreachable links are shown.
+.SH OPTIONS
+
+.IP checkexternal [-a] URL
+.B The -a flag forces the script to list all matches, whether they're accessible or not: by default only unreachable links are shown.
+
+.SH SEE ALSO
+.BR lynx(1)
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

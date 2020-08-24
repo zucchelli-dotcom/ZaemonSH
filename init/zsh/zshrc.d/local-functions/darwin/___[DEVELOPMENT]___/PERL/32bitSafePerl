@@ -1,0 +1,169 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# 32bitSafePerl - A wrapper for Perl scripts which will force them to be run by
+#                 the 32-bit Perl binary since MacPerl is not 64-bit compatible.
+#                 It's intelligent enough to find the appropriate version
+#                 depending on the version of Mac OS X, regardless of whether
+#                 "Prefer-32-Bit" has been set, up until Mac OS X 10.7 Lion
+#                 which no longer has a 32-bit Perl binary.
+# 
+#                 Use '#!/usr/bin/env 32bitSafePerl'.
+# 
+# v0.1   2012-01-06 - Morgan Aldridge <morgant@makkintosshu.com>
+#                     Initial version.
+# 
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 00/00/0000 :
+#  • Create this one .
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+
+# get the Mac OS X version
+version_major=$(sw_vers -productVersion | cut -d . -f 2)
+#version_minor=$(sw_vers -productVersion | cut -d . -f 3)
+
+interpreter=''
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  echo "${RED}"
+  cat<<__EOF__
+    usage: $0 [  ]
+
+    Examples:
+                                                 # .
+
+
+__EOF__
+echo ${NC}
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+emulate -L zsh
+banner
+# 10.7.x now has no 32-bit only version of Perl included, so we
+# need to set Perl's prefer-32-Bit default
+if [ $version_major -eq 7 ]; then
+	if [ "$(defaults read com.apple.versioner.perl Prefer-32-Bit)" != "1" ]; then
+		printf "Mac OS X 10.7.x Lion requires that we set Perl's 'Prefer-32-Bit' default for %s to work properly.\n" "$1"
+		printf "Shall we do that for you (y/n)?"
+		read confirm
+		if [ "$confirm" = "y" ]; then
+			defaults write com.apple.versioner.perl Prefer-32-Bit -bool true
+			printf "Done. You can change this back at any time by running 'defaults write com.apple.versioner.perl Prefer-32-Bit -bool false'.\n"
+		else
+			printf "No change made. Exiting.\n"
+			exit 1
+		fi
+	fi
+	interpreter='/usr/bin/perl'
+# 10.6.x should use Perl 5.8.9
+elif [ $version_major -eq 6 ]; then
+	interpreter='/usr/bin/perl5.8.9'
+# 10.5.x should use Perl 5.8.8
+elif [ $version_major -eq 5 ]; then
+	interpreter='/usr/bin/perl5.8.8'
+# 10.4.x and earlier can use just use 'perl'
+elif [ $version_major -le 4 ]; then
+	interpreter='/usr/bin/perl'
+fi
+
+# Perl tries to be helpful and always honors the shebang/hashbang in the script
+# it executes, but that causes an infinite loop due to what we're doing. So we
+# have to strip out the shebang/hashbang before sending to Perl. To do that,
+# because Perl can't accept command line arguments when running a script from
+# stdin, we must write the script, sans the shebang, to a tmp file.
+
+# determine the command name & shift it off the stack of arguments
+full_command="$1"
+command="${full_command##*/}"
+shift
+
+# create the tmp Perl script and fill it with the original script, sans the
+# shebang/hashbang
+mkdir -p "/tmp/32bitSafePerl"
+touch "/tmp/32bitSafePerl/${command}"
+chmod 755 "/tmp/32bitSafePerl/${command}"
+tail -n+2 "$full_command" > "/tmp/32bitSafePerl/${command}"
+
+# run the new temp Perl script through the appropriate version of Perl w/the
+# command line arguments
+"$interpreter" "/tmp/32bitSafePerl/${command}" "$@"
+
+# clean up the temp Perl script
+rm "/tmp/32bitSafePerl/${command}"
+
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:
+### }}}
+
+
+
+

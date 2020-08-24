@@ -1,0 +1,114 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_colors :
+# Inspired by Whicked shells scripts
+#    ANSI Color -- use these variables to easily have different color
+#    and format output. Make sure to output the reset sequence after 
+#    colors (f = foreground, b = background), and use the 'off'
+#    feature for anything you turn on.
+# Call yhis Functions in another one. Give you specials colors effects.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 10/10/2017 :
+#  • Create this one.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+initializeANSI()
+{
+  esc=""
+  
+  blackf="${esc}[30m";   redf="${esc}[31m";    greenf="${esc}[32m"
+  yellowf="${esc}[33m"   bluef="${esc}[34m";   purplef="${esc}[35m"
+  cyanf="${esc}[36m";    whitef="${esc}[37m"
+  
+  blackb="${esc}[40m";   redb="${esc}[41m";    greenb="${esc}[42m"
+  yellowb="${esc}[43m"   blueb="${esc}[44m";   purpleb="${esc}[45m"
+  cyanb="${esc}[46m";    whiteb="${esc}[47m"
+
+  boldon="${esc}[1m";    boldoff="${esc}[22m"
+  italicson="${esc}[3m"; italicsoff="${esc}[23m"
+  ulon="${esc}[4m";      uloff="${esc}[24m"
+  invon="${esc}[7m";     invoff="${esc}[27m"
+
+  reset="${esc}[0m"
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+# note in this first use that switching colors doesn't require a reset
+# first - the new color overrides the old one.
+initializeANSI
+
+# cat << EOF
+# ${yellowf}This is a phrase in yellow${redb} and red${reset}
+# ${boldon}This is bold${ulon} this is italics${reset} bye bye
+# ${italicson}This is italics${italicsoff} and this is not
+# ${ulon}This is ul${uloff} and this is not
+# ${invon}This is inv${invoff} and this is not
+# ${yellowf}${redb}Warning I${yellowb}${redf}Warning II${reset}
+# EOF
+
+# echo "----"
+# echo " ${yellowf}This is a phrase in yellow${redb} and red${reset}"

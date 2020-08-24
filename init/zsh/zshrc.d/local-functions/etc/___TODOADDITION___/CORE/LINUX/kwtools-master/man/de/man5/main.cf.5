@@ -1,0 +1,119 @@
+'\" t
+.\"     Title: MAIN.CF
+.\"    Author: Kai Wilke <kiste@netzworkk.de>
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 07/04/2014
+.\"    Manual: Benutzer Anleitung
+.\"    Source: Version 0.3.2
+.\"  Language: English
+.\"
+.TH "MAIN\&.CF" "5" "07/04/2014" "Version 0.3.2" "Benutzer Anleitung"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+main.cf \- Konfigurationsdatei f\(:ur alle kwtools Scripte\&.
+.SH "BESCHREIBUNG"
+.PP
+Die Funktion
+\(lq\fBscript_init\fR\(rq
+liest die Variablen von der Datei
+\fI/etc/kwtools/main\&.cf\fR
+ein\&. Beginnt eine Zeile mit
+\(lq#\(rq
+oder ist leer wird dies als Kommentar interpretiert\&.
+.SH "VARIABELN"
+.PP
+\fBKWTOOLS_PATH\fR
+.RS 4
+Hier kann man den Pfad zu den kwtools einstellen\&. Standard ist
+\fI/usr/lib/kwtools\fR\&.
+.RE
+.PP
+\fBLANGUAGE\fR
+.RS 4
+Hier stellt man die Sprache ein in der die Hilfeseiten und Nachrichten angezeigt werden soll\&. Zur Zeit geht nur
+\fBde\fR=\fIdeutsch\fR
+und
+\fBen\fR=\fIenglisch\fR\&.
+.sp
+\fBNotiz:\fR
+Wenn man die Sprache \(:uber
+\fBkwadmin\fR
+einstellt, muss man
+\fBkwadmin\fR
+neu starten damit
+\fBkwadmin\fR
+in der neuen Sprache angezeigt wird\&. Alle anderen Scripts \(:ubernehmen die Sprache gleich\&.
+.RE
+.PP
+\fBTMP_PATH\fR
+.RS 4
+Hier stellt man das tempor\(:are Verzeichnis ein in dem die Scripte tempor\(:are Dateien anlegen d\(:urfen\&. Dieses Verzeichnis gilt f\(:ur alle Scripte\&. Sie k\(:onnen auch Variablen, wie \fI$HOME\fR benutzen (Beispiele:
+\fI$HOME/tmp\fR, \fI/var/tmp\fR)\&.
+.RE
+.PP
+\fBEDITOR\fR
+.RS 4
+Mit diesem Eintrag haben Sie die Auswahl wie Sie Dateien bearbeiten\&. Sie k\(:onnen hier einen
+\(lqEditor\(rq
+Ihrer Wahl einstellen\&. Zum Beispiel
+\fB/usr/bin/vim\fR,
+\fBemacs\fR,
+\fBjoe\fR,
+\fBdialog\fR, \&.\&.\&.\&. Der Wert
+\fBdialog\fR
+ist eine Ausnahme\&. Ist dieser Wert eingetragen oder leer wird die Dialogbox
+\(lqeditbox\(rq
+verwendet\&.
+.RE
+.PP
+\fBPAGER\fR
+.RS 4
+Angabe eines Pagers, um Dateien seitenweise auf die Standardausgabe anzuzeigen (Beispiel:
+\fBless\fR,
+\fBmore\fR)\&.
+.RE
+.PP
+\fBFARBEN\fR
+.RS 4
+Farben f\(:ur (Fehler)Meldungen\&. Dabei wird das ZSH Farbmodul
+\(lq\fBcolors\fR\(rq
+geladen und ausgef\(:uhrt, so dass man eine verst\(:andliche Schreibweise nutzen kann\&. Siehe HTML Dokumentation\&.
+.RE
+.SH "DATEI"
+.PP
+\fI/etc/kwtools/main\&.cf\fR
+.RS 4
+Dies ist die Konfigurations Datei f\(:ur alle kwtools Scripte F\(:ur weitere Details siehe auch
+\fBkwadmin\fR(1)\&.
+.RE
+.SH "SIEHE AUCH"
+.PP
+\fBkwadmin\fR(1)
+.SH "AUTHOR"
+.PP
+\fBKai Wilke\fR <\&kiste@netzworkk\&.de\&>
+.RS 4
+Die Manpage wurde in DocBook XML f\(:ur die Debian Distribution geschrieben\&.
+.RE
+.SH "COPYRIGHT"
+.br
+Copyright \(co 2002-2014 Kai Wilke
+.br

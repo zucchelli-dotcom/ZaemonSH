@@ -1,0 +1,457 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# LaunchLondoncalling  :
+# Disable/enable launch MacOS service.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 29/02/2020 :
+# • Need to etablish if agents or daemons are initially looaded. for [un]loading them.
+## View all LaunchDaemons
+# for ho in $(ls /System/Library/LaunchDaemons | sort -f); do echo "" && echo "${GREEN}$ho${NC}" && PlistBuddy -c Print "/System/Library/LaunchDaemons/${ho}" && echo "" && echo $LINEE; done
+## View all LaunchAgents
+# for ho in $(ls /System/Library/LaunchAgents | sort -f); do echo "" && echo "${GREEN}$ho${NC}" && PlistBuddy -c Print /System/Library/LaunchAgents/$ho && echo "" && echo $LINEE; done
+# Set the colours you can use
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 29/02/2020 :
+#  • Creating this one .
+# 2020-03-03 :
+#  • Adding function extras for Specific treatment 
+# 2020-03-04 :
+#  • Adding edit option.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+black='\033[0;30m'
+white='\033[0;37m'
+red='\033[0;31m'
+green='\033[0;32m'
+yellow='\033[0;33m'
+blue='\033[0;34m'
+magenta='\033[0;35m'
+cyan='\033[0;36m'
+
+# Resets the style
+reset=`tput sgr0`
+
+# if ((  $IS_ADMIN != 1 )) || ((  $IS_ROOT != 1 )); then
+if [[ ! $IS_ADMIN  ]]; then
+    clear
+    echo -e "${WB} You need to have administrator right to run the script...${reset}"
+    echo ""
+    echo ""
+    echo " macOS LondonCalling by @n@tome"
+    echo " version 1.0"
+    echo ""
+    echo " Available commands"
+    echo " audit - print current settings"
+    echo " disable - fix your macOS to stop/limit invasions of your privacy"
+    echo " enable - restore to default settings"
+    echo " help - help message"
+    return 0
+fi
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+TRAPINT() {
+     print "Caught SIGINT, aborting."
+     return $(( 128 + $1 ))
+}
+
+if [[ $P_SYSETCDIR/Harden/LaunchConfig.lxl ]]; then
+    source $P_SYSETCDIR/Harden/LaunchConfig.lxl
+else
+    echo "${WB} Error with config file.${NC}"
+fi
+
+# Color-echo. Improved. [Thanks @joaocunha]
+# arg ( = message
+# arg [ = Color
+cecho(){
+    echo -e "${2}${1}${reset}"
+    return
+}
+
+
+check(){
+  if csrutil status | grep -q 'enabled'
+  then
+    echo "SIP is enabled. It may not fully work."
+    if sw_vers -productVersion | grep -q '10.13'
+    then #high sierra
+      echo "High Sierra (10.13.X) requires to have SIP DISABLED"
+      echo "Boot into recovery mode and type csrutil disable. It's nice to enable it afterwards."
+      return 1
+    fi
+  fi
+}
+
+help_msg(){
+  clear
+  echo ""
+  echo "macOS ${YEL}LondonCalling${NC} by @n@tome"
+  echo "version 1.0"
+  echo ""
+  echo "Available commands"
+  echo "${GREEN}audit${NC} - print current settings"
+  echo "${GREEN}disable${NC} - disable your macOS to stop/limit invasions of your privacy"
+  echo "${GREEN}enable${NC} - restore to default settings"
+  echo "${GREEN}help${NC} - help message"
+ }
+
+LaunchAgents(){
+  if [ -f "/System/Library/LaunchAgents/${2}.plist" ]; then
+      sudo launchctl "$1" -w "/System/Library/LaunchAgents/${2}.plist" 2>/dev/null
+      launchctl "$1" -w "/System/Library/LaunchAgents/${2}.plist" 2>/dev/null
+      echo "Agent ${agent} ${1}ed"
+  else
+      echo "$2 is not a System LaunchAgent"
+  fi
+}
+
+LaunchDaemons(){
+  if [ -f "/System/Library/LaunchDaemons/${2}.plist" ]; then
+      sudo launchctl "$1" -w "/System/Library/LaunchDaemons/${2}.plist" 2>/dev/null
+      launchctl "$1" -w "/System/Library/LaunchDaemons/${2}.plist" 2>/dev/null
+      echo "Daemon ${daemon} disabled"
+  else
+      echo "$2 is not a System LaunchDaemon"
+  fi
+}
+
+
+Disable(){
+  echo ""
+  for agent in "${AGENTS[@]}"; do
+    if [ -f /System/Library/LaunchAgents/$agent.plist ]; then
+        # LaunchAgents unload $agent
+        # sudo launchctl unload -w /System/Library/LaunchAgents/${agent}.plist
+        wait
+        # sudo mv /System/Library/LaunchAgents/${agent}.plist /System/Library/LaunchAgents/${agent}.plist.disabled
+        # trap "sudo mv /System/Library/LaunchAgents/${agent}.plist /System/Library/LaunchAgents/${agent}.plist.disabled" INT TERM
+        sudo mv /System/Library/LaunchAgents/${agent}.plist /System/Library/LaunchAgents/${agent}.plist.disabled
+        echo -e  "${green}[ OK ]${reset} Agent ${agent} disabled"
+    elif [ -f /System/Library/LaunchAgents/$agent.plist.disabled ]; then
+        echo -e "${cyan}[ NOTHING TO DO ]${reset} Agent ${agent} already disabled."
+    else
+        echo -e "${red}[ WARNING ]${reset} Agent ${agent} not founded on your system."
+    fi
+  done
+  echo "Specified agents have been disabled"
+  echo ""
+  echo ""
+  echo "------------------------------------------------------------------------------------------------"
+  echo ""
+  echo ""
+  for daemon in "${DAEMONS[@]}"; do
+    if [ -f /System/Library/LaunchDaemons/$daemon.plist ]; then
+        # LaunchDaemons unload $daemon
+        # sudo launchctl unload -w /System/Library/LaunchDaemons/${daemon}.plist
+        wait
+        # trap "sudo mv /System/Library/LaunchDaemons/${daemon}.plist /System/Library/LaunchDaemons/${daemon}.plist.disabled" INT TERM
+        sudo mv /System/Library/LaunchDaemons/${daemon}.plist /System/Library/LaunchDaemons/${daemon}.plist.disabled
+        echo -e "${green}[OK]${reset} Daemon ${daemon} disabled"
+    elif [ -f /System/Library/LaunchDaemons/$daemon.plist.disabled ]; then
+        echo -e "${cyan}[ NOTHING TO DO ]${reset} Daemon ${daemon} already disabled"
+    else
+        echo -e "${red}[WARNING]${reset} Daemon ${daemon} not founded on your system"
+    fi
+  done
+  if [[ -e "/System/Library/Input Methods/PressAndHold.app/Contents/PlugIns/PAH_Extension.appex/Contents/MacOS/PAH_Extension" ]]; then
+      sudo mv "/System/Library/Input Methods/PressAndHold.app/Contents/PlugIns/PAH_Extension.appex/Contents/MacOS/PAH_Extension" "/System/Library/Input Methods/PressAndHold.app/Contents/PlugIns/PAH_Extension.appex/Contents/MacOS/PAH_Extension.disabled"
+  else
+      echo -e "${cyan}[ NOTHING TO DO ]${NC}"
+  fi
+  echo ""
+  echo "Specified daemons have been disabled"
+  echo ""
+  echo ""
+  echo "!!!RESTART YOUR COMPUTER NOW TO APPLY CHANGES!!!"
+  echo ""
+  return 1
+}
+
+
+Enable(){
+for agent in "${AGENTS[@]}"
+  do
+
+    if [ -f /System/Library/LaunchAgents/$agent.plist.disabled ]; then
+        sudo mv /System/Library/LaunchAgents/${agent}.plist.disabled /System/Library/LaunchAgents/${agent}.plist
+        wait
+        # LaunchAgents load ${agent}
+        # sudo launchctl load -w /System/Library/LaunchAgents/${agent}.plist
+        echo -e "${green}[ OK ]${reset} Agent ${agent} enabled"
+    elif [ -f /System/Library/LaunchAgents/$agent.plist ]; then
+        echo -e "${cyan}[ NOTHING TO DO ]${rest} Agent ${agent} enabled"
+    else
+        echo -e "${red}[ WARNING ]${reset} Agent ${agent} not founded on your system"
+    fi
+
+  done
+  echo ""
+  echo "Specified agents have been enabled"
+  echo ""
+  echo ""
+  echo "------------------------------------------------------------------------------------------------"
+  echo ""
+  echo ""
+  for daemon in "${DAEMONS[@]}"
+  do
+    if [ -f /System/Library/LaunchDaemons/$daemon.plist.disabled ]; then
+        sudo mv /System/Library/LaunchDaemons/${daemon}.plist.disabled /System/Library/LaunchDaemons/${daemon}.plist
+        wait
+        # LaunchAgents load ${daemon}
+        # sudo launchctl load -w /System/Library/LaunchDaemons/${daemon}.plist
+        echo -e "${green}[ OK ]${reset} Daemon ${daemon} enabled"
+    elif [ -f /System/Library/LaunchDaemons/$daemon.plist ]; then
+        echo -e "${cyan}[ NOTHING TO DO ]${reset} Daemon ${daemon} already enabled"
+    else
+        echo -e "${red}[ WARNING ]${reset} Daemon ${daemon} not founded on your system"
+    fi
+  done
+    sudo mv "/System/Library/Input Methods/PressAndHold.app/Contents/PlugIns/PAH_Extension.appex/Contents/MacOS/PAH_Extension.disabled" "/System/Library/Input Methods/PressAndHold.app/Contents/PlugIns/PAH_Extension.appex/Contents/MacOS/PAH_Extension"
+  echo ""
+  echo "Specified daemons have been enabled"
+  echo ""
+  echo "RESTART YOUR COMPUTER NOW TO APPLY CHANGES"
+  echo ""
+  return 1
+}
+
+
+audit_launchctl(){
+  echo "Searching for LaunchAgents:"
+  launchctl list | while read -r line
+  do
+    for agent in "${AGENTS[@]}"
+    do
+      case "$line" in
+        *"$agent") echo "Found LaunchAgent $line"
+          ;;
+      esac
+    done
+  done
+
+  echo "Searching for LaunchDaemons:"
+  launchctl list | while read -r line
+  do
+    for daemon in "${DAEMONS[@]}"
+    do
+      case "$line" in
+        *"$daemon") echo "Found LaunchDaemon $line"
+          ;;
+      esac
+    done
+  done
+}
+
+extras(){
+
+#echo "# -------------------------------------------------------------------"
+#echo "#  5 - Securing Applications Services"
+#echo "# -------------------------------------------------------------------"
+		#echo ""
+		#echo "# -------------------------------------------"
+		#echo "# • Disabling GateKeeper.    			       "
+		#echo "# -------------------------------------------"
+		## Disabling OS X Gate Keeper
+		## (You'll be able to install any app you want from here on,
+		##  not just Mac App Store apps)
+				#sudo spctl --master-disable
+				#sudo defaults write /var/db/SystemPolicy-prefs.plist enabled -string no
+				#defaults write com.apple.LaunchServices LSQuarantine -bool false
+
+        #echo "# -------------------------------------------"
+        #echo "# • Disabling FrontRow.                    "
+        #echo "# -------------------------------------------"
+		#mv /System/Library/CoreServices/Front\\ Row.app /System/Library/CoreServices/Front_Row_disabled.app
+
+        #echo "# -------------------------------------------"
+        #echo "# • Disabling iSync.                        "
+        #echo "# -------------------------------------------"
+		## Default Setting:
+		## OFF
+		## Suggested Setting:
+		## Disable iSync.
+		#launchctl unload -w /System/Library/LaunchAgents/com.apple.syncservices.SyncServer.plist
+		#launchctl unload -w /System/Library/LaunchAgents/com.apple.syncservices.uihandler.plist
+		## Available Setting: # None
+
+        #echo "# -------------------------------------------"
+        #echo "# • Disabling gamed.                        "
+        #echo "# -------------------------------------------"
+		##  make sure to log out from game center
+		#sudo defaults write /System/Library/LaunchAgents/com.apple.gamed Disabled -bool true
+
+        #echo "# -------------------------------------------"
+        #echo "# • Disabling Notification Center and remove the menu bar icon."
+        #echo "# -------------------------------------------"
+		#launchctl unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist 2> /dev/null
+		#launchctl remove com.apple.notificationcenterui.agent
+		#launchctl submit -l com.apple.notificationcenterui.agent -p /System/Library/CoreServices/NotificationCenter.app/Contents/MacOS/NotificationCenter
+		#sudo killall NotificationCenter
+
+        #echo "# -------------------------------------------"
+        #echo "# • Disabling Calendar agent."
+        #echo "# -------------------------------------------"
+		#sudo launchctl unload -w /System/Library/LaunchAgents/com.apple.apsd.plist
+
+        #echo "# -------------------------------------------"
+        #echo "# • Disabling Apple Push Notification Service (apsd)."
+        #echo "# -------------------------------------------"
+		## disable Apple Push Notification Service (apsd)
+		## FaceTime could complain
+		#sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.apsd.plist
+
+        #echo "# -------------------------------------------"
+        #echo "# • Disabling photolibraryd."
+        #echo "# -------------------------------------------"
+		## disable photolibraryd
+		## com.apple.photomoments.xpc tries to access the internet without any reason and authorisation
+		## photos.app stops working after this
+		#sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.photolibraryd
+		#sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.cloudphotosd
+		## after restart they show up here
+		#sudo launchctl unload -w /System/Library/LaunchAgents/com.apple.photolibraryd.plist
+		#sudo launchctl unload -w /System/Library/LaunchAgents/com.apple.cloudphotosd.plist
+
+        #echo "# -------------------------------------------"
+        #echo "# • Disabling sending of crash reports to Apple (SubmitDiagInfo)."
+        #echo "# -------------------------------------------"
+		## Disable sending of crash reports to Apple (SubmitDiagInfo)
+		#sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.SubmitDiagInfo.plist
+		## Disable Crash Reporter
+		#defaults write com.apple.CrashReporter DialogType -string 'none'
+		## Show Crash Reporter in Notifications
+		#defaults write com.apple.CrashReporter UseUNC -bool
+
+        #echo "# -------------------------------------------"
+        #echo "# • Disabling Airdrop."
+        #echo "# -------------------------------------------"
+		## Disable Airdrop
+		#sudo ifconfig adw10 down
+		#OR
+		#sudo defaults write com.apple.NetworkBrowser BrowseAllInterfaces 0 ( 1 to enable )
+		#OR
+		#sudo defaults write System/Library/User\ Template/French.lpropj/Preferences/com.apple.NetworkBrowser DisableAirDrop -bool YES
+
+        #echo "# -------------------------------------------"
+        #echo "# • Disabling Airplay mirroring."
+        #echo "# -------------------------------------------"
+		## Disable Airplay mirroring
+		#sudo mv /System/Library/CoreServices/AirPlayUIAgent.app/Contents/MacOS/AirPlayUIAgent /System/Library/CoreServices/AirPlayUIAgent.app/Contents/MacOS/AirPlayUIAgent.disabled
+		#sudo chmod 000 /System/Library/CoreServices/AirPlayUIAgent.app/Contents/MacOS/AirPlayUIAgent.disabled
+		### Reeneable
+		## sudo chmod 755 /System/Library/CoreServices/AirPlayUIAgent.app/Contents/MacOS/AirPlayUIAgent.disabled
+		## sudo mv /System/Library/CoreServices/AirPlayUIAgent.app/Contents/MacOS/AirPlayUIAgent.disabled /System/Library/CoreServices/AirPlayUIAgent.app/Contents/MacOS/AirPlayUIAgent
+#echo ""
+#echo ""
+
+}
+
+editList(){
+local launcha="$P_SYSETCDIR/Harden/LaunchConfig.lxl"
+[[ $launcha ]] && vim $kexta $launcha && return 1
+}
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+emulate -L zsh
+sudo -v
+case $1 in
+  "audit")
+   # audit_safari
+   # audit_spotlight
+    audit_launchctl
+    return 1
+    ;;
+    "enable")
+    check
+    Enable
+    return 1
+    ;;
+    "disable")
+    check
+    Disable
+    return 1
+    ;;
+    "edit")
+    editList
+    return 1
+    ;;
+    "help")
+    help_msg
+    return 0
+    ;;
+*)
+    help_msg
+    return 0
+    ;;
+esac
+
+#EOF

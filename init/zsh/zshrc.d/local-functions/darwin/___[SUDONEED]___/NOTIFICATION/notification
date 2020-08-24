@@ -1,0 +1,160 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# notification :
+# Get status, enable and disable notification center.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 19/10/2017 :
+# • This one need sudo write :
+# • Move this one to SUDONEED sub-folder. Maybe a better idea to join this function to
+#   a big disable service one.Perhaps needing to restart is another good reason.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 18/10/2017 :
+#  • Modify script presentation.
+#  • Define some command variables.
+#  • Add banner.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+PATH=${PATH}
+
+local CLEAR ECHO LAUNCHCTL KILLALL CAT PS GREP
+
+# Define some local command
+CLEAR="$(whereis clear)"
+ECHO="$(whereis echo)"
+LAUNCHCTL="$(whereis launchctl)"
+KILLALL="$(whereis killall)"
+CAT="$(whereis cat)"
+PS="$(whereis ps)"
+GREP="$(whereis grep)"
+SUDO="$(whereis sudo)"
+
+local banner help status enable disable
+
+local VERSION FCT_NANME
+
+VERSION="0.0.2"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+    $CAT<<__EOF__
+    ${RED}
+    usage: notification [ status | enable | disable | help ]
+    Examples:
+      notification status    # Get the current status.
+      notification enable    # Enable the notification center.
+      notification disable   # Disable the notification center
+    ${NC}
+__EOF__
+}
+
+status(){
+    local NOTITEST=$($PS -A | $GREP apsd | $GREP -v "grep" 2>/dev/null)
+    if [ $NOTITEST ]; then
+        CENTER_STATUS="enabled"
+    else
+        CENTER_STATUS="disabled"
+    fi
+    $ECHO "${GREEN}Notification Center: $CENTER_STATUS${NC}"
+}
+
+disable(){
+if [ -z "$1" ]; then
+    $ECHO "Enable notification center: NO"
+    $SUDO $LAUNCHCTL unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist
+    #$KILLALL NotificationCenter
+    $ECHO "Restart your computer for this to take effect"
+    return 0
+fi
+}
+
+enable(){
+if [ -z "$1" ]; then    
+    $ECHO "Enable notification center: YES"
+    $SUDO $LAUNCHCTL load -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist
+    #$KILLALL NotificationCenter
+    $ECHO "Restart your computer for this to take effect."
+    return 0
+fi
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+case $1 in
+    help)
+        help
+        ;;
+    status)
+        shift
+        status
+        ;;
+    enable)
+        shift
+        enable "$*"
+        ;;
+    disable)
+        shift
+        disable "$*"
+       ;;
+    *)
+        help
+        ;;
+esac

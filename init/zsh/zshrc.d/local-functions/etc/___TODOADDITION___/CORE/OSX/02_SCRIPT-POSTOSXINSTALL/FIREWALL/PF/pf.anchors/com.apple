@@ -1,0 +1,58 @@
+######
+# com.apple revisited ruleset, referred to by the default /etc/pf.conf file.
+# See notes in that file regarding the anchor point in the main ruleset.
+# These are mostly just allowing the Apple services to work with services enabled in the Sharing system preference pane, etc.
+# The scrub options are pretty cool as it cleans dirty packets prior to passing them to their destination
+
+# how the rules are interpreted, let’s run pfctl with the -sa option, which shows all information/stats:
+# $ sudo pfctl -sa
+# see information like stats on timeouts, limits to rules, etc. Let’s look at the rules specifically:
+# $ sudo pfctl -sr
+
+
+
+
+
+# This is going to always allow local traffic, which we need for a few internal processes.
+pass in quick on lo0 all
+pass out quick on lo0 all
+
+
+# -------------
+# Anchors points.
+# -------------
+
+#
+# InternetSharing anchor point.
+#
+anchor "100.InternetSharing/*"
+
+#
+# AirDrop anchor point.
+#
+anchor "200.AirDrop/*"
+
+#
+# Application Firewall anchor point.
+#
+anchor "250.ApplicationFirewall/*"
+
+
+#
+# Dummynet-anchor NetworkLinkConditioner.
+#
+dummynet-anchor "300.NetworkLinkConditioner/*"
+
+#
+# anchor NetworkLinkConditioner.
+#
+anchor "300.NetworkLinkConditioner/*"
+
+#
+# anchor AdaptiveFirewall.
+#
+anchor "400.AdaptiveFirewall/*"
+load anchor "400.AdaptiveFirewall/" from "/Applications/Server.app/Contents/ServerRoot/private/etc/pf.anchors/400.AdaptiveFirewall"
+
+
+

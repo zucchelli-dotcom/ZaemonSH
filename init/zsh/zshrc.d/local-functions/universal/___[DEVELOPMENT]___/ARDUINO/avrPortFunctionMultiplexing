@@ -1,0 +1,134 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# avrPortFunctionMultiplexing :
+# Atmega 328p multiplexing function graphic.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 30/07/2019 :
+#  • Create this one .
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  echo "${RED}"
+  cat<<__EOF__
+    usage: $0 [  ]
+
+    Examples:
+                                                 # .
+
+
+__EOF__
+echo ${NC}
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+echo $BGREEN
+echo $LINEE
+cat<<EOF
+"(28-pin PIPD) Pin#"	"PAD"	        "EXTINT"    	"PCINT"	       "ADC/AC"     	  "OSC"            "T/C #0"    	"T/C #1"    	"USART 0"   	"I2C 0"      	"SPI 0"
+    5                  "PD[3]"	        "INT1"	       "PCINT19"			                                "OC2B"				
+    6                  "PD[4]"                         "PCINT20"			                                               "T0"		     "XCK0"		
+    7                  "VCC"                                               
+    8                  "GND"                                               
+    "-"                "VCC"                                               
+    "-"                "GND"                                               
+    9                  "PB[6]"                         "PCINT6"		                  "XTAL1/ TOSC1"					
+    10                 "PB[7]"                         "PCINT7"		                  "XTAL2/ TOSC2"					
+    11                 "PD[5]"                         "PCINT21"			                                 "OC0B"	       "T1"			
+    12                 "PD[6]"                         "PCINT22"	    "AIN0"		                         "OC0A"				
+    13                 "PD[7]"                         "PCINT23"	    "AIN1"						
+    14                 "PB[0]"                         "PCINT0"		                      "CLKO"	         "ICP1"				
+    15                 "PB[1]"                         "PCINT1"			                                     "OC1A"				
+    16                 "PB[2]"                         "PCINT2"			                                     "OC1B"				                                         "SS0"
+    17                 "PB[3]"                         "PCINT3"			                                     "OC2A"				                                        "MOSI0"
+    18                 "PB[4]"                         "PCINT4"							                                                                                "MISO0"
+    19                 "PB[5]"                         "PCINT5"							                                                                                "SCK0"
+    20                 "AVCC"                                              
+    "-"                "ADC6"                                          "ADC6"						
+    21                 "AREF"                                                  
+    22                 "GND"                                                   
+    "-"                "ADC7"                                          "ADC7"						
+    13                 "PC[0]"                         "PCINT8"        "ADC0"						
+    24                 "PC[1]"                         "PCINT9"        "ADC1"						
+    25                 "PC[2]"                         "PCINT10"       "ADC2"						
+    26                 "PC[3]"                         "PCINT11"       "ADC3"						
+    27                 "PC[4]"                         "PCINT12"       "ADC4"					                                                        "SDA0"	
+    28                 "PC[5]"                         "PCINT13"       "ADC5"					                                                        "SCL0"	
+    1                  "PC[6]/ RESET"                  "PCINT14"							
+    2                  "PD[0]"                         "PCINT16"					                                                     "RXD0"
+    3                  "PD[1]"                         "PCINT17"					                                                     "TXD0"
+    4                  "PD[2]"	        "INT0"         "PCINT18"					
+
+EOF
+echo $LINEE
+echo "$NC"
+echo ""

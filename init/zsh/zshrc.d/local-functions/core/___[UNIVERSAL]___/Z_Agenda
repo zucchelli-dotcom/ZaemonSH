@@ -1,0 +1,136 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_agenda :
+# Inspired by Wicked shells scripts.
+# Scan through the user's .agenda file to see if there 
+# are any matches for the current or next day
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 10/10/2017 :
+#  • Create this one.
+
+#-------------------------------------------------------------------------------------------#
+#                                              CONFIG
+#-------------------------------------------------------------------------------------------#
+local VERSION FCT_NAME agendafile weekday day month year format1 format2 format3 description
+###
+#
+VERSION="0.0.0"
+FCT_NAME="$(echo $0)"
+# ###
+# #S
+# UID_ROOT=0     # Seu$LS les utilisateurs avec un $UID valant 0 ont les droits de root.
+# ###
+# # PROGRAM
+# E_MAUVAISARGS=65  # Argument non numérique (mauvais fo$RMat de l'argument)
+
+# addagenda - prompt the user to add a new event for the Agenda script
+agendafile="$HOME/.agenda"
+SAVEIFS=$IFS
+# ###
+# # Looks best on a te$RMinal with black background.....
+# clear
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+checkDate()
+{
+  # create the possible default values that'll match today
+  weekday=$1   day=$2   month=$3   year=$4
+  format1="$weekday"   format2="$day$month"   format3="$day$month$year"
+
+  # and step through the file comparing dates...
+  IFS="|"	# The reads will naturally split at the IFS
+
+  echo "On the Agenda for today:"
+  while read date description record; do
+    if [[ "$date" = "$format1" ]] || [[ "$date" = "$format2" ]] || [[ "$date" = "$format3" ]]; then
+    echo ""  
+    echo " ${GREEN}• Stored the $record :${NC} $description"
+    echo ""
+    fi
+  done < $agendafile
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                                 SCRIPT
+#-------------------------------------------------------------------------------------------#
+clear
+banner
+echo ""
+if [ ! -e $agendafile ] ; then
+  echo "$0: You don't seem to have an .agenda file. " >&2
+  echo "To remedy this, please use 'Z_Addagenda' to add events" >&2
+  return 1
+fi
+
+# now let's get today's date...
+eval $(date "+weekday=\"%a\" month=\"%b\" day=\"%e\" year=\"%G\"")
+day="$(echo $day|sed 's/ //g')"	# remove possible leading space
+
+echo "${LINEP}"
+checkDate $weekday $day $month $year
+IFS=$SAVEIFS
+echo "${LINEP}"
+return 1

@@ -1,0 +1,2171 @@
+#!/usr/bin/env bash
+#
+#                        _ _
+#   ___  _____  __   ___| (_)
+#  / _ \/ __\ \/ /  / __| | |
+# | (_) \__ \>  <  | (__| | |
+#  \___/|___/_/\_\  \___|_|_|
+#
+# Shortcuts for OS X operations.
+#
+# Copyright (c) 2015 William Melody • hi@williammelody.com
+
+###############################################################################
+# Strict Mode
+###############################################################################
+
+# Treat unset variables and parameters other than the special parameters ‘@’ or
+# ‘*’ as an error when performing parameter expansion. An 'unbound variable'
+# error message will be written to the standard error, and a non-interactive
+# shell will exit.
+#
+# This requires using parameter expansion to test for unset variables.
+#
+# http://www.gnu.org/software/bash/manual/bashref.html#Shell-Parameter-Expansion
+#
+# The two approaches that are probably the most appropriate are:
+#
+# ${parameter:-word}
+#   If parameter is unset or null, the expansion of word is substituted.
+#   Otherwise, the value of parameter is substituted. In other words, "word"
+#   acts as a default value when the value of "$parameter" is blank. If "word"
+#   is not present, then the default is blank (essentially an empty string).
+#
+# ${parameter:?word}
+#   If parameter is null or unset, the expansion of word (or a message to that
+#   effect if word is not present) is written to the standard error and the
+#   shell, if it is not interactive, exits. Otherwise, the value of parameter
+#   is substituted.
+#
+# Examples
+# ========
+#
+# Arrays:
+#
+#   ${some_array[@]:-}              # blank default value
+#   ${some_array[*]:-}              # blank default value
+#   ${some_array[0]:-}              # blank default value
+#   ${some_array[0]:-default_value} # default value: the string 'default_value'
+#
+# Positional variables:
+#
+#   ${1:-alternative} # default value: the string 'alternative'
+#   ${2:-}            # blank default value
+#
+# With an error message:
+#
+#   ${1:?'error message'}  # exit with 'error message' if variable is unbound
+#
+# Short form: set -u
+set -o nounset
+
+# Exit immediately if a pipeline returns non-zero.
+#
+# NOTE: this has issues. When using read -rd '' with a heredoc, the exit
+# status is non-zero, even though there isn't an error, and this setting
+# then causes the script to exit. read -rd '' is synonymous to read -d $'\0',
+# which means read until it finds a NUL byte, but it reaches the EOF (end of
+# heredoc) without finding one and exits with a 1 status. Therefore, when
+# reading from heredocs with set -e, there are three potential solutions:
+#
+# Solution 1. set +e / set -e again:
+#
+# set +e
+# read -rd '' variable <<EOF
+# EOF
+# set -e
+#
+# Solution 2. <<EOF || true:
+#
+# read -rd '' variable <<EOF || true
+# EOF
+#
+# Solution 3. Don't use set -e or set -o errexit at all.
+#
+# More information:
+#
+# https://www.mail-archive.com/bug-bash@gnu.org/msg12170.html
+#
+# Short form: set -e
+set -o errexit
+
+# Return value of a pipeline is the value of the last (rightmost) command to
+# exit with a non-zero status, or zero if all commands in the pipeline exit
+# successfully.
+set -o pipefail
+
+# Set IFS to just newline and tab at the start
+#
+# http://www.dwheeler.com/essays/filenames-in-shell.html
+#
+# $DEFAULT_IFS and $SAFER_IFS
+#
+# $DEFAULT_IFS contains the default $IFS value in case it's needed, such as
+# when expanding an array and you want to separate elements by spaces.
+# $SAFER_IFS contains the preferred settings for the program, and setting it
+# separately makes it easier to switch between the two if needed.
+IFS=$'\n\t'
+
+###############################################################################
+# Globals
+###############################################################################
+
+_VERSION="0.1.0-alpha"
+
+# DEFAULT_COMMAND
+#
+# The command to be run by default, when no command name is specified. If the
+# environment has an existing $DEFAULT_COMMAND set, then that value is used.
+DEFAULT_COMMAND="${DEFAULT_COMMAND:-help}"
+
+###############################################################################
+# Debug
+###############################################################################
+
+# _debug()
+#
+# Usage:
+#   _debug printf "Debug info. Variable: %s\n" "$0"
+#
+# A simple function for executing a specified command if the `$_USE_DEBUG`
+# variable has been set. The command is expected to print a message and
+# should typically be either `echo`, `printf`, or `cat`.
+_debug() {
+  if [[ "${_USE_DEBUG:-"0"}" -eq 1 ]]
+  then
+    # Prefix debug message with "bug (U+1F41B)"
+    printf "🐛  "
+    "$@"
+    printf "――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――\n"
+  fi
+}
+# debug()
+#
+# Usage:
+#   debug "Debug info. Variable: $0"
+#
+# Print the specified message if the `$_USE_DEBUG` variable has been set.
+#
+# This is a shortcut for the _debug() function that simply echos the message.
+debug() {
+  _debug echo "$@"
+}
+
+###############################################################################
+# Die
+###############################################################################
+
+# _die()
+#
+# Usage:
+#   _die printf "Error message. Variable: %s\n" "$0"
+#
+# A simple function for exiting with an error after executing the specified
+# command. The command is expected to print a message and should typically
+# be either `echo`, `printf`, or `cat`.
+_die() {
+  # Prefix die message with "cross mark (U+274C)", often displayed as a red x.
+  printf "❌  "
+  "$@" 1>&2
+  exit 1
+}
+# die()
+#
+# Usage:
+#   die "Error message. Variable: $0"
+#
+# Exit with an error and print the specified message.
+#
+# This is a shortcut for the _die() function that simply echos the message.
+die() {
+  _die echo "$@"
+}
+
+###############################################################################
+# Options
+###############################################################################
+
+# Get raw options for any commands that expect them.
+_RAW_OPTIONS="$*"
+
+# Steps:
+#
+# 1. set expected short options in `optstring` at beginning of the "Normalize
+#    Options" section,
+# 2. parse options in while loop in the "Parse Options" section.
+
+# Normalize Options ###########################################################
+
+# Source:
+#   https://github.com/e36freak/templates/blob/master/options
+
+# The first loop, even though it uses 'optstring', will NOT check if an
+# option that takes a required argument has the argument provided. That must
+# be done within the second loop and case statement, yourself. Its purpose
+# is solely to determine that -oARG is split into -o ARG, and not -o -A -R -G.
+
+# Set short options -----------------------------------------------------------
+
+# option string, for short options.
+#
+# Very much like getopts, expected short options should be appended to the
+# string here. Any option followed by a ':' takes a required argument.
+#
+# In this example, `-x` and `-h` are regular short options, while `o` is
+# assumed to have an argument and will be split if joined with the string,
+# meaning `-oARG` would be split to `-o ARG`.
+optstring=h
+
+# Normalize -------------------------------------------------------------------
+
+# iterate over options, breaking -ab into -a -b and --foo=bar into --foo bar
+# also turns -- into --endopts to avoid issues with things like '-o-', the '-'
+# should not indicate the end of options, but be an invalid option (or the
+# argument to the option, such as wget -qO-)
+unset options
+# while the number of arguments is greater than 0
+while (($#))
+do
+  case $1 in
+    # if option is of type -ab
+    -[!-]?*)
+      # loop over each character starting with the second
+      for ((i=1; i<${#1}; i++))
+      do
+        # extract 1 character from position 'i'
+        c=${1:i:1}
+        # add current char to options
+        options+=("-$c")
+
+        # if option takes a required argument, and it's not the last char
+        # make the rest of the string its argument
+        if [[ $optstring = *"$c:"* && ${1:i+1} ]]
+        then
+          options+=("${1:i+1}")
+          break
+        fi
+      done
+      ;;
+    # if option is of type --foo=bar, split on first '='
+    --?*=*)
+      options+=("${1%%=*}" "${1#*=}")
+      ;;
+    # end of options, stop breaking them up
+    --)
+      options+=(--endopts)
+      shift
+      options+=("$@")
+      break
+      ;;
+    # otherwise, nothing special
+    *)
+      options+=("$1")
+      ;;
+  esac
+
+  shift
+done
+# set new positional parameters to altered options. Set default to blank.
+set -- "${options[@]:-}"
+unset options
+
+# Parse Options ###############################################################
+
+# Initialize $_COMMAND_ARGV array
+#
+# This array contains all of the arguments that get passed along to each
+# command. This is essentially the same as the program arguments, minus those
+# that have been filtered out in the program option parsing loop. This array
+# is initialized with $0, which is the program's name.
+_COMMAND_ARGV=("$0")
+# Initialize $_CMD and `$_USE_DEBUG`, which can continue to be blank depending
+# on what the program needs.
+_CMD=""
+_USE_DEBUG=0
+
+while [ $# -gt 0 ]
+do
+  opt="$1"
+  shift
+  case "$opt" in
+    -h|--help)
+      _CMD="help"
+      ;;
+    --version)
+      _CMD="version"
+      ;;
+    --debug)
+      _USE_DEBUG=1
+      ;;
+    *)
+      # The first non-option argument is assumed to be the command name.
+      # All subsequent arguments are added to $_COMMAND_ARGV.
+      if [[ -n $_CMD ]]
+      then
+        _COMMAND_ARGV+=("$opt")
+      else
+        _CMD="$opt"
+      fi
+      ;;
+  esac
+done
+
+# Set $_COMMAND_PARAMETERS to $_COMMAND_ARGV, minus the initial element, $0. This
+# provides an array that is equivalent to $* and $@ within each command
+# function, though the array is zero-indexed, which could lead to confusion.
+#
+# Use `unset` to remove the first element rather than slicing (e.g.,
+# `_COMMAND_PARAMETERS=("${_COMMAND_ARGV[@]:1}")`) because under bash 3.2 the
+# resulting slice is treated as a quoted string and doesn't easily get coaxed
+# into a new array.
+_COMMAND_PARAMETERS=(${_COMMAND_ARGV[*]})
+unset _COMMAND_PARAMETERS[0]
+
+_debug printf "\$_CMD: %s\n" "$_CMD"
+_debug printf "\$_RAW_OPTIONS (one per line):\n%s\n" "$_RAW_OPTIONS"
+_debug printf "\$_COMMAND_ARGV: %s\n" "${_COMMAND_ARGV[*]}"
+_debug printf "\$_COMMAND_PARAMETERS: %s\n" "${_COMMAND_PARAMETERS[*]:-}"
+
+###############################################################################
+# Environment
+###############################################################################
+
+# $_ME
+#
+# Set to the program's basename.
+_ME=$(basename "$0")
+
+_debug printf "\$_ME: %s\n" "$_ME"
+
+###############################################################################
+# Load Commands
+###############################################################################
+
+# Initialize $_DEFINED_COMMANDS array.
+_DEFINED_COMMANDS=()
+
+# _load_commands()
+#
+# Usage:
+#   _load_commands
+#
+# Loads all of the commands sourced in the environment.
+_load_commands() {
+
+  _debug printf "_load_commands(): entering...\n"
+  _debug printf "_load_commands() declare -F:\n%s\n" "$(declare -F)"
+
+  # declare is a bash built-in shell function that, when called with the '-F'
+  # option, displays all of the functions with the format
+  # `declare -f function_name`. These are then assigned as elements in the
+  # $function_list array.
+  local function_list=($(declare -F))
+
+  for c in "${function_list[@]}"
+  do
+    # Each element has the format `declare -f function_name`, so set the name
+    # to only the 'function_name' part of the string.
+    local function_name=
+    function_name=$(printf "%s" "$c" | awk '{ print $3 }')
+
+    _debug printf "_load_commands() \$function_name: %s\n" "$function_name"
+
+    # Add the function name to the $_DEFINED_COMMANDS array unless it starts
+    # with an underscore or is one of the desc(), debug(), or die() functions,
+    # since these are treated as having 'private' visibility.
+    if ! ( [[ "$function_name" =~ ^_(.*)  ]] || \
+           [[ "$function_name" == "desc"  ]] || \
+           [[ "$function_name" == "debug" ]] || \
+           [[ "$function_name" == "die"   ]]
+    )
+    then
+      _DEFINED_COMMANDS+=("$function_name")
+    fi
+  done
+
+  _debug printf \
+    "commands() \$_DEFINED_COMMANDS:\n%s\n" \
+    "${_DEFINED_COMMANDS[*]:-}"
+}
+
+###############################################################################
+# Main
+###############################################################################
+
+# _main()
+#
+# Usage:
+#   _main
+#
+# The primary function for starting the program.
+#
+# NOTE: must be called at end of program after all commands have been defined.
+_main() {
+  _debug printf "main(): entering...\n"
+  _debug printf "main() \$_CMD (upon entering): %s\n" "$_CMD"
+
+  # If $_CMD is blank, then set to `$DEFAULT_COMMAND`
+  if [[ -z $_CMD ]]
+  then
+    _CMD="$DEFAULT_COMMAND"
+  fi
+
+  # Load all of the commands.
+  _load_commands
+
+  # If the command is defined, run it, otherwise return an error.
+  if _contains "$_CMD" "${_DEFINED_COMMANDS[*]:-}"
+  then
+    # Pass all comment arguments to the program except for the first ($0).
+    $_CMD "${_COMMAND_PARAMETERS[@]:-}"
+  else
+    _die printf "Unknown command: %s\n" "$_CMD"
+  fi
+}
+
+###############################################################################
+# Utility Functions
+###############################################################################
+
+# _function_exists()
+#
+# Usage:
+#   _function_exists "possible_function_name"
+#
+# Takes a potential function name as an argument and returns whether a function
+# exists with that name.
+_function_exists() {
+  [ "$(type -t "$1")" == 'function' ]
+}
+
+# _command_exists()
+#
+# Usage:
+#   _command_exists "possible_command_name"
+#
+# Takes a potential command name as an argument and returns whether a command
+# exists with that name.
+#
+# For information on why `hash` is used here, see:
+# http://stackoverflow.com/a/677212
+_command_exists() {
+  hash "$1" 2>/dev/null
+}
+
+# _contains()
+#
+# Usage:
+#   _contains "$item" "${list[*]}"
+#
+# Takes an item and a list and determines whether the list contains the item.
+_contains() {
+  local test_list=(${*:2})
+  for _test_element in "${test_list[@]:-}"
+  do
+    _debug printf "_contains() \$_test_element: %s\n" "$_test_element"
+    if [[ "$_test_element" == "$1" ]]
+    then
+      _debug printf "_contains() match: %s\n" "$1"
+      return 0
+    fi
+  done
+  return 1
+}
+
+# _join()
+#
+# Usage:
+#   _join "," a b c
+#   _join "${an_array[@]}"
+#
+# Takes a separator and a list of items, joining that list of items with the
+# separator.
+_join() {
+  local separator=
+  local target_array=
+  local dirty=
+  local clean=
+  separator="$1"
+  target_array=(${@:2})
+  dirty="$(printf "${separator}%s"  "${target_array[@]}")"
+  clean="${dirty:${#separator}}"
+  printf "%s" "${clean}"
+}
+
+# _command_argv_includes()
+#
+# Usage:
+#   _command_argv_includes "an_argument"
+#
+# Takes a possible command argument and determines whether it is included in
+# the command argument list.
+#
+# This is a shortcut for simple cases where a command wants to check for the
+# presence of options quickly without parsing the options again.
+_command_argv_includes() {
+  _contains "$1" "${_COMMAND_ARGV[*]}"
+}
+
+# _blank()
+#
+# Usage:
+#   _blank "$an_argument"
+#
+# Takes an argument and returns true if it is blank.
+_blank() {
+  [[ -z "${1:-}" ]]
+}
+
+# _present()
+#
+# Usage:
+#   _present "$an_argument"
+#
+# Takes an argument and returns true if it is present.
+_present() {
+  [[ -n "${1:-}" ]]
+}
+
+###############################################################################
+# desc
+###############################################################################
+
+# _escape_function_name()
+#
+# Usage:
+#   _escape_function_name "some-function:name"
+#
+# Replace ":" and "-" with "__COLON__" and "__HYPHEN__" in function names in
+# order to conform to Bash identifier restrictions.
+#
+# Bash allows ":" and "-" in function names, but they are not allowed in
+# identifiers for variables. In order to store the description in a variable
+# that matches the function name, this function escapes the function name in
+# order to make it suitable for use in a variable identifier.
+#
+# Uses built-in substring replacement:
+# http://www.tldp.org/LDP/abs/html/parameter-substitution.html#EXPREPL1
+_escape_function_name() {
+  local escaped_colons
+  local escaped_hyphens
+  escaped_colons="${1//:/__COLON__}"
+  escaped_hyphens="${escaped_colons//-/__HYPHEN__}"
+
+  printf "%s" "$escaped_hyphens"
+}
+
+# desc()
+#
+# Usage:
+#   desc command "description"
+#
+# Create a description for a specified command name. The command description
+# text can be passed as the second argument or as standard input.
+#
+# To make the description text available to other functions, desc() assigns the
+# text to a variable with the format $_desc_function_name
+#
+# NOTE:
+#
+# The `read` form of assignment is used for a balance of ease of
+# implementation and simplicity. There is an alternative assignment form
+# that could be used here:
+#
+# var="$(cat <<'EOM'
+# some message
+# EOM
+# )
+#
+# However, this form appears to require trailing space after backslases to
+# preserve newlines, which is unexpected. Using `read` simply requires
+# escaping backslashes, which is more common.
+desc() {
+  set +e
+  [[ -z $1 ]] && _die printf "desc: No command name specified.\n"
+
+  local raw_function_name
+  local escaped_function_name
+  raw_function_name="$1"
+  escaped_function_name="$(_escape_function_name "$raw_function_name")"
+
+  if [[ -n ${2:-} ]]
+  then
+    read -d '' "_desc_$escaped_function_name" <<EOM
+$2
+EOM
+    _debug printf \
+      "desc() set with argument: _desc_%s\n" \
+      "$escaped_function_name"
+  else
+    read -d '' "_desc_$escaped_function_name"
+    _debug printf \
+      "desc() set with pipe: _desc_%s\n" \
+      "$escaped_function_name"
+  fi
+  set -e
+}
+
+# _print_desc()
+#
+# Usage:
+#   _print_desc <command>
+#
+# Prints the description for a given command, provided the description has been
+# set using the desc() function.
+_print_desc() {
+  local raw_function_name
+  local escaped_function_name
+  raw_function_name="$1"
+  escaped_function_name="$(_escape_function_name "$raw_function_name")"
+
+  local var="_desc_$escaped_function_name"
+  if [[ -n ${!var:-} ]]
+  then
+    printf "%s\n" "${!var}"
+  else
+    printf "No additional information for \`%s\`\n" "$raw_function_name"
+    return 1
+  fi
+}
+
+###############################################################################
+# Default Commands
+###############################################################################
+
+# Version #####################################################################
+
+desc "version" <<EOM
+Usage:
+  $_ME ( version | --version )
+
+Description:
+  Display the current program version.
+
+  To save you the trouble, the current version is $_VERSION
+EOM
+version() {
+  printf "%s\n" "$_VERSION"
+}
+
+# Help ########################################################################
+
+desc "help" <<EOM
+Usage:
+  $_ME help [<command>]
+
+Description:
+  Display help information for $_ME or a specified command.
+EOM
+help() {
+  if [[ ${#_COMMAND_ARGV[@]} = 1 ]]
+  then
+    cat <<EOM
+                       _ _
+  ___  _____  __   ___| (_)
+ / _ \\/ __\\ \\/ /  / __| | |
+| (_) \\__ \\>  <  | (__| | |
+ \\___/|___/_/\\_\\  \\___|_|_|
+
+Shortcuts for OS X operations.
+
+Version: $_VERSION
+
+Usage:
+  $_ME <command> [--command-options] [<arguments>]
+  $_ME -h | --help
+  $_ME --version
+
+Options:
+  -h --help  Display this help information.
+  --version  Display version information.
+
+Help:
+  $_ME help [<command>]
+
+$(commands)
+EOM
+  else
+    _print_desc "$1"
+  fi
+}
+
+# Command List ################################################################
+
+desc "commands" <<EOM
+Usage:
+  $_ME commands [--raw]
+
+Options:
+  --raw  Display the command list without formatting.
+
+Description:
+  Display the list of available commands.
+EOM
+commands() {
+  if _command_argv_includes "--raw"
+  then
+    printf "%s\n" "${_DEFINED_COMMANDS[@]}"
+  else
+    printf "Available commands:\n"
+    printf "  %s\n" "${_DEFINED_COMMANDS[@]}"
+  fi
+}
+
+###############################################################################
+# Commands
+# ========.....................................................................
+#
+# Example command group structure:
+#
+# desc example ""   - Optional. A short description for the command.
+# example() { : }   - The command called by the user.
+#
+#
+# desc example <<EOM
+#   Example help text. Options specified with http://docopt.org/
+# EOM
+# example() {
+#   echo "Hello, World!"
+# }
+#
+###############################################################################
+
+# -------------------------------------------------------------------- Accounts
+
+desc "accounts" <<EOM
+Usage:
+  $_ME accounts (list | login <username> | logout [--force] | window)
+
+Subcommands:
+  list    List login user accounts.
+  login   Log in as the specified user, aka "Fast User Switching."
+  logout  Log out the current user.
+  window  Go to the OS X login window.
+
+Options:
+  --force  Suppress confirmation prompt.
+EOM
+_CGSESSION="/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession"
+accounts() {
+  _debug printf "accounts() >> start\n"
+
+  local _subcommand="help"
+  local _arguments=()
+
+  for arg in "${_COMMAND_ARGV[@]:-}"
+  do
+    case $arg in
+      list|login|logout|window)
+        _subcommand="$arg"
+        ;;
+      *)
+        _arguments+=($arg)
+        ;;
+    esac
+  done
+
+
+  case "$_subcommand" in
+    "list")
+      local _users_and_ids=($(dscl . list /Users uid | grep -v '^_'))
+      for _user in "${_users_and_ids[@]}"
+      do
+        local _username=
+        local _home_directory=
+
+        _username="$(echo "$_user" | awk '{print $1}')"
+
+        # Only print users with valid home directories, which is used here as
+        # an indication that the account is a valid login account. So far I've
+        # been unable to find a better way to list only full login user
+        # accounts.
+        _home_directory="$(
+          dscl . -read "/Users/${_username}" NFSHomeDirectory | \
+            awk '{for (i=2; i<NF; i++) printf $i " "; print $NF}'
+        )"
+        _debug printf "accounts() \$_username: %s\n" "$_username"
+        _debug printf "accounts() \$_home_directory: %s\n" "$_home_directory"
+        if ! ( [[ "$_username" == "root" ]]         ||
+               [[ "$_username" == "daemon" ]]       ||
+               [[ "$_home_directory" =~ ^/var.* ]]  ||
+               [[ "$_home_directory" =~ ^/dev.* ]]  ||
+               [[ "$_home_directory" =~ ^/opt.* ]]
+        )
+        then
+          echo "$_username"
+        fi
+      done
+      ;;
+    "login")
+      local _user="${_arguments[1]:-}"
+      local _user_id=
+
+      if [[ -z "$_user" ]]
+      then
+        _die printf "User missing.\n%s\n" "$(_print_help)"
+      fi
+
+      _user_id=$(id -u "$_user")
+      if [[ -z "$_user_id" ]]
+      then
+        _die printf "No user with that name found.\n"
+      fi
+
+      _debug printf "%s\n" "$_CGSESSION -switchToUserID $_user_id"
+      "$_CGSESSION" -switchToUserID "$_user_id"
+      ;;
+    "logout")
+      if [[ "${_arguments[1]:-}" == "--force" ]]
+      then
+        osascript -e 'tell application "loginwindow" to  «event aevtrlgo»'
+      else
+        osascript -e 'tell app "System Events" to log out'
+      fi
+      ;;
+    "window")
+      "$_CGSESSION" -suspend
+      ;;
+    "help")
+      $_ME help accounts
+      ;;
+  esac
+}
+
+# --------------------------------------------------------------------- Airport
+
+desc airport <<EOM
+Usage:
+  $_ME airport (on | off | info | quality | scan | join <SSID>)
+
+Subcommands:
+  on       Turn wireless on.
+  off      Turn wireless off.
+  info     Show the current airport status.
+  quality  Show the wireless quality as a percentage.
+  scan     Perform a scan for wireless networks.
+  join     Join the specified network.
+EOM
+_AIRPORT_CMD="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport"
+airport() {
+  local _networksetup_cmd=
+  local _wifi_interface=
+  local _subcommand="info"
+  local _arguments=()
+
+  _networksetup_cmd="$(which networksetup)"
+
+  # Command references:
+  # - http://apple.stackexchange.com/a/90516
+  # - https://jamfnation.jamfsoftware.com/discussion.html?id=4849
+  _wifi_interface="$(
+    "$_networksetup_cmd" \
+      -listallhardwareports | awk '/Wi-Fi|AirPort/ {getline; print $NF}'
+  )"
+
+  for arg in "${_COMMAND_ARGV[@]:-}"
+  do
+    case $arg in
+      on|off|info|quality|scan|join)
+        _subcommand="$arg"
+        ;;
+      *)
+        _arguments+=($arg)
+        ;;
+    esac
+  done
+
+  case "$_subcommand" in
+    "on")
+      "$_networksetup_cmd" -setairportpower "$_wifi_interface" on && \
+        printf "Airport on\n"
+      ;;
+    "off")
+      "$_networksetup_cmd" -setairportpower "$_wifi_interface" off && \
+        printf "Airport off\n"
+      ;;
+    "join")
+      local _ssid="${_arguments[1]:-}"
+      local _password=
+
+      # Request password without displaying it
+      printf "Password: "
+      read -s _password
+      printf "\n" # print newline to stop `read`.
+
+      _debug printf "airport() \$_wifi_interface: %s\n" "$_wifi_interface"
+      _debug printf "airport() \$_ssid: %s\n" "${_ssid}"
+
+      "$_networksetup_cmd" \
+        -setairportnetwork \
+        "$_wifi_interface" \
+        "$_ssid" \
+        "$_password"
+      ;;
+    "info")
+      "$_AIRPORT_CMD" --getinfo
+      ;;
+    "quality")
+      local _info=
+      local _signal=
+      local _noise=
+      local _snr=
+      local _percent=
+
+      # Reference: http://apple.stackexchange.com/a/110884
+      _info="$($_ME airport info)"
+      _signal="$(
+        printf "%s\n" "$_info" | awk '/agrCtlRSSI/ {print $NF}'
+      )"
+      _noise="$(
+        printf "%s\n" "$_info" | awk '/agrCtlNoise/ {print $NF}'
+      )"
+      _snr="$(printf "100*(%s -(%s))\n" "$_signal" "$_noise" | bc -l)"
+      _percent="$(printf "%s/50\n" "$_snr" | bc -l)"
+      printf "%s%%\n" "${_percent%.*}"
+      ;;
+    "scan")
+      "$_AIRPORT_CMD" --scan
+      ;;
+  esac
+}
+
+# ----------------------------------------------------------------------- Audio
+
+desc play <<EOM
+Alias for \`afplay\`
+$(printf "%s\n" "$(afplay -h 2>&1)" | sed s/afplay/"$_ME"\ play/g)
+EOM
+play() {
+  afplay "$*"
+}
+
+desc volume <<EOM
+Usage:
+  $_ME volume ( <0-9> | <00-100> | mute | unmute )
+
+Arguments:
+  <none>    Print the current output volume level as a percent.
+  <0-9>     Set the output volume to about the nearest tenth percent. Sometimes
+            the actual number is slightly off for reasons unknown.
+  <00-100>  Set the output volume to the specified percent.
+  mute      Mute output.
+  unmute    Unmute output.
+EOM
+_print_mute_state() {
+  local _mute_state=
+  _mute_state=$(osascript -e "output muted of (get volume settings)")
+  printf "Mute: %s\n" "${_mute_state}"
+}
+_print_current_output_volume() {
+  local _volume=
+  _volume=$(osascript -e "output volume of (get volume settings)")
+  printf "Output volume: %s%%\n" "${_volume}"
+}
+volume() {
+  case "${1}" in
+    mute)
+      osascript -e "set volume output muted true"
+      _print_mute_state
+      ;;
+    unmute)
+      osascript -e "set volume output muted false"
+      _print_mute_state
+      ;;
+    *[0-9][0-9])
+      osascript -e "set volume output volume ${1}"
+      _print_current_output_volume
+      ;;
+    [0-9])
+      osascript -e "set volume output volume ${1}0"
+      _print_current_output_volume
+      ;;
+    *)
+      _print_current_output_volume
+      _print_mute_state
+      ;;
+  esac
+}
+desc vol <<EOM
+Description:
+  Volume controls. This is an alias for the \`volume\`
+  command. See \`help volume\` for usage information.
+EOM
+vol() {
+  $_ME volume "$@"
+}
+
+# --------------------------------------------------------------------- battery
+
+desc battery <<EOM
+Usage:
+  $_ME battery [-l|--long]
+  $_ME battery status [-l|--long]
+  $_ME battery cycles
+  $_ME battery health
+
+Subcommands:
+  status  Current battery status.
+  cycles  Number of battery cycles.
+  health  Health of the battery, using the current maximum capacity as
+          percentage of the battery's design capacity).
+
+Options:
+  -l --long  Print longform information about the battery status.
+
+Description:
+  Print battery info. When no subcommand is specified, display \`status\`.
+EOM
+# _ioreg_property()
+#
+# Usage:
+#   _ioreg_property <object name> <property key>
+#
+# Description:
+#   Print individual Darwin / OS X I/O Kit Registry property keys via the
+#   `ioreg` tool.
+#
+# Example:
+#   _ioreg_property AppleSmartBattery CycleCount
+_ioreg_property() {
+  local _name="${1:-}"
+  if [[ -z "$_name" ]]
+  then
+    printf "_ioreg_property(): No object name specified.\n"
+    exit 1
+  fi
+  local _key="${2:-}"
+  if [[ -z "$_key" ]]
+  then
+    printf "_ioreg_property(): No property key specified.\n"
+    exit 1
+  fi
+  local _value=
+  _value="$(ioreg \
+    -l \
+    -n "$_name" \
+    -r | awk -v pattern="\"${_key}\"" '$1 == pattern {print $3}')"
+  printf "%s\n" "$_value"
+}
+battery() {
+  local _long_status=
+  local _subcommand="status"
+  for arg in "${_COMMAND_ARGV[@]:-}"
+  do
+    case $arg in
+      -l|--long)
+        _long_status=1
+        ;;
+      status|cycles|health)
+        _subcommand="$arg"
+        ;;
+      *)
+        arguments+=($arg)
+        ;;
+    esac
+  done
+
+  case "$_subcommand" in
+    "status")
+      if [[ -n "$_long_status" ]]
+      then
+        ioreg -l -w 0 -n AppleSmartBattery -r
+      else
+        pmset -g batt
+      fi
+      ;;
+    "cycles")
+      _ioreg_property AppleSmartBattery CycleCount
+      ;;
+    "health")
+      local _health_percentage=
+      _health_percentage="$(ioreg -l -n AppleSmartBattery -r | \
+        awk '/MaxCapacity/{mc=$3};/DesignCapacity/{dc=$3};END{print 100*mc/dc}'
+      )"
+      printf "%s%%\n" "$_health_percentage"
+      ;;
+  esac
+}
+
+# ------------------------------------------------------------------ caffeinate
+
+desc caffeinate <<EOM
+Usage:
+  $_ME caffeinate [-disu] [-t timeout] [command] [arguments]
+
+Description:
+  Prevent the system from sleeping on behalf of a utility.
+
+  This is simply a bookmark for the caffeinate command.
+
+  See \`man caffeinate\` for more information.
+
+Examples:
+  caffeinate -u -t 3600
+    Prevent sleeping for one hour (3,600 seconds).
+
+  caffeinate -s scp bigfile me:myserver/bigfile
+    Prevent sleeping until the secure file copy (scp) completes.
+EOM
+_CAFFEINATE_CMD="$(which caffeinate)"
+caffeinate() {
+  "$_CAFFEINATE_CMD" "$*"
+}
+
+# --------------------------------------------------------------------- desktop
+
+desc desktop <<EOM
+Usage:
+  $_ME desktop ( hide | show )
+
+Description:
+  Hide/show all desktop icons (useful when presenting).
+EOM
+desktop() {
+  local _action="$1"
+  case "$_action" in
+    hide)
+      defaults write com.apple.finder CreateDesktop -bool false && \
+        killall Finder
+      ;;
+    show)
+      defaults write com.apple.finder CreateDesktop -bool true && \
+        killall Finder
+      ;;
+    *)
+      _print_desc "desktop"
+      ;;
+  esac
+}
+
+# ------------------------------------------------------------------------- DNS
+
+desc flushdns <<EOM
+Usage:
+  $_ME flushdns
+
+Description:
+  Flush Directory Service cache.
+EOM
+flushdns() {
+  # pre-yosemite
+  # need os x version checking to use properly
+  #dscacheutil -flushcache && killall -HUP mDNSResponder
+  sudo discoveryutil mdnsflushcache && sudo discoveryutil udnsflushcaches
+}
+
+# ------------------------------------------------------------------------ fans
+
+desc fans <<EOM
+Usage:
+  $_ME fans
+
+Description:
+  Display fan stats via iStats.
+
+  More information:
+    https://github.com/Chris911/iStats
+EOM
+fans() {
+  if _command_exists "istats"
+  then
+    istats fan
+  else
+    _die printf "\
+iStats not installed.
+
+Install via Rubygems with:
+  gem install iStats
+
+More information:
+  https://github.com/Chris911/iStats
+"
+  fi
+}
+
+# ---------------------------------------------------------------------- Finder
+
+desc finder <<EOM
+Usage:
+  $_ME finder hidden ( hide | show )
+
+Description:
+  Hide/show hidden files in the Finder.
+EOM
+finder() {
+  local _target="$1"
+  local _action="$2"
+  if [[ "$_target" != "hidden" ]]
+  then
+    _print_desc "finder"
+    exit 1
+  fi
+  case "$_action" in
+    hide)
+      defaults write com.apple.finder AppleShowAllFiles -bool false && \
+        killall Finder
+      ;;
+    show)
+      defaults write com.apple.finder AppleShowAllFiles -bool true && \
+        killall Finder
+      ;;
+    *)
+      _print_desc "finder"
+      ;;
+  esac
+}
+
+# --------------------------------------------------------------------- hdiutil
+
+desc eject <<EOM
+Usage:
+  $_ME eject <volname>
+
+Description:
+  Ejects a given volume (eg, a disk image).
+EOM
+eject() {
+  if [[ -z "$1" ]]
+  then
+    _die _print_desc "eject"
+  fi
+  hdiutil eject "/Volumes/$*"
+}
+
+# ------------------------------------------------------------------ JavaScript
+
+desc jsc <<EOM
+Usage:
+  $_ME jsc [<filename.js>]
+
+Description:
+  Run the JavaScriptCore REPL.
+
+  If no argument is provided, launch an interactive REPL session. If a
+  filename is provided as the second argument, run that file with jsc.
+EOM
+_JSC_CMD="/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Resources/jsc"
+jsc() {
+  if [[ -e "$_JSC_CMD" ]]
+  then
+    local _javascript_filename="$1"
+    if [[ -z "$_javascript_filename" ]]
+    then
+      "$_JSC_CMD"
+    else
+      _debug printf "jsc() \$_javascript_filename: %s\n" "$_javascript_filename"
+      "$_JSC_CMD" "$_javascript_filename"
+    fi
+  else
+    printf "JavaScriptCore.framework not found.\n"
+  fi
+}
+
+# ------------------------------------------------------------------------ kext
+
+desc kext <<EOM
+Usage:
+  $_ME kext list [--third-party]
+  $_ME kext install <path>
+  $_ME kext uninstall <path>
+  $_ME kext load <path>
+  $_ME kext unload <path>
+
+Description:
+  List, install, uninstall, load, and unload kexts.
+
+  NOTE: !=> EXPERIMENTAL <=! Not recommended for use.
+EOM
+kext() {
+  local _subcommand="help"
+  local _arguments=()
+
+  for arg in "${_COMMAND_ARGV[@]:-}"
+  do
+    case $arg in
+      list|load|unload|install|uninstall)
+        _subcommand="$arg"
+        ;;
+      *)
+        _arguments+=($arg)
+        ;;
+    esac
+  done
+
+  case "$_subcommand" in
+    "list")
+      if [[ "${_arguments[1]:-}" == "--third-party" ]]
+      then
+        kextstat | grep -v com.apple
+      else
+        kextstat
+      fi
+      ;;
+    "load")
+      local _path="${_arguments[1]:-}"
+      [[ -z "$_path" ]] && die "Path missing."
+
+      sudo kextload "$_name"
+      ;;
+    "unload")
+      local _path="${_arguments[1]:-}"
+      [[ -z "$_path" ]] && die "Path missing."
+
+      sudo kextunload "$_path"
+      ;;
+    "install")
+      local _path="${_arguments[1]:-}"
+      [[ -z "$_path" ]] && die "Path missing."
+
+      local _basename
+      _basename="$(basename "$_path")"
+      [[ -z "$_basename" ]] && die "Unable to determine kext filename."
+
+      sudo cp -R "$_path" "/Library/Extensions/"
+      [[ ! -e "/Library/Extensions/$_basename" ]] && die "Error copying kext."
+      sudo chmod -R 755 "/Library/Extensions/$_basename"
+      sudo chown -R root:wheel "/Library/Extensions/$_basename"
+      sudo kextload "/Library/Extensions/$_basename"
+      ;;
+    "uninstall")
+      local _path="${_arguments[1]:-}"
+      [[ -z "$_path" ]] && die "Path missing."
+
+      sudo kextunload "$_path"
+      sudo chown "$(whoami)" "$_path"
+      if _command_exists "trash"
+      then
+        sudo "trash" "$_path"
+      else
+        sudo mv "$_path" "$HOME/.Trash/"
+      fi
+      ;;
+    "help")
+      $_ME help kext
+      ;;
+  esac
+}
+
+# -------------------------------------------------------------- LaunchServices
+
+desc launch-services <<EOM
+Usage:
+  $_ME launch-services cleanup
+
+Description:
+  Clean up LaunchServices to remove duplicates in the "Open With" menu.
+EOM
+_LSREGISTER_CMD="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+launch-services() {
+  local _action="$1"
+
+  case "$_action" in
+    "cleanup")
+      "$_LSREGISTER_CMD" -kill -r -domain local -domain system -domain user && \
+        killall Finder
+      ;;
+    *)
+      _print_desc "launch_services"
+      ;;
+  esac
+}
+
+# ---------------------------------------------------------------------- Locate
+
+desc locate <<EOM
+Usage:
+  $_ME locate updatedb
+
+Description:
+  Update the locate database.
+
+  NOTE: prefer using \`spotlight\` commands rather than \`locate\`.
+EOM
+locate() {
+  local _action="$1"
+  case "$_action" in
+    "updatedb")
+      sudo /usr/libexec/locate.updatedb
+      ;;
+    *)
+      _print_desc "locate"
+      ;;
+  esac
+}
+
+
+# ------------------------------------------------------------------------ lock
+
+desc afk <<EOM
+Alias for \`$_ME lock\`
+
+For full usage information, run:
+  $_ME help lock
+EOM
+afk() {
+  lock "$*"
+}
+
+desc lock <<EOM
+Usage:
+  $_ME lock
+
+Description:
+  Lock the screen (when going AFK).
+EOM
+lock() {
+  "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession" -suspend
+}
+
+# ----------------------------------------------------------------- login-items
+
+desc login-items <<EOM
+Usage:
+  $_ME login-items list
+  $_ME login-items add <path> [--hide]
+  $_ME login-items show ( <name> | </path/to/application.app> )
+  $_ME login-items delete ( <name> | </path/to/application.app> )
+
+Subcommands:
+  list    List current login items.
+  add     Add a login item using the full path to the .app.
+  show    Print the properties for a login item using either the name, found
+          via the \`list\` subcommand, or the full path to the item.
+  delete  Delete a login item using either the name, found via the \`list\`
+          subcommand, or the full path to the item.
+
+Description:
+  List, add, show, and delete login items.
+
+  More information:
+    https://hamstergene.github.io/post/editing-osx-login-items-cmdline/
+EOM
+login-items() {
+  local _subcommand="help"
+  local _arguments=()
+  local _hide=false
+
+  for arg in "${_COMMAND_ARGV[@]:-}"
+  do
+    case $arg in
+      list|add|delete|show)
+        _subcommand="$arg"
+        ;;
+      --hide)
+        _hide=true
+        ;;
+      *)
+        _arguments+=($arg)
+        ;;
+    esac
+  done
+
+
+  case "$_subcommand" in
+    "list")
+      osascript \
+        -e 'tell application "System Events" to get every login item' | \
+        sed 's/login item //g' | \
+        sed -e $'s/, /\\\n/g'
+      ;;
+    "add")
+      local _path=
+      local _properties=
+      local _add_command=
+
+      if [[ -n "${_arguments[1]:-}" ]]
+      then
+        _path="${_arguments[1]}"
+      else
+        _die printf "Path missing.\n"
+      fi
+
+      _properties="{path:\"$_path\", hidden:$_hide}"
+      _add_command="\
+tell application \"System Events\" \
+to make login item at end with properties $_properties"
+      _debug printf \
+        "loginitems() add \$_add_command: %s\n" \
+        "$_add_command"
+      osascript -e "$_add_command"
+      ;;
+    "delete")
+      local _delete_identifier=
+      local _delete_command=
+
+      if [[ -z "${_arguments[1]:-}" ]]
+      then
+        _die printf "No name or path provided.\n"
+      elif [[ "${_arguments[1]}" =~ /.*.app ]]
+      then
+        _delete_identifier="path is \"${_arguments[1]}\""
+      else
+        _delete_identifier="name is \"${_arguments[1]}\""
+      fi
+      _delete_command="\
+tell application \"System Events\" \
+to delete every login item whose $_delete_identifier"
+      _debug printf \
+        "loginitems delete \$_delete_command: %s\n" \
+        "$_delete_command"
+      osascript -e "$_delete_command"
+      ;;
+    "show")
+      local _show_identifier=
+      local _show_command=
+
+      if [[ -z "${_arguments[1]:-}" ]]
+      then
+        _die printf "No name or path provided.\n"
+      elif [[ "${_arguments[1]}" =~ /.*.app ]]
+      then
+        _show_identifier="path is \"${_arguments[1]}\""
+      else
+        _show_identifier="name is \"${_arguments[1]}\""
+      fi
+      _show_command="\
+tell application \"System Events\" \
+to get the properties of every login item whose $_show_identifier"
+      _debug printf \
+        "loginitems show \$_show_command: %s\n" \
+        "$_show_command"
+      osascript -e "$_show_command"
+      ;;
+    "help")
+      $_ME help login-items
+      ;;
+  esac
+}
+
+# ---------------------------------------------------------------------- memory
+
+desc memory <<EOM
+Usage:
+  $_ME memory
+
+Description:
+  Print memory (RAM) usage information.
+EOM
+memory() {
+  # via: http://apple.stackexchange.com/a/46655
+  # NOTE: `vm_stat` is much faster, but the output requires processing to be
+  # used. More info:
+  # - http://apple.stackexchange.com/q/4286
+  # - http://apple.stackexchange.com/a/94258
+  top -l 1 -s 0 | grep PhysMem
+}
+
+desc ram <<EOM
+Alias for \`$_ME memory\`
+
+For full usage information, run:
+  $_ME help memory
+EOM
+ram() {
+  memory "$*"
+}
+
+# ---------------------------------------------------------------- networksetup
+
+desc networksetup <<EOM
+Usage:
+  $_ME networksetup <arguments>
+
+Description:
+  Configuration tool for network settings in System Preferences.
+
+  This is simply a bookmark for the networksetup utility.
+
+  See \`man networksetup\` for more information.
+
+Examples:
+   networksetup -listallnetworkservices
+
+   networksetup -setmanual "Built-in Ethernet" 192.168.100.100 255.255.255.0
+   192.168.100.1
+
+   networksetup -setdnsservers "Built-in Ethernet" 192.168.100.100
+   192.168.100.12
+
+   networksetup -setsearchdomains "Built-in Ethernet" company.com corp.com
+
+   networksetup -setwebproxy "Built-in Ethernet" proxy.company.com 80
+
+   networksetup -setwebproxy "Built-In Ethernet" proxy.company.com 80 On
+   authusername authpassword
+
+   networksetup -duplicatenetworkservice "Built-In Ethernet" "Local LAN"
+
+   networksetup -getdnsservers "Built-In Ethernet"
+
+   networksetup -setMTU en0 1500
+
+   networksetup -setMedia en0 autoselect
+
+   networksetup -setMedia en0 100baseTX half-duplex
+
+   networksetup -createBond MyBond en0 en1
+
+   networksetup -addDeviceToBond en0 bond0
+
+   networksetup -setpppoepassword MyPPPoE - < ~/Desktop/MyPasswordFile.txt
+
+   networksetup -createlocation Home populate
+EOM
+_NETWORKSETUP_CMD="$(which networksetup)"
+networksetup() {
+  "$_NETWORKSETUP_CMD" "$*"
+}
+
+# ----------------------------------------------------------------- Preferences
+
+desc plistbuddy <<EOM
+Usage:
+  $_ME plistbuddy <PlistBuddy arguments> [<PlistBuddy options>]
+
+Description:
+  PlistBuddy alias, because sometimes \`defaults\` just doesn’t cut it.
+EOM
+plistbuddy() {
+  /usr/libexec/PlistBuddy "$@"
+}
+
+# --------------------------------------------------------------------- process
+
+desc process <<EOM
+Usage:
+  $_ME process pause ( <pid> | -n --name <name> )
+  $_ME process continue ( <pid> | -n --name <name> )
+  $_ME process throttle <pid> <max usage>
+  $_ME process kill ( <pid> | -n --name <name> )
+
+Description:
+  Pause, continue, throttle, or kill a given process.
+
+Dependency:
+  cputhrottle
+    http://www.willnolan.com/cputhrottle/cputhrottle.html
+EOM
+process() {
+  local _name=
+  local _pid=
+  local _subcommand=
+  local _arguments=()
+  local _throttle_percent=
+  for arg in "${_COMMAND_ARGV[@]:-}"
+  do
+    case $arg in
+      -n|--name)
+        shift
+        _name="$arg"
+        ;;
+      pause|continue|throttle|kill)
+        _subcommand="$arg"
+        ;;
+      *)
+        _arguments+=($arg)
+        ;;
+    esac
+  done
+
+  if [[ -z "$_name" ]]
+  then
+    _pid="${_arguments[1]:-}"
+    _debug printf "process() \$_pid: %s\n" "$_pid"
+  else
+    _die printf "Process id missing.\n"
+  fi
+
+  case "$_subcommand" in
+    "pause")
+      if [[ -n "$_name" ]]
+      then
+        killall -STOP -c "$_name"
+      else
+        kill -STOP "$_pid"
+      fi
+      ;;
+    "continue")
+      if [[ -n "$_name" ]]
+      then
+        killall -CONT -c "$_name"
+      else
+        kill -CONT "$_pid"
+      fi
+      ;;
+    "throttle")
+      if ! _command_exists "cputhrottle"
+      then
+        _die printf "\
+cputhrottle not installed.
+
+Get it from here:
+  http://www.willnolan.com/cputhrottle/cputhrottle.html
+"
+      fi
+      _throttle_percent="${_arguments[2]:-}"
+      if [[ -z "$_throttle_percent" ]]
+      then
+        _die printf "Max usage is missing."
+      fi
+      cputhrottle "$_pid" "$_throttle_percent"
+      ;;
+    "kill")
+      if [[ -n "$_name" ]]
+      then
+        killall -c "$_name"
+      else
+        kill "$_pid"
+      fi
+      ;;
+    *)
+      $_ME help process
+      ;;
+  esac
+}
+
+# ------------------------------------------------------------------ Quick Look
+
+desc ql <<EOM
+Usage:
+  $_ME ql <item>
+
+Description:
+  Open items with Quick Look.
+EOM
+ql() {
+  qlmanage -p "$*" > /dev/null 2>&1
+}
+
+# ----------------------------------------------------------------------- Sleep
+
+desc sleep <<EOM
+Usage:
+  $_ME sleep
+
+Description:
+  Put the system to sleep immediately.
+EOM
+sleep() {
+  pmset sleepnow
+}
+
+# -------------------------------------------------------------- softwareupdate
+
+desc softwareupdate <<EOM
+Usage:
+  $_ME softwareupdate ( -l | --list )
+  $_ME softwareupdate ( -i | --install ( <item> | ( -a | --all ) ) )
+
+Options:
+  -l --list    List available updates
+  -i --install Install the given update or all of the available updates.
+    -a --all   When used with -i or --install, install all available updates.
+
+Description:
+  Get and install updates available through Apple's software update catalog,
+  or whichever .sucatalog is set in preferences for catalogs provided by OS X
+  Server's Software Update service.
+
+  This is just a redundant wrapper around the \`softwareupdate\` utility
+  included as a bookmark. See \`man softwareupdate\` for more options.
+EOM
+_SOFTWAREUPDATE_CMD="$(which softwareupdate)"
+softwareupdate() {
+  "$_SOFTWAREUPDATE_CMD" "${@:-}"
+}
+
+# ------------------------------------------------------------------- Spotlight
+
+desc spotlight <<EOM
+Usage:
+  $_ME spotlight search ( <text> | <filename> )
+  $_ME spotlight filename <filename>
+  $_ME spotlight disable
+  $_ME spotlight enable
+
+Description:
+  Spotlight searching and controls.
+EOM
+spotlight() {
+  case "$1" in
+    "search")
+      shift
+      mdfind -interpret "$*"
+      ;;
+    "filename")
+      shift
+      mdfind "kMDItemDisplayName == '$*'wc"
+      ;;
+    "disable")
+      sudo mdutil -a -i off
+      ;;
+    "enable")
+      sudo mdutil -a -i on
+      ;;
+    *)
+      _print_desc "spotlight"
+      ;;
+  esac
+}
+
+desc sl <<EOM
+Description:
+  Spotlight searching and controls. This is an alias for the \`spotlight\`
+  command. See \`help spotlight\` for usage information.
+EOM
+sl() {
+  $_ME spotlight "$@"
+}
+
+# ------------------------------------------------------------------------ sshd
+
+desc sshd <<EOM
+Usage:
+  $_ME sshd ( start | stop | status )
+
+Description:
+  Start, stop, or get the status of sshd for remote login.
+EOM
+sshd() {
+  local _action="$1"
+  if [[ "$_action" == "start" ]]
+  then
+    sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist
+    sshd status
+  elif [[ "$_action" == "stop" ]]
+  then
+    sudo launchctl unload -w /System/Library/LaunchDaemons/ssh.plist
+    sshd status
+  elif [[ "$_action" == "status" ]]
+  then
+    if sudo launchctl list | grep -q com.openssh.sshd
+    then
+      printf "sshd running\n"
+    else
+      printf "sshd stopped\n"
+    fi
+  else
+    _die printf "Command not recognized.\n%s\n" "$(_print_desc "sshd")"
+  fi
+}
+
+# ----------------------------------------------------------------------- stats
+
+desc stats <<EOM
+Usage:
+  $_ME stats
+
+Description:
+  Display temperature, fan, and battery status via iStats.
+
+  More information:
+    https://github.com/Chris911/iStats
+EOM
+stats() {
+  if _command_exists "istats"
+  then
+    istats
+  else
+    _die printf "\
+iStats not installed.
+
+Install via Rubygems with:
+  gem install iStats
+
+More information:
+  https://github.com/Chris911/iStats
+"
+  fi
+}
+
+# ---------------------------------------------------------------------- sysctl
+
+desc sysctl <<EOM
+Usage:
+  $_ME sysctl <arguments>
+
+Description:
+  Configuration tool for certain machine settings in System Preferences.
+
+  This is simply a bookmark for the system's sysctl utility.
+
+  See \`man sysctl\` for more information.
+
+Examples:
+  sysctl -n machdep.cpu.brand_string
+    Print CPU information.
+
+  sysctl vm.loadavg
+    Print load average history.
+EOM
+_SYSCTL_CMD="$(which sysctl)"
+sysctl() {
+  "$_SYSCTL_CMD" "$*"
+}
+
+# ----------------------------------------------------------------- systemsetup
+
+desc systemsetup <<EOM
+Usage:
+  $_ME systemsetup <arguments>
+
+Description:
+  Configuration tool for certain machine settings in System Preferences.
+
+  This is simply a bookmark for the system's systemsetup utility.
+
+  See \`man systemsetup\` for more information.
+
+Examples:
+  systemsetup -setdate 04:15:02
+
+  systemsetup -settime 16:20:00
+
+  systemsetup -settimezone US/Pacific
+
+  systemsetup -setnetworktimeserver time.apple.com
+EOM
+_SYSTEMSETUP_CMD="$(which systemsetup)"
+systemsetup() {
+  "$_SYSTEMSETUP_CMD" "$*"
+}
+
+# ------------------------------------------------------------------------ temp
+
+desc temp <<EOM
+Usage:
+  $_ME temp
+
+Description:
+  Display CPU and battery temperature via iStats.
+
+  More information:
+    https://github.com/Chris911/iStats
+EOM
+temp() {
+  if _command_exists "istats"
+  then
+    istats cpu
+    istats battery temp
+  else
+    _die printf "\
+iStats not installed.
+
+Install via Rubygems with:
+  gem install iStats
+
+More information:
+  https://github.com/Chris911/iStats
+"
+  fi
+}
+desc temperature <<EOM
+Usage:
+  $_ME temperature
+
+Description:
+  Alias for \`temp\`.
+
+  Display CPU temperature via iStats.
+
+  More information:
+    https://github.com/Chris911/iStats
+EOM
+temperature() {
+  $_ME temp
+}
+
+# -------------------------------------------------------------------- textutil
+
+desc textutil <<EOM
+Usage:
+  $_ME textutil [command_option] [other_options] file...
+
+Description:
+  textutil can be used to manipulate text files of various formats, using the
+  mechanisms provided by the Cocoa text system.
+
+  This is simply a bookmark for the system's textutil utility.
+
+  See \`man textutil\` for more information.
+
+Examples:
+  textutil -convert html MyWordFile -output /tmp/webfile.html
+    Convert a Word document into HTML.
+
+  textutil -info MyWordFile
+    Display information about the file format.
+EOM
+_TEXTUTIL_CMD="$(which textutil)"
+textutil() {
+  "$_TEXTUTIL_CMD" "$*"
+}
+
+# ----------------------------------------------------------------------- Trash
+
+desc trash <<EOM
+Usage:
+  $_ME trash ( empty [--secure] [--all] | open )
+
+Subcommands:
+  empty  Empty the trash.
+  open   Open the trash folder in the finder.
+
+Options:
+  --secure  Use \`srm\` to securely delete trash contents.
+  --all     Empty trashes on all connected volumes.
+EOM
+trash() {
+  local _subcommand=
+  local _secure=
+  local _all=
+  for arg in "${_COMMAND_ARGV[@]:-}"
+  do
+    case "$arg" in
+      empty|open)
+        _subcommand="$arg"
+        ;;
+      --secure)
+        _secure=1
+        ;;
+      --all)
+        _all=1
+        ;;
+      *)
+        :
+        ;;
+    esac
+  done
+
+  case "$_subcommand" in
+    "open")
+      open "$HOME/.Trash"
+      ;;
+    "empty")
+      local _trash_command="rm -rfv"
+      if [[ -n "$_secure" ]]
+      then
+        _trash_command="srm -rfvm"
+      fi
+
+      sudo "$_trash_command" ~/.Trash/
+      if [[ -n "$_all" ]]
+      then
+        sudo "$_trash_command" /Volumes/*/.Trashes
+      fi
+      ;;
+    *)
+      _print_desc "trash"
+      ;;
+  esac
+}
+
+# ------------------------------------------------------------------------- vnc
+
+desc vnc <<EOM
+Usage:
+  $_ME vnc ( start | stop | status )
+
+Description:
+  Start, stop, or get the status of vnc aka Screen Sharing aka Remote Desktop.
+EOM
+_KICKSTART_CMD="/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart"
+vnc() {
+  local _action="$1"
+  # Start and stop commands via: http://apple.stackexchange.com/q/30238
+  if [[ "$_action" == "start" ]]
+  then
+    sudo "$_KICKSTART_CMD" \
+      -activate \
+      -configure \
+      -access \
+      -on \
+      -configure \
+      -allowAccessFor \
+      -allUsers \
+      -configure \
+      -restart \
+      -agent \
+      -privs \
+      -all
+  elif [[ "$_action" == "stop" ]]
+  then
+    sudo "$_KICKSTART_CMD" \
+      -deactivate \
+      -configure \
+      -access \
+      -off
+  elif [[ "$_action" == "status" ]]
+  then
+    local _results=
+    _results="$(pgrep ARDAgent)"
+    [[ -n "$_results" ]] && printf "vnc running\n" || printf "vnc stopped\n"
+  else
+    _die printf "Command not recognized.\n%s\n" "$(_print_desc "vnc")"
+  fi
+}
+
+# ---------------------------------------------------------------- WindowServer
+
+desc windowserver <<EOM
+Usage:
+  $_ME windowserver kill
+
+Description:
+  Kill WindowServer. Warning: this will quit all running applications and log
+  out of the current user account.
+
+  Killing WindowServer and be used to reset the UI of OS X, esspecially if it
+  slows down over a period of use as the process becomes bloated.
+EOM
+windowserver() {
+  if [[ "$1" == "kill" ]]
+  then
+    local _kill_windowserver=
+    while true
+    do
+      read -p "Are you sure you want to close all apps and log out? [y/n] " yn
+      case $yn in
+        [Yy]*)
+          _kill_windowserver=1
+          break
+          ;;
+        [Nn]*)
+          _kill_windowserver=0
+          break
+          ;;
+        *)
+          printf "Please answer yes or no.\n"
+          ;;
+      esac
+    done
+    if ((_kill_windowserver))
+    then
+      printf "Logging out...\n"
+      # via: http://hints.macworld.com/article.php?story=20071121154033749
+      sudo killall -HUP WindowServer
+    else
+      printf "Exiting...\n"
+      exit
+    fi
+  else
+    _print_desc "windowserver"
+  fi
+}
+
+###############################################################################
+# Platform Check
+###############################################################################
+
+if [[ ! "$OSTYPE" =~ ^darwin ]]
+then
+  printf "osx-cli is only supported on OS X.\nExiting...\n"
+  exit 0
+fi
+
+###############################################################################
+# Run Program
+###############################################################################
+
+# Calling the _main function after everything has been defined.
+_main

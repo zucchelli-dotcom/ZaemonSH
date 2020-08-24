@@ -1,0 +1,138 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# dirstack :
+# usage:   dirstack [n]
+# n = # of lines of directory stack printed
+# if n is not given, default to 20
+# command to update and then print out the shared directory stack
+# aliases a series of cd-type commands corresponding to the line
+# number in the directory stack printout
+# eg:
+#     cd7  will cd to the directory in line #7 of the dirstack printout
+#     cd? is aliased to the dirstack command (in the file aliases.local)
+#  The commands cp7 and cpath7 are aliases to the same string of commands
+#  that copies the directory in line #7 into the clipboard cut/paste buffer
+#  cd# and cp# / cpath#  are updated dynamically each time this function is invoked,
+#  so always invoke it first with cd? or dirstack
+# Here you can change the default 20 most recent directories to
+# whatever number suits you.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/01/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.4"
+FCT_NAME="dirstack"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+dirdump
+if [[ -n $1 ]]; then
+ GLOBALDIRSIZE=$1
+else
+ GLOBALDIRSIZE=20
+fi
+
+global_dirs=()
+global_dirs=(  $dirs_shared[1,$GLOBALDIRSIZE]  )
+export global_dirs
+
+for ((i = 1; i <= $GLOBALDIRSIZE; i++ )) do         
+	if [[ -n $global_dirs[i] ]];then 
+		# print $i $global_dirs[i] | perl -pi -e 's|_SPACE_|\\\ |g'
+		print $i $global_dirs[i] | perl -p -e 's|_SPACE_|\\\ |g'
+                # dir_index=$(print $global_dirs[i] | perl -pi -e 's|_SPACE_|\\\ |g' )
+                dir_index=$(print $global_dirs[i] | perl -p -e 's|_SPACE_|\\\ |g' )
+                alias cd$i="cd $dir_index ; command pwd " 
+                # dir_index_chomp=$(print -n $global_dirs[i] | perl -pi -e 's|_SPACE_|\\\ |g' )
+                dir_index_chomp=$(print -n $global_dirs[i] | perl -p -e 's|_SPACE_|\\\ |g' )
+
+		# alias cp$i="echo -n $dir_index_chomp |perl -pi -e 's; ;\\\ ;g' | pbcopy "
+		alias cp$i="echo -n $dir_index_chomp |perl -p -e 's; ;\\\ ;g' | pbcopy "
+		# alias cpath$i="echo -n $dir_index_chomp |perl -pi -e 's; ;\\\ ;g' | pbcopy "
+		alias cpath$i="echo -n $dir_index_chomp |perl -p -e 's; ;\\\ ;g' | pbcopy "
+
+	else 
+		return 0
+	fi
+done
+
+

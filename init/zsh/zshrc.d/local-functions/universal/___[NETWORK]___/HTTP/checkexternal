@@ -1,0 +1,148 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# checkexternal :
+#   Traverse all internal URLs on a Web site to build a
+#   list of external references, then check each one to ascertain
+#   which might be dead or otherwise broken. The -a flag forces the
+#   script to list all matches, whether they're accessible or not: by
+#   default only unreachable links are shown.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME lynx listall outfile
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+# lynx="/usr/local/bin/lynx"      # might need to be tweaked
+lynx="$(which lynx)"      # might need to be tweaked
+listall=0; errors=0             # shortcut: two vars on one line!
+
+outfile="$(echo "$1" | cut -d/ -f3).external-errors"
+
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+  clear
+  echo "${NC}"  
+  echo " ###################################################################################################"
+  echo " #                                                                                                 #"
+  echo " #     ${GREEN}This is ${RED}$FCT_NAME : ${YEL}$VERSION FOR $OSTYPE ${NC}                                #"
+  echo " #     CopyL®®v 2019, Zucchelli Bryan                                                              #"
+  echo " #                                                                                                 #"
+  echo " #     Unless required by applicable law or agreed to in writing, software                         #"
+  echo " #     distributed under the License is distributed on an "AS IS" BASIS,                             #"
+  echo " #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.                    #"
+  echo " #     See the License for the specific language governing permissions and                         #"
+  echo " #     limitations under the License.                                                              #"
+  echo " #                                                                                                 #"
+  echo " ###################################################################################################"
+  echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner 
+if [ "$1" = "-a" ] ; then
+  listall=1; shift
+fi
+
+/bin/rm -f $outfile     # clean it for new output
+
+trap "/bin/rm -f traverse*.errors reject*.dat traverse*.dat" 0 
+
+if [ -z "$1" ] ; then
+  echo "Usage: $(basename $0) [-a] URL" >&2
+  return 1
+fi
+
+# create the data files needed
+$lynx -traversal $1 > /dev/null;
+
+if [ -s "reject.dat" ] ; then 
+  # The following line has a trailing space after the backslash!
+  echo -n $(sort -u reject.dat | wc -l) external links encountered
+  echo \ in $(grep '^http' traverse.dat | wc -l) pages
+
+  for URL in $(grep '^http:' reject.dat | sort -u)
+  do
+    if ! $lynx -dump $URL > /dev/null 2>&1 ; then
+      echo "Failed : $URL" >> $outfile
+      errors="$(( $errors + 1 ))"
+    elif [ $listall -eq 1 ] ; then
+      echo "Success: $URL" >> $outfile
+    fi
+  done
+
+  if [ -s $outfile ] ; then
+    cat $outfile
+    echo "(A copy of this output has been saved in ${outfile})"
+  elif [ $listall -eq 0 -a $errors -eq 0 ] ; then
+    echo "No problems encountered."
+  fi
+else 
+  echo -n "No external links encountered "
+  echo  in $(grep '^http' traverse.dat | wc -l) pages.
+fi
+
+return 0

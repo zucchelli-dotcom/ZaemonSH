@@ -1,0 +1,130 @@
+#compdef sd
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _sd :
+# Completion for sd; change the CodeTek Virtual Desktop Display to the indicated Desktop.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify completion presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+cvd_process=( $(ps -ax | grep "VirtualDesktop" | grep -v grep | \
+                    head -n 1 | awk '{print $1}' ))
+                    
+vir_process=( $(ps -ax | grep Virtue | grep -v grep | \
+                    head -n 1 | awk '{print $1}' ))
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+function GetDesktopNames {
+
+if [[ -n $cvd_process  &&  $cvd_process -gt 0 ]];then
+
+osascript << eof
+    tell application "Finder"
+        tell application "CodeTek VirtualDesktop Pro"
+            set names to (get desktopNames)
+        end tell
+    end tell
+eof
+
+elif [[ -n $vir_process  &&  $vir_process -gt 0 ]];then
+
+    # Stupid kludge.  I will figure out how to poll the application
+    # for the list of desktops some day
+
+#    print "Main, Browsing, Mail, Code"
+
+# if [[ -d "$HOME/Library/Application\ Support/VirtueDesktops" ]];then
+    desktop_array=($(/usr/bin/awk '/<key>name<\/key>/{ getline; gsub(/<[^>]*>/,""); gsub(/^[\t ]*/,""); if ( $0 !~ "^Desktop" ){ OUTPUT = OUTPUT " " $0 } } END{ sub(/^ /,"",OUTPUT); print OUTPUT }' ~/Library/Application\ Support/VirtueDesktops/Desktops.virtuedata  ))
+# elif [[ -d "$HOME/Library/Application\ Support/Virtue" ]];then
+#    desktop_array=($(/usr/bin/awk '/<key>name<\/key>/{ getline; gsub(/<[^>]*>/,""); gsub(/^[\t ]*/,""); if ( $0 !~ "^Desktop" ){ OUTPUT = OUTPUT " " $0 } } END{ sub(/^ /,"",OUTPUT); print OUTPUT }' ~/Library/Application\ Support/Virtue/Desktops.virtuedata  ))
+# else
+#    print "Cannot find ~/Library/Application\ Support/Virtue/Desktops.virtuedata "
+#    return 42
+#fi
+
+#desktop_array=($(/usr/bin/sed -n '/name/{n;p;}' \
+#               ~/Library/Application\ Support/Virtue/Desktops.virtuedata | grep -v "Desktop " \
+#                      | perl -p -e 's|<string>||g' | perl -p -e 's|</string>||g' )) 
+print "${(f)desktop_array[@]}"
+
+fi
+}
+  
+
+function _sd {
+  local curcontext="$curcontext" state line expl
+
+  _arguments -C \
+    '-a[specify application]: :->open_mac_applications' \
+    '*: :->desktop_picker'
+
+  case "$state" in
+    (open_mac_applications)
+
+    # The following style enables one to type (eg) "sd -a wor"  and complete to 
+    #  "sd -a Microsoft\ Word"
+    
+    
+    zstyle ':completion:*:*:sd:*' matcher 'm:{a-z}={A-Z} r: ||[^ ]=**'
+    
+            _mac_apps=${(f)"$( mdfind -onlyin /Applications -onlyin /Developer \
+         "kMDItemContentType == 'com.apple.application-*'" | perl -p -e 's|.app||g' )"}
+    
+    
+        _wanted commands expl 'Mac OS X application' compadd Finder "${${(f)_mac_apps}[@]:t}"
+            
+    ;;    
+    (desktop_picker)
+        compadd -X %B'--- Desktop names ---'%b \
+         $(GetDesktopNames | perl -p -e 's|\,||g' )
+    
+    ;;
+  esac
+}
+
+#----------------------------------------------------------------------------------------#
+#                                      COMPLETION
+#----------------------------------------------------------------------------------------#
+
+#set -x
+_sd "$@"
+

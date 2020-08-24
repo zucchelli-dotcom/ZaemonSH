@@ -1,0 +1,137 @@
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+#  Function _comp_appgetter
+#  October 11, 2004 version 1.0.3,  W. G. Scott et al.
+#  Function to generate a listing of applications for command completion of the
+#  command completion of the command.
+#  Z_Open -a  application\ name 
+#
+#    
+#  Based on a version by Marius van Wyk, but now more general.  I also received
+#  invaluable help from Gary Kerbaugh, Nathan Hackett, Wataru Kagawa, and others.
+#
+#  This script takes about 3 seconds to run during shell startup on my 
+#  G4 800 laptop.  The slow point is having to use the file command to obtain
+#  Carbon apps like Microsoft Word.  The rest is based on locate and thus requires
+#  the locatedb to exist and to be updated regularly.
+#
+#  Add directories to the ones below as appropriate:
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 31/12/2019 :
+# • Add hidden Applications on listing.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 31/12/2019 :
+# • Add better applicaton filter ( remove Adobe Shit )
+# 24/12/2020 :
+# • Add MacOS Hidden app.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+
+
+
+
+#  Generate a list of all OS X applications that can be opened with "open -a"
+##################################################################################
+
+     print "\e[41m\e[1mLoading application name completions for 'open -a' command...\e[0m"
+
+
+        function FindCarbonApps {
+        cd /Applications
+        #This is the slow part.  There must be a better way.
+        file * | grep header | perl -pi 2>/dev/null -e 's;header for PowerPC PEF executable;;g' | perl -pi 2>/dev/null -e 's;:;.app;g' 
+        file */* | grep header | perl -pi 2>/dev/null -e 's;header for PowerPC PEF executable;;g' | perl -pi 2>/dev/null -e 's;:;.app;g'
+        file */*/* | grep header | perl -pi 2>/dev/null -e 's;header for PowerPC PEF executable;;g' | perl -pi 2>/dev/null -e 's;:;.app;g'
+        # This one causes some people problems, but if applications are missing from your list
+        #  try using it...
+        # file */*/*/* | grep header | perl -pi -e 's;header for PowerPC PEF executable;;g' \
+        # | perl -pi -e 's;:;.app;g'
+        # This finds the adobe apps:
+#####
+#/!\#
+#####        
+        /usr/bin/locate "/Applications**/Contents" | grep -v .app | grep -v Plug-Ins \
+         | grep -v plugin | grep -v Support | grep -v Documentation | grep -v bundle \
+          | grep -v service | grep -v help  | grep -v "Plug-ins.localized" | perl -pi 2>/dev/null -e 's;/Contents;.app;g'
+
+     #   "Plug-ins.localized" New Adobe plug-ins folder
+#####
+#/!\#
+#####
+        }
+        
+        function FindCocoaApps {
+        # /usr/bin/locate "/Applications**/*.app" | grep -v Contents
+        /usr/bin/locate "/Applications**/*.app" | grep -v Contents | grep -v Adobe\ Application\ Manager | grep -v "Scripting.localized" | grep -v "Adobe Creative Cloud"
+      
+        # Hidden Applications in /System/Library/CoreServices/Applications
+        if [[ -d /System/Library/CoreServices/Applications ]]; then
+            /usr/bin/locate "/System/Library/CoreServices/Applications**/*.app" | grep -v Contents
+        fi
+       
+        if [[ -d $HOME/Applications ]]; then
+            /usr/bin/locate "$HOME/Applications**/*.app" | grep -v Contents
+        fi
+        
+        if [[ -d /Developer/Applications ]]; then
+            /usr/bin/locate "/Developer/Applications**/*.app" | grep -v Contents
+        fi
+        }
+        
+        # This stuff runs the application finding functions and then strips off the 
+        # basename, the .app suffixes, and escapes the spaces in the application names.
+        # (FindCarbonApps; FindCocoaApps) \
+        (FindCocoaApps) \
+        | sed 's|^.*/\([^/]*\)\.app.*|\1|' \
+        | perl -pi 2>/dev/null -e "s/([ ')(])/\\\\\$1/g" \
+        | perl -pi 2>/dev/null -e 's;EndNote\\\ 7.0;EndNote\\\ 7.0.app.app;g' \
+        | perl -pi 2>/dev/null -e 's;Adobe\\\ Reader\\\ 6.0;Adobe\\\ Reader\\\ 6.0.app.app;g' \
+        | perl -pi 2>/dev/null -e 's;Adobe\\\ Reader\\\ 7.0;Adobe\\\ Reader\\\ 7.0.app.app;g' \
+        | sort -u 
+      
+#    }  ### function _comp_appgetter -- end of definition
+    # -----------------------------------------------------------------------

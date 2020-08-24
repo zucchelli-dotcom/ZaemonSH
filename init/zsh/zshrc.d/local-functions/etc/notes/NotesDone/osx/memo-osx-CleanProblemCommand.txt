@@ -1,0 +1,125 @@
+
+###############################################################################    
+###############################################################################            
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                           PROCESS BECOME CRAZY                        	      |   
+# -------------------------------------------------------------------------------- 
+##### FONTD #####
+#### SYMTOMS
+### High CPU usage caused by fontd on OS X.
+### Clear Font Caches & Font Databases in Mac OS X to Resolve Unusual Font Problems.
+sudo atsutil databases -remove && atsutil server -shutdown && sudo shutdown -r now
+# According
+# to the manual page of atsutil, the -remove flag will perform the following:
+# will remove fontd System or User databases along with any cache
+# files. Removing databases may cause the loss of font registration state:
+# fonts activated outside the standard font directories, font faces disabled,
+# and font libraries. New databases will be regenerated from fonts
+# installed the standard font directories after the user logs out,
+# restarts, or the fontd server is restarted.
+
+#####NSURLSTORAGED#####
+#### SYMTOMS
+# Since yesterday is constantly using a huge amount of CPU. Nothing shows up in the logs but shows that the process
+# is accessing
+# nsurlstoraged opensnoop
+# /Library/Containers/com.apple.mail/Data/Library/Caches/com.apple.mail/fsCachedData
+# The directory contains XML files from the beginning of the month (from October 1. at 8:12) up to now (growing). I now have more than 9 GB of
+# cached data and a new file is created every 2-3 seconds.
+After a reboot the nsurlstoraged starts again with the same behaviour.
+Make sure you have a recent backup
+Quit Safari (if it is running)
+In Finder, type SShhiifftt--CCmdd--G and enter ~/Library/Caches/com.apple.Safari
+A Finder window will open, with the com.apple.Safari folder selected
+Delete the whole folder
+Restart Safari
+##
+Your best bet is to find out which file is it accessing.
+sudo opensnoop | grep nsurlstoraged
+###
+###
+#
+rm ~/Library/Caches/com.apple.Safari
+- Clear History and Web Data from Safari menu
+- Quit and relaunch and check..
+## Stop the services completly.
+# To stop that from happening, put the following in a script file called STOP_NSURLSTORAGED or whatever you want to call it.
+do shell script "sudo launchctl unload -F /System/Library/LaunchDaemons/com.apple.nsurlstoraged.plist" user name
+"YourUsername" password "YourPassword" with administrator privileges
+do shell script "sudo launchctl unload -F /System/Library/LaunchAgents/com.apple.nsurlsessiond.plist" user name
+"YourUsername" password "YourPassword" with administrator privileges
+do shell script "sudo launchctl unload -F /System/Library/LaunchDaemons/com.apple.nsurlsessiond.plist" user name
+"YourUsername" password "YourPassword" with administrator privileges
+do shell script "sudo launchctl unload -F /System/Library/LaunchDaemons/com.apple.nsurlstoraged.plist" user name
+"YourUsername" password "YourPassword" with administrator privileges
+
+
+##### MDS #####
+
+
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                  RESETHOMEPERMISSIONS                        	  |   
+# -------------------------------------------------------------------------------- 
+##### RESETHOMEPERMISSIONSWITHACL
+#### SYMTOMS 
+# Success! This resolved my aperture/iphoto videos not showing up in iMovie and the Reset Home Directory Permissions and ACLs getting hung up in a loop. I have no idea what this
+# did but it worked flawlessly.
+
+# if  $USER is not administrator and your system contains just one user.
+# add this $USER to admin group. 
+#
+{ sudo chflags -R nouchg,nouappnd ~ $TMPDIR.. ; sudo chown -R $UID:staff ~ $_ ; sudo chmod -R u+rwX ~ $_ ; chmod -R -N ~ $_ ; } 2> /dev/null
+#
+find ~ $TMPDIR.. \( -flags +sappnd,schg,uappnd,uchg -o ! -user $UID -o ! -perm -600 -o -acl \) 2> /dev/null | wc -l
+#
+{ sudo chflags -R nouchg,nouappnd ~ $TMPDIR.. ; \
+sudo chown -R $UID:staff ~ $_ ; \
+sudo chmod -R -N ~ $_ ; \
+sudo chmod -R 755 ~ $_ ; \
+sudo chmod 700 Desktop Documents Downloads Dropbox Library Movies Music Pictures Sites $_ ; \
+sudo chmod 777 Public ; \
+sudo chmod 733 Public/Drop\ Box ; \
+} 2> /
+
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                  DOCX                        	  				 |   
+# -------------------------------------------------------------------------------- 
+# Rebuild  dyld cache 
+sudo update_dyld_shared_cache -root / -force
+
+# Rebuild XPC cache
+sudo /usr/libexec/xpchelper --rebuild cache
+
+# Remove DS_Store 
+sudo find / -name \*.DS_Store -exec rm -Rf {} \;;
+
+# Update locate database
+sudo /usr/libexec/locate.updatedb
+
+# Rebuild system preferences , Preferences are cached
+/System/Library/PrivateFrameworks/SyncedDefaults.framework/Support/syncdefaults
+
+# Rebuild kernel Extensions Caches
+sudo chown root:admin /
+sudo kextcache -system-prelinked-kernel
+sudo kextcache -system-caches
+
+# Clear DNS cache 
+sudo discoveryutil udnsflushcaches
+
+# Clear font cache 
+sudo atsutil databases -removes
+
+# Find cache folder on mac
+sudo find / -type f -name Caches
+
+# Run periodic scripts
+sudo periodic all 
+
+##

@@ -1,0 +1,138 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# archivedir : 
+# Create a compressed archive of the specified directory
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME maxarchivedir compress programe dirsize archivename
+
+VERSION="0.0.1"
+FCT_NAME="archivedir"
+
+maxarchivedir=10  # size, in blocks, of 'big' directory, to confirm
+compress=gzip   # change to your favorite compress app
+progname=$(basename $0)
+
+dirsize="$(du -s $1 | awk '{print $1}')"
+
+archivename="$(echo $1 | sed 's/$/.tgz/')"
+
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+if [[ $# -eq 0 ]] ; then
+  echo "Usage: $progname directory" >&2 ;return 1
+fi
+
+if [[ ! -d $1 ]] ; then
+  echo "${progname}: can't find directory $1 to archive." >&2; return 1
+fi
+
+# if [ "$(basename $1)" != "$1" -o "$1" = "." ] ; then
+if [  "$1" = "." ] ; then
+  echo "${progname}: You must specify a subdirectory" >&2
+  return 1
+fi
+
+if [ ! -w . ] ; then
+  echo "${progname}: cannot write archive file to current directory." >&2
+  return 1
+fi
+
+if [ $dirsize -gt $maxarchivedir ] ; then
+  echo -n "Warning: directory $1 is $dirsize blocks. Proceed? [n] " 
+  read answer
+  answer="$(echo $answer | tr '[:upper:]' '[:lower:]' | cut -c1)"
+  if [ "$answer" != "y" ] ; then
+    echo "${progname}: archive of directory $1 cancelled." >&2
+    return 0
+  fi
+fi
+
+if tar cf - $1 | $compress > $archivename ; then
+  echo "Directory $1 archived as $archivename"
+else
+  echo "Warning: tar encountered errors archiving $1"
+fi
+
+return 0

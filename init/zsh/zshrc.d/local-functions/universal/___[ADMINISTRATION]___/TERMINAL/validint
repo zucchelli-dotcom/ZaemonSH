@@ -1,0 +1,140 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# validint :
+# Validate integer input, allow negative ints too
+
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$0"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+validint()
+{
+  # validate first field. Optionally test against min value $2 and/or 
+  # max value $3: if you'd rather skip these tests, send "" as values.
+  # returns 1 for error, 0 for success.
+  local number="$1";   local   min="$2";  local  max="$3"
+  if [ -z $number ] ; then
+    echo "You didn't enter anything. Unacceptable." >&2 ; return 1
+  fi
+  
+  if [ "${number%${number#?}}" = "-" ] ; then # first char '-' ?
+    local testvalue="${number#?}"   # all but first character
+    echo $testvalue
+  else
+    local testvalue="$number"
+    echo $testvalue
+  fi
+  
+  local nodigits="$(echo $testvalue | sed 's/[[:digit:]]//g')"
+  echo $nodigits
+  
+  if [ ! -z $nodigits ] ; then
+    echo "Invalid number format! Only digits, no commas, spaces, etc." >&2
+    return 1
+  fi
+  
+  if [ ! -z $min ] ; then
+    if [ "$number" -lt "$min" ] ; then
+       echo "Your value is too small: smallest acceptable value is $min" >&2
+       return 1
+    fi
+  fi
+  if [ ! -z $max ] ; then
+     if [ "$number" -gt "$max" ] ; then
+       echo "Your value is too big: largest acceptable value is $max" >&2
+       return 1
+     fi
+  fi
+  return 0
+}
+
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+# uncomment these lines to test, but beware that it'll break Hack #6
+# because Hack #6 wants to source this file to get the validint()
+# function. :-)
+
+if validint "$1" "$2" "$3" ; then
+  echo "That input is a valid integer value within your constraints"
+fi

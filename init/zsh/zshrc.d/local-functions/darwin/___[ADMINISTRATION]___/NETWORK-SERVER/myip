@@ -1,0 +1,144 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# myip :
+# Function to get the IP address of the computer or router.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 19/10/2017 :
+#  • Modify script presentation.
+#  • Define some command variables.
+#  • Add banner.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+# Define some local command
+local CLEAR ECHO CAT CURL HEAD AWK GREP PERL PRINT IPCONFIG SYSTEM_PROFILER VERSION FCT_NAME
+
+CLEAR="$(whereis clear)"
+ECHO="$(whereis echo)"
+CAT="$(whereis cat)"
+CURL="$(whereis curl)"
+HEAD="$(whereis head)"
+AWK="$(whereis awk)"
+GREP="$(whereis grep)"
+PERL="$(whereis perl)"
+PRINT="$(whereis print)"
+IPCONFIG="$(whereis ipconfig)"
+SYSTEM_PROFILER="$(whereis system_profiler)"
+
+
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+ 
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+if [[ $1 == '-r' || $1 == '-R' ]];then
+    # $CURL -s http://www.showmyipeurope.com/ | $HEAD -n 1 | $AWK '{$PRINT $8}' | $PERL -p -e 's|</TITLE><META||g'   
+    $CURL -s http://www.showmyip.com/ | $HEAD -n 1 | $AWK '{$PRINT $8}' | $PERL -p -e 's|</TITLE><META||g'
+    return 0
+elif [[ $1 == '-h' || $1 == '--help' || $1 == '-help' || $1 == '--h' || $# -gt 1 ]];then
+    $PRINT "Usage:  $0 [-r]  to get ip address of computer [or router]"
+    return 1
+fi
+
+if [[ $# -gt 0 ]];then
+    $PRINT "Usage:  $0 [-r]  to get ip address of computer [or router]"
+    return 1
+fi
+
+$IPCONFIG getifaddr en0 2>/dev/null
+
+if [[ $? != 0 ]];then
+    $IPCONFIG getifaddr en1 2>/dev/null
+    if [[ $? != 0 ]];then
+        IPv6IP=($($SYSTEM_PROFILER -detailLevel 2 | $GREP "IPv6 Addresses" | $AWK '{$PRINT $3}' ))
+            if [[ -z $IPv6IP ]];then
+                IPv4IP=($($SYSTEM_PROFILER -detailLevel 2 | $GREP "IPv4 Addresses" | $AWK '{$PRINT $3}' ))
+                if [[ -n $IPv6IP ]];then
+                    $PRINT $IPv4IP
+                    return 0
+                else
+                    $PRINT "No IP address detected.  Check internet connection."
+                    return 100
+                fi
+            else
+                $PRINT $IPv6IP
+                return 0
+            fi
+    else
+        return 0
+    fi    
+else
+    return 0
+fi

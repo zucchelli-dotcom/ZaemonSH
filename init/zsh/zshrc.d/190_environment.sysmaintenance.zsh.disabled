@@ -1,0 +1,136 @@
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                                                                 |   
+#                                - ZAEMONSH -                                     |
+#              $ZDOT/zshrc.d/190_environment.sysmaintenance.zsh                   |
+#                                                                                 |
+# --------------------------------------------------------------------------------                    
+#########################################################################
+#                                                                       #
+#  ZaemonSH created by :                                                #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.  #
+#  Copyright (c) 2020. All rights reserved.                             #
+#  Inspired by zsh-templates-osx created by :                           #
+#  William Scott on May 11, 2007.                                       #
+#  Copyright (c) 2007. All rights reserved.                             #
+#                                                                       #
+#  This program is free software; you can redistribute it               #
+#  and/or modify it under the terms of the GNU General Public License   #
+#  as published by the Free Software Foundation; either version 2       #
+#  of the License, or (at your option) any later version.               #
+#                                                                       #
+#  This program is distributed in the hope that it will be useful,      #
+#  but WITHOUT ANY WARRANTY ; without even the implied warranty         #
+#  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.              #
+#  See the GNU General Public License for more details.                 #
+#                                                                       #
+#  You should have received a copy of the GNU General Public License    #
+#  along with this program ; if not, write to :                         #
+#  The Free Software Foundation,Inc.                                    #
+#  51 Franklin Street, Fifth Floor                                      #
+#  Boston,  MA 02110-1301 USA                                           #
+#                                                                       #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html            #
+#                                                                       #
+######################################################################### 
+
+# --------------------------------------------------------------------------------                    
+# File:  $ZDOT/zshrc.d/190_environment.sysmaintenance.zsh 
+# sourced from /etc/zshrc
+# Version: 2.0.0
+# System maintenance prompts to check if up to date.
+# --------------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------------
+#                                      TODO
+#---------------------------------------------------------------------------------
+# 07/08/2019 :
+# • Add numerical test to $2 
+
+#---------------------------------------------------------------------------------
+#                                     CHANGES
+#---------------------------------------------------------------------------------
+# 07/01/2017 :
+# • Add rights version testing (10.?.?).
+# 23/08/2019 :
+# • Add wo options forground/backgroung
+
+#---------------------------------------------------------------------------------
+#                                  CONFIGURATION
+#---------------------------------------------------------------------------------
+#if [[ -o interactive ]] && [[ $ISMAC ]] && [[ $IS_ADMIN ]] && [[ $(Z_OsxVersTest -b "10.6") = 1 ]]; then
+if [[ -o interactive ]] && [[ $IS_MAC ]] && [[ $(Z_OsxVersTest -b "10.6") = 1 ]]; then
+           ##uncomment to debug
+        # {{{ Loading status
+            ####zshrc_primary_load_status() { echo "${WG}${NC}\033[1;32m $* \e[0m" }
+        #}}}
+
+        # {{{ Loading status
+            ####zshrc_load_status () { echo "${YEL}  + Environment systemaintenance load:${GREY} $*${NC}"}
+        #}}} 
+	
+	###############################################################################
+	###############################################################################
+	# ------------------------------------------------------------------------------
+	#                                                                               \
+	# --------------------------------------------------------------------------------
+	#                           DARWIN SYSTEM MAINTENANCE                            |   
+	# -------------------------------------------------------------------------------- 
+	#local VERS_ACT=$(sw_vers -productVersion)
+	#local VERS_ACT_CORRECT=$(sw_vers -productVersion | sed 's/^10.//')
+	#local VERS_MIN=$(echo "10.6"  | sed 's/^10.//')
+    if [[ $IS_ROOT ]] || [[ $IS_ADMIN ]]; then
+	     # Check to see if locate_database exists, and if it is younger that two weeks old.   
+	     # If not, prompt user to run the periodic maintenance scripts. These get run
+	     # automatically if your computer is on at 3 am. Otherwise, you have to do it somehow:
+		 #if [[ /var/db/locate.database == $( ls /var/db/locate.database(.mw-1) ) ]];then
+		 # if [[ /var/db/locate.database == $( find /var/db/locate.database -mtime +12 )  ]]; then
+		 if [[ $( ls /var/db/locate.database*(.mw-1) | grep -v locate.database.old )  ]]; then
+			 :  # Do nothing, database is younger than one weeks old
+		 else 
+			 print ""
+			 if [[ ! -f /var/db/locate.database ]];then
+				 print "\e[1m  No locate.database found"
+				 print ""
+			 else
+				 #print "\e[1m  System maintenance scripts haven't been run for two weeks."
+				 print "\e[1m  System maintenance scripts haven't been run for one weeks."
+				 print ""
+			 fi
+			 print ""
+			 print "  Please run the system periodic maintenance scripts as soon as possible."
+			 print ""
+			 print -n "  Shall I do this for you? \e[0m [y/N] "
+			 print ""
+
+			 user_task_yes=( sudo periodic monthly daily weekly  )
+			 user_task_no=(   )
+
+			 timeout=15 # second until default answer takes effect
+			         answer=""
+			         read -t $timeout -A answer
+			         if [[ $answer[1] == (y|Y) ]]; then
+						 print ""
+						 print "Issuing \e[1m sudo periodic monthly daily weekly \e[0m now"
+			             $user_task_yes
+						 print ""
+			             answer=""
+			         else
+			             $user_task_no
+						 print ""
+						 print "Issue \e[1m sudo periodic monthly daily weekly \e[0m at your convenience"
+						 print ""
+			             answer=""
+			         fi
+                # --------------------------------
+                #                                 \
+                # ---------------------------------
+                #         ZEAMONSH-DEBUG           |
+                # ---------------------------------
+                ##
+                # uncomment for debugging
+                ####zshrc_primary_load_status "Environment sysmaintenance test is passed."
+        fi
+	fi
+fi # [[ -o interactive ]] 

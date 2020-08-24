@@ -1,0 +1,100 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# 10/10/2017 :
+#  function Z_Osa_display_dialog takes up to three arguments (button item options)
+#  supplied after invoking the function.
+ 
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 10/10/2017 :
+#  •
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 10/10/2017 :
+#  • Modifying Script presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+
+
+#  Display times out according to the variable $timeout in seconds (defaults to 15 sec).
+
+    if [[ -z $timeout ]];then
+        timeout='15'
+    fi
+
+# The variable $dialogue_text is an array that contains the text displayed in the window.
+
+    if [[ -z $dialogue_text ]];then
+        dialogue_text=( Choose a button: )
+    fi
+    
+    
+    if (( $# > 3 || $# == 0 )); then
+        print "Usage:  list up to 3 button names, with the last as default choice (eg: No 42 OK )"
+        return 11
+    fi
+    
+    # Thanks to Gary Kerbaugh for the next five lines
+    button_items="" 
+    for argument in "$@"; do 
+       button_items=${button_items}\"${argument}'", ' 
+    done 
+    button_items=${button_items%, } 
+  
+    if (( $# == 3 ));then
+        def_but="$3"
+    elif (( $# == 2 ));then
+        def_but="$2"
+    else
+        def_but="$1"    
+    fi
+    
+osascript << eof
+    tell app "Finder"
+    activate
+    set r to display dialog "$dialogue_text" buttons { $button_items } with icon caution giving up after $timeout default button "$def_but"
+    set ButtonChoice to button returned of r
+    end tell
+eof

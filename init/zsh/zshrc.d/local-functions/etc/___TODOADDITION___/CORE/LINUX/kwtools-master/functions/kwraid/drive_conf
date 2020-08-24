@@ -1,0 +1,621 @@
+# Funktion (drive_conf), RAID Arrays verwalten# {{{
+#
+drive_conf() {
+	# Funktion (search_exact_md), sucht nach den richtigen Arrays# {{{
+	# Nur Raid Laufwerke auflisten die die richtige
+	# Laufwerksanzahl Anzahl besitzen 
+	# 
+	# usage: search_exact_md LEVEL
+	#
+	search_exact_md() {
+		unset -- MD_RAIDLEVEL_DEV MD_RAID_DEV_ANZ
+		local Rl R_Part_Nr
+		if [[ ${#argv} == 1 ]] ; then
+			Level="$1"
+			for md in ${=R_DEVS} ; {
+				Rl=$(raid_is_level $md)
+				R_Part_Nr=$(raid_anz $md)
+				if [[ ${Rl#raid} == $Level ]] && [[ $R_Part_Nr -gt 3 ]] ; then
+					MD_RAIDLEVEL_DEV+=($md \"$R_Part_Nr\")
+				fi
+			}
+		else
+			no_part_msg $0
+		fi
+	}
+	## }}}
+	# Funktion (search_md_state), die ARRAYs mit Status herausfinden.{{{
+	#
+	search_md_state() {
+		unset -- MD_ARRAY_STATE MD_ARRAY_STATE_E
+		local State
+		for md in ${=MD_DEV} ; {
+			State=${${(ws,: ,)${(M)${(f)"$(mdadm -D $md 2>&1)"}##*State :*}}[2]}
+			Md_Array="$md"
+			MD_ARRAY_STATE+=($md)
+			MD_ARRAY_STATE_E+=($md \"$State\")
+		}
+	}
+	#}}}
+	# Funktion (raid_fs_check), checkt welches Dateisytsme das RAID Array# {{{
+	# hat und bricht eventuell ab.
+	#
+	# usage: raid_fs_check DEVICE
+	#
+	raid_fs_check() {
+		if [[ ${#argv} == 1 ]] ; then
+			local Dev
+			Dev="$1"
+			check_fs $Dev
+			case "$gv_Fs" in
+				crypto*)
+					MSG=(gettext 'Dieses Laufwerk ($Dev) besitzt ein Crypto-Dateisystem und kann deshalb nicht bearbeitet werden.')
+					msgbox "$gv_Info" "$MSG"
+					break 2
+					;;
+				LVM*)
+					MSG=(gettext 'Dieses Laufwerk ($Dev) besitzt ein LVM und kann deshalb nicht bearbeitet werden.')
+					msgbox "$gv_Info" "$MSG"
+					break 2
+					;;
+				*)
+					;;
+			esac
+		else
+			no_part_msg $0
+			break 2
+		fi
+	}
+	## }}}
+	# Funktion (drive_menu){{{
+	#
+	DRIVE_MENU=($gv_Create \"\" $gv_Change \"\" $gv_Enlarge \"\"
+	$gv_Reduce \"\" $lv_Repair \"\" $lv_Raid_Hot_Ar \"\"
+	$gv_Delete \"\" $gv_Back \"\")
+	drive_menu() {
+		menubox "$1" "$gv_Mainmenu" "$gv_Menupoint" "$DRIVE_MENU"
+	}
+	#}}}
+	MD_SEL_MSG=$(gettext 'Waehlen Sie ein Array zum konvertieren aus.\n\n
+Array        Laufwerksanzahl')
+	drive_menu
+	while [ -n "$gv_Auswahl" ] ; do
+		case $gv_Auswahl in
+			HELP*)
+				# Hilfe
+				script_help drive_help
+				drive_menu "${gv_Auswahl#HELP }"
+				;;
+			$gv_Create)
+				# Konfiguration und Erstellung von SW RAID Arrays
+				raid_create_conf
+				drive_menu $gv_Create
+				;;
+			$gv_Change)
+				################################
+				# INFO:
+				# chunksize fehlt noch?
+				################################
+				# Arrays raid1,5,6 konvertieren# {{{
+				if [ -n "${MD_DEV_E[1]}" ] ; then
+					unset -- RAID_ANZ RAID_USED_DEV_SIZE
+					typeset -F3 New_Size_MiB 
+					raid_filter -t
+					if [ -n "$R_DEVS" ] ; then
+					# Funktion (raid_change_menu)# {{{
+					raid_change_menu() {
+						RAID_CHANGE_TITLE=$(gettext 'Raid-Arrays::${gv_Change}')
+						RAID_CHANGE_MENU=(1 \"RAID1 -\> RAID5\" \"2\" \"RAID1 -\> RAID6\"
+						\"3\" \"RAID5 -\> RAID6\" \"4\" \"RAID6 -\> RAID5\"
+						\"5\" \"RAID6 -\> RAID1\" \"6\" \"RAID5 -\> RAID1\")
+						menubox "$1" "$RAID_CHANGE_TITLE" "$gv_Menupoint" "$RAID_CHANGE_MENU"
+					}
+					## }}}
+						raid_change_menu
+						while [ -n "$gv_Auswahl" ] ; do
+							case "$gv_Auswahl" in
+								HELP*)	script_help drive_help
+									raid_change_menu "${gv_Auswahl#HELP }"
+									;;
+								1)
+									# Raidlevel 1 nach 5# {{{
+									# RAID1 Arrays herausfinden
+									search_exact_md 1
+									if [ ! -z "${MD_RAIDLEVEL_DEV[1]}" ] ; then
+										MD_SEL_MENU=($MD_RAIDLEVEL_DEV)
+										menubox "" "$RAID_CHANGE_TITLE" "$MD_SEL_MSG" "$MD_SEL_MENU"
+										while [ -n "$gv_Auswahl" ] ; do
+											case $gv_Auswahl in
+												HELP*)	script_help drive_change_help
+													menubox "${gv_Auswahl#HELP }" "$RAID_CHANGE_TITLE" "$MD_SEL_MSG" "$MD_SEL_MENU"
+													;;
+												*)
+													# Auswahl uebernehmen
+													DEV=$gv_Auswahl
+													# Dateisystemcheck
+													raid_fs_check $DEV
+													RAID_ANZ=$(raid_anz $DEV)
+													# 1. Schritt 1 nach 5 mit 4 layout auf der
+													# letzten disk (parity-last)
+													mdadm -G $DEV -l 5 -p parity-last -n $RAID_ANZ \
+														--backup-file=/root/${${DEV//\//_}#_}.bak \
+														1>/dev/null || prog_failure
+													# Fortschrittsbalken
+													raid_gauge "$DEV"
+													# 2. Schritt 5 mit 4 layout nach 5 mit 5 layout
+													# (left-symmetric)
+													mdadm -G $DEV -l 5 -p left-symmetric -n $RAID_ANZ \
+														--backup-file=/root/${${DEV//\//_}#_}.bak \
+														1>/dev/null || prog_failure
+													# Fortschrittsbalken
+													raid_gauge "$DEV"
+													# Groeese eines Laufwerks vom Array herausfinden
+													RAID_USED_DEV_SIZE=$(raid_used_dev_size $DEV)
+													# Raid1 hat die Groesse eines Laufwerks, Raid5
+													# hat die Groesse aller Laufwerke - 1 (Parity)
+													(( RAID_ANZ-- ))
+													(( Resize_Size = RAID_USED_DEV_SIZE * RAID_ANZ ))
+													mdadm $DEV -G --array-size=${Resize_Size} 1>/dev/null || prog_failure
+													# Dateisystem vergroessern.
+													(( New_Size_MiB == Resize_Size / 1024.0 ))
+													resize_fs +${New_Size_MiB} $DEV
+													# alle RAID Arrays neu heraussuchen
+													raid
+													break
+													;;
+											esac
+										done
+									else
+										no_raid_arrays_msg change
+									fi
+									## }}}
+									raid_change_menu 1
+									;;
+								2)
+									# Raidlevel 1 nach 6# {{{
+									# RAID1 Arrays herausfinden
+									search_exact_md 1
+									if [ -n "${MD_RAIDLEVEL_DEV[1]}" ] ; then
+										MD_SEL_MENU=($MD_RAIDLEVEL_DEV)
+										menubox "" "$RAID_CHANGE_TITLE" "$MD_SEL_MSG" "$MD_SEL_MENU"
+										while [ -n "$gv_Auswahl" ] ; do
+											case $gv_Auswahl in
+												HELP*)	script_help drive_change_help
+													menubox "${gv_Auswahl#HELP }" "$RAID_CHANGE_TITLE" "$MD_SEL_MSG" "$MD_SEL_MENU"
+													;;
+												*)
+													# Auswahl uebernehmen
+													DEV=$gv_Auswahl
+													# Dateisystemcheck
+													raid_fs_check $DEV
+													RAID_ANZ=$(raid_anz $DEV)
+													# 1. Schritt 1 nach 5 mit 4 layout auf der
+													# letzten disk (parity-last)
+													mdadm -G $DEV -l 5 -p parity-last -n $RAID_ANZ \
+														--backup-file=/root/${${DEV//\//_}#_}.bak \
+														1>/dev/null || prog_failure
+													# Fortschrittsbalken
+													raid_gauge "$DEV"
+													# 2. Schritt 5 mit 4 layout nach 6 mit 6 layout
+													# (left-symmetric)
+													mdadm -G $DEV -l 6 -p left-symmetric -n $RAID_ANZ \
+														--backup-file=/root/${${DEV//\//_}#_}.bak \
+														1>/dev/null || prog_failure
+													# Fortschrittsbalken
+													raid_gauge "$DEV"
+													# Groeese eines Laufwerks vom Array herausfinden
+													RAID_USED_DEV_SIZE=$(raid_used_dev_size $DEV)
+													# Raid1 hat die Groesse eines Laufwerks,
+													# Raid6 hat die Groesse aller Laufwerke - 2 (Parity)
+													(( RAID_ANZ = RAID_ANZ - 2 ))
+													(( Resize_Size = RAID_USED_DEV_SIZE * RAID_ANZ ))
+													mdadm $DEV -G --array-size=${Resize_Size} 1>/dev/null || prog_failure
+													# Dateisystem vergroessern.
+													(( New_Size_MiB == Resize_Size / 1024.0 ))
+													resize_fs +${New_Size_MiB} $DEV
+													# alle RAID Arrays neu heraussuchen
+													raid
+													break
+													;;
+											esac
+										done
+									else
+										no_raid_arrays_msg change
+									fi
+									## }}}
+									raid_change_menu 2
+									;;
+								3)
+									# Raidlevel 5 nach 6# {{{
+									# RAID5 Arrays herausfinden
+									search_exact_md 5
+									if [ -n "${MD_RAIDLEVEL_DEV[1]}" ] ; then
+										MD_SEL_MENU=($MD_RAIDLEVEL_DEV)
+										menubox "" "$RAID_CHANGE_TITLE" "$MD_SEL_MSG" "$MD_SEL_MENU"
+										while [ -n "$gv_Auswahl" ] ; do
+											case $gv_Auswahl in
+												HELP*)	script_help drive_change_help
+													menubox "${gv_Auswahl#HELP }" "$RAID_CHANGE_TITLE" "$MD_SEL_MSG" "$MD_SEL_MENU"
+													;;
+												*)
+													# Auswahl uebernehmen
+													DEV=$gv_Auswahl
+													# Dateisystemcheck
+													raid_fs_check $DEV
+													RAID_ANZ=$(raid_anz $DEV)
+													RAID_LAYOUT=$(raid_is_layout $DEV)
+													# 1. Schritt Groesse anpassen
+													# Groeese eines Laufwerks vom Array herausfinden
+													RAID_USED_DEV_SIZE=$(raid_used_dev_size $DEV)
+													# Raid5 hat die Groesse aller Laufwerks - 1 (Parity),
+													# Raid6 hat die Groesse aller Laufwerke - 2 (Parity)
+													(( RAID_ANZ = RAID_ANZ - 2 ))
+													(( Resize_Size = RAID_USED_DEV_SIZE * RAID_ANZ ))
+													# Dateisystem anpassen
+													(( New_Size_MiB == Resize_Size / 1024.0 ))
+													# Wenn das Verkleinern eines FS nicht funktioniert
+													# abbrechen.
+													if resize_fs -${New_Size_MiB} $DEV ; then
+														# Array Groesse anpassen
+														mdadm $DEV -G --array-size=${Resize_Size} 1>/dev/null || prog_failure
+														# 2. Schritt 5 nach 6
+														# RAID_Anz wieder auf vorherige Anzahl hochrechnen
+														(( RAID_ANZ = RAID_ANZ + 2 ))
+														mdadm -G $DEV -l 6 -p ${RAID_LAYOUT}-6 -n $RAID_ANZ \
+															--backup-file=/root/${${DEV//\//_}#_}.bak \
+															1>/dev/null || prog_failure
+														# Fortschrittsbalken
+														raid_gauge "$DEV"
+														# alle RAID Arrays neu heraussuchen
+														raid
+														break
+													fi
+													;;
+											esac
+										done
+									else
+										no_raid_arrays_msg change
+									fi
+									## }}}
+									raid_change_menu 3
+									;;
+								4)
+									# Raidlevel 6 nach 5# {{{
+									# RAID6 Arrays herausfinden
+									search_exact_md 6
+									if [ -n "${MD_RAIDLEVEL_DEV[1]}" ] ; then
+										MD_SEL_MENU=($MD_RAIDLEVEL_DEV)
+										menubox "" "$RAID_CHANGE_TITLE" "$MD_SEL_MSG" "$MD_SEL_MENU"
+										while [ -n "$gv_Auswahl" ] ; do
+											case $gv_Auswahl in
+												HELP*)	script_help drive_change_help
+													menubox "${gv_Auswahl#HELP }" "$RAID_CHANGE_TITLE" "$MD_SEL_MSG" "$MD_SEL_MENU"
+													;;
+												*)
+													# Auswahl uebernehmen
+													DEV=$gv_Auswahl
+													# Dateisystemcheck
+													raid_fs_check $DEV
+													RAID_ANZ=$(raid_anz $DEV)
+													RAID_LAYOUT=$(raid_is_layout $DEV)
+													# Groeese eines Laufwerks vom Array herausfinden
+													RAID_USED_DEV_SIZE=$(raid_used_dev_size $DEV)
+													# 1. Schritt 6 nach 5
+													mdadm -G $DEV -l 5 -p ${RAID_LAYOUT%-6} -n $RAID_ANZ \
+														--backup-file=/root/${${DEV//\//_}#_}.bak \
+														1>/dev/null || prog_failure
+													# Fortschrittsbalken
+													raid_gauge "$DEV"
+													# 2. Array Groesse anpassen
+													# RAID_Anz anpassen
+													# Raid6 hat die Groesse aller Laufwerke - 2 (Parity),
+													# Raid5 hat die Groesse aller Laufwerks - 1 (Parity)
+													(( RAID_ANZ = RAID_ANZ - 1 ))
+													(( Resize_Size = RAID_USED_DEV_SIZE * RAID_ANZ ))
+													mdadm $DEV -G --array-size=${Resize_Size} 1>/dev/null || prog_failure
+													# Dateisystem anpassen
+													(( New_Size_MiB == Resize_Size / 1024.0 ))
+													resize_fs +${New_Size_MiB} $DEV
+													# alle RAID Arrays neu heraussuchen
+													raid
+													break
+													;;
+											esac
+										done
+									else
+										no_raid_arrays_msg change
+									fi
+									## }}}
+									raid_change_menu 4
+									;;
+								5)
+									# Raidlevel 6 nach 1# {{{
+									# RAID6 Arrays herausfinden
+									search_exact_md 6
+									if [ -n "${MD_RAIDLEVEL_DEV[1]}" ] ; then
+										MD_SEL_MENU=($MD_RAIDLEVEL_DEV)
+										menubox "" "$RAID_CHANGE_TITLE" "$MD_SEL_MSG" "$MD_SEL_MENU"
+										while [ -n "$gv_Auswahl" ] ; do
+											case $gv_Auswahl in
+												HELP*)	script_help drive_change_help
+													menubox "${gv_Auswahl#HELP }" "$RAID_CHANGE_TITLE" "$MD_SEL_MSG" "$MD_SEL_MENU"
+													;;
+												*)
+													# Auswahl uebernehmen
+													DEV=$gv_Auswahl
+													# Dateisystemcheck
+													raid_fs_check $DEV
+													RAID_ANZ=$(raid_anz $DEV)
+													# Groeese eines Laufwerks vom Array herausfinden
+													RAID_USED_DEV_SIZE=$(raid_used_dev_size $DEV)
+													# 1. Array Groesse anpassen
+													# Dateisystem anpassen
+													(( New_Size_MiB == RAID_USED_DEV_SIZE / 1024.0 ))
+													# Wenn das Verkleinern eines FS nicht funktioniert
+													# abbrechen.
+													if resize_fs -${New_Size_MiB} $DEV ; then
+														# Raid6 hat die Groesse aller Laufwerke - 2 (Parity),
+														# Raid1 hat die Groesse eines Laufwerks.
+														mdadm $DEV -G --array-size=${RAID_USED_DEV_SIZE} 1>/dev/null || prog_failure
+														# 2. Schritt 6 nach 5 mit 4 Layout
+														mdadm -G $DEV -l 5 -p parity-last -n $RAID_ANZ \
+															--backup-file=/root/${${DEV//\//_}#_}.bak \
+															1>/dev/null || prog_failure
+														# Fortschrittsbalken
+														raid_gauge "$DEV"
+														# 3. Schritt 5 mit 4 layout nach 1 ohne Layout
+														mdadm -G $DEV -l 1 -n $RAID_ANZ \
+															--backup-file=/root/${${DEV//\//_}#_}.bak \
+															1>/dev/null || prog_failure
+														# Fortschrittsbalken
+														raid_gauge "$DEV"
+														# alle RAID Arrays neu heraussuchen
+														raid
+														break
+													fi
+													;;
+											esac
+										done
+									else
+										no_raid_arrays_msg change
+									fi
+									## }}}
+									raid_change_menu 5
+									;;
+								6)
+									# Raidlevel 5 nach 1# {{{
+									# RAID5 Arrays herausfinden
+									search_exact_md 5
+									if [ -n "${MD_RAIDLEVEL_DEV[1]}" ] ; then
+										MD_SEL_MENU=($MD_RAIDLEVEL_DEV)
+										menubox "" "$RAID_CHANGE_TITLE" "$MD_SEL_MSG" "$MD_SEL_MENU"
+										while [ -n "$gv_Auswahl" ] ; do
+											case $gv_Auswahl in
+												HELP*)	script_help drive_change_help
+													menubox "${gv_Auswahl#HELP }" "$RAID_CHANGE_TITLE" "$MD_SEL_MSG" "$MD_SEL_MENU"
+													;;
+												*)
+													# Auswahl uebernehmen
+													DEV=$gv_Auswahl
+													# Dateisystemcheck
+													raid_fs_check $DEV
+													RAID_ANZ=$(raid_anz $DEV)
+													# Groeese eines Laufwerks vom Array herausfinden
+													RAID_USED_DEV_SIZE=$(raid_used_dev_size $DEV)
+													# 1. Array Groesse anpassen
+													# Dateisystem anpassen
+													(( New_Size_MiB == RAID_USED_DEV_SIZE / 1024.0 ))
+													# Wenn das Verkleinern eines FS nicht funktioniert
+													# abbrechen.
+													if resize_fs -${New_Size_MiB} $DEV ; then
+														# Raid5 hat die Groesse aller Laufwerke - 1 (Parity),
+														# Raid1 hat die Groesse eines Laufwerks.
+														mdadm $DEV -G --array-size=${RAID_USED_DEV_SIZE} 1>/dev/null || prog_failure
+														# 2. Schritt 6 nach 5 mit 4 Layout
+														mdadm -G $DEV -l 5 -p parity-last -n $RAID_ANZ \
+															--backup-file=/root/${${DEV//\//_}#_}.bak \
+															1>/dev/null || prog_failure
+														# Fortschrittsbalken
+														raid_gauge "$DEV"
+														# 3. Schritt 5 mit 4 layout nach 1 ohne Layout
+														mdadm -G $DEV -l 1 -n $RAID_ANZ >/dev/null \
+															--backup-file=/root/${${DEV//\//_}#_}.bak \
+															1>/dev/null || prog_failure
+														# Fortschrittsbalken
+														raid_gauge "$DEV"
+														# alle RAID Arrays neu heraussuchen
+														raid
+														break
+													fi
+													;;
+											esac
+										done
+									else
+										no_raid_arrays_msg change
+									fi
+									## }}}
+									raid_change_menu 6
+									;;
+								$gv_Back)	break								
+									;;
+							esac
+						done
+					else
+						no_raid_arrays_msg
+					fi
+				else
+					no_raid_arrays_msg
+				fi
+				## }}}
+				drive_menu $gv_Change
+				;;
+			$gv_Enlarge)
+				# Partition/Laufwerk addieren/vergroessern# {{{
+				if [ -n "${MD_DEV_E[1]}" ] ; then
+					RAID_ENLARGE_DISK_MENU=($MD_DEV_E)
+					RAID_ENLARGE_DISK_TITLE=$(gettext 'Raid-Arrays::${gv_Enlarge}')
+					RAID_ENLARGE_DISK_MSG=$(gettext 'Waehlen Sie ein RAID Array aus, welches vergroessert werden soll.')
+					# ARRAY auswaehlen
+					menubox "$RAIDDEV" "$RAID_ENLARGE_DISK_TITLE" "$RAID_ENLARGE_DISK_MSG" "$RAID_ENLARGE_DISK_MENU"
+					while [ -n "$gv_Auswahl" ] ; do
+						case "$gv_Auswahl" in
+							HELP*)	script_help drive_help
+								menubox "${gv_Auswahl#HELP }" "$RAID_ENLARGE_DISK_TITLE" "$RAID_ENLARGE_DISK_MSG" "$RAID_ENLARGE_DISK_MENU"
+								;;
+							*)
+								# Array uebernehmen
+								RAIDDEV="$gv_Auswahl"
+								raid_enlarge_dev $RAIDDEV
+								break
+								;;
+						esac
+					done
+				else
+					no_raid_arrays_msg
+				fi
+				## }}}
+				drive_menu $gv_Enlarge
+				;;
+			$gv_Reduce)
+				# Partition/Laufwerk verkleinern/substrahieren# {{{
+				if [ -n "${MD_DEV_E[1]}" ] ; then
+					RAID_REDUCE_DISK_TITLE=$(gettext 'Raid-Arrays::${gv_Reduce}')
+					RAID_REDUCE_DISK_MENU=($MD_DEV_E)
+					RAID_REDUCE_DISK_MSG=$(gettext 'Waehlen Sie ein RAID Array aus, welches verkleinert werden soll.')
+					# ARRAY auswaehlen
+					menubox "$RAIDDEV" "$RAID_REDUCE_DISK_TITLE" "$RAID_REDUCE_DISK_MSG" "$RAID_REDUCE_DISK_MENU"
+					while [ -n "$gv_Auswahl" ] ; do
+						case "$gv_Auswahl" in
+							HELP*)	script_help drive_help
+								menubox "${gv_Auswahl#HELP }" "$RAID_REDUCE_DISK_TITLE" "$RAID_REDUCE_DISK_MSG" "$RAID_REDUCE_DISK_MENU"
+								;;
+							*)
+								# Array uebernehmen
+								RAIDDEV="$gv_Auswahl"
+								raid_reduce_dev $RAIDDEV
+								break
+								;;
+						esac
+					done
+				else
+					no_raid_arrays_msg
+				fi
+				## }}}
+				drive_menu $gv_Reduce
+				;;
+			$lv_Repair)
+				# Arrays versuchen zu reparieren# {{{
+				########################################
+				# NOTE:
+				# Diese ARRAYS muessen in der $RAIDTAB stehen.
+				########################################
+				raid
+				if [ -n "${MD_DEV_E[1]}" ] ; then
+					# Funktion (repair_md_menu)# {{{
+					repair_md_menu() {
+						RAID_REPAIR_DISK_TITLE=$(gettext 'Raid-Arrays::${lv_Repair}')
+						RAID_REPAIR_DISK_MSG=$(gettext 'Waehlen Sie ein RAID Array aus, welches repariert werden soll.')
+						RAID_REPAIR_DISK_MENU=($MD_ARRAY_STATE_E)
+						menubox "$1" "$RAID_REPAIR_DISK_TITLE" "$RAID_REPAIR_DISK_MSG" "$RAID_REPAIR_DISK_MENU"
+					}
+					## }}}
+					# ARRAY auswaehlen
+					search_md_state
+					repair_md_menu "$RAIDDEV"
+					while [ -n "$gv_Auswahl" ] ; do
+						case "$gv_Auswahl" in
+							HELP*)	script_help drive_help
+								repair_md_menu "${gv_Auswahl#HELP }"
+								;;
+							*)
+								# Array uebernehmen
+								RAIDDEV="$gv_Auswahl"
+								# Array stoppen
+								mdadm --stop $RAIDDEV 1>/dev/null || prog_failure
+								# Die Variable RET wird von der Funktion prog_failure
+								# erzeugt.
+								if [[ $RET = 0 ]] ; then
+									# Array resync
+									# -A - assemble
+									# -U - update (Superblock etc.)
+									mdadm -A -U resync $RAIDDEV 1>/dev/null || prog_failure
+									# Fortschrittsbalken
+									raid_gauge "$RAIDDEV"
+									# neu einlesen
+									search_md_state
+								fi
+								repair_md_menu
+								;;
+						esac
+					done
+				else
+					no_raid_arrays_msg
+				fi
+				## }}}
+				drive_menu $lv_Repair
+				;;
+			$lv_Raid_Hot_Ar)
+				# Ersatzpartition/Festplatte im laufenden Betrieb# {{{
+				# addieren oder entfernen.
+				if [ -n "${MD_DEV_E[1]}" ] ; then
+					unset -- RAIDDEV
+					raidhotadd_remove
+					# Konfigurationsdatei aktualisieren
+					mdadm_conf_scan
+				else
+					no_raid_arrays_msg
+				fi
+				## }}}
+				drive_menu $lv_Raid_Hot_Ar
+				;;
+			$gv_Delete)
+				# Arrays loeschen# {{{
+				if [ -n "${MD_DEV_M[1]}" ] ; then
+					RAID_DEL_DISK_MENU=($MD_DEV_M)
+					RAID_DEL_DISK_TITLE=$(gettext 'Raid-Arrays::${gv_Delete}')
+					RAID_DEL_DISK_MSG=$(gettext 'Waehlen Sie ein oder mehrere RAID Arrays zum loeschen aus. Dabei werden auch die Superblocks der Partitionen geloescht.')
+					# ARRAYs auswaehlen
+					checklist "" "$RAID_DEL_DISK_TITLE" "$RAID_DEL_DISK_MSG" "$RAID_DEL_DISK_MENU"
+					while [ -n "${gv_Auswahl[1]}" ] ; do
+						case "$gv_Auswahl" in
+							HELP*)	script_help drive_help
+								checklist "${gv_Auswahl#HELP }" "$RAID_DEL_DISK_TITLE" "$RAID_DEL_DISK_MSG" "$RAID_DEL_DISK_MENU"
+								;;
+							*)
+								# loeschen
+								RAID_ARRAYS="$gv_Auswahl"
+								for md in ${=RAID_ARRAYS} ; {
+									# Partitionen des Array heraus finden
+									Part=${(o)${(M)$(mdadm -D $md 2>&1)##*/dev/[sh]d*}}
+									# Array stoppen
+									mdadm --stop $md 1>/dev/null || prog_failure
+									for P in ${=Part} ; {
+										# Superblock loeschen
+										mdadm --zero-superblock $P 1>/dev/null || prog_failure
+									}
+								}
+								# Konfiguration neu schreiben
+								mdadm_conf_scan
+								# alle RAID Arrays neu heraussuchen
+								raid
+								#
+								break
+								;;
+						esac
+					done
+				else
+					no_raid_arrays_msg
+				fi
+				## }}}
+				drive_menu $gv_Delete
+				;;
+			$gv_Back)	break
+				;;
+		esac
+	done
+}
+## }}}
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:                                                                               
+### }}}

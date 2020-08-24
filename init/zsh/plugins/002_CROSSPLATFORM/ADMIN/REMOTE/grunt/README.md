@@ -1,0 +1,1 @@
+# Grunt is a tool to let you execute command remotely, offline.It also let you copy files to a remote machine.

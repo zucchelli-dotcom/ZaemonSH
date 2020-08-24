@@ -1,0 +1,233 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+#  cds :
+# cds, when issued from the command prompt in Terminal, iTerm, or xterm,  will cd 
+# into the directory corresponding to the web page displayed in Safari.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# April 17, 2007 :  
+# • Fixed to work with URLs lacking ~username
+# 04/01/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+# set -x
+
+banner
+
+
+# Put your top-level server directory here:
+if [[ -z $PUBLIC_HTML ]];then
+
+    if [[ -d /Users/$USER/public_html ]];then
+        PUBLIC_HTML=/Users/$USER/public_html
+    else
+        PUBLIC_HTML=/Users/$USER/Sites
+    fi
+fi
+
+##########
+# Change this to your domain:
+# MY_DOMAIN='chemistry.ucsc.edu'
+# This guesses your domain name if you haven't defined MY_DOMAIN 
+if  [[ -z $MY_DOMAIN ]];then
+function GetTheDomain {
+osascript << eof
+tell app "Finder"
+    activate
+    tell app "Safari"
+        do javaScript "document.domain" in document 1
+    end tell
+end tell
+eof
+}  
+
+MY_DOMAIN="$(GetTheDomain | perl -p -e 's|www.||g' )"
+print ""
+print "\e[1m WARNING:  Improvising with MY_DOMAIN set to $MY_DOMAIN  \e[0m"
+print ""
+print "If this is incorrect, please export your server domain with"
+print "\e[1m export MY_DOMAIN='my.webserver.domain' \e[0m for http://www.my.webserver.domain "
+print ""
+fi
+
+##########
+# set these to your website root, various aliases.  Do not leave unused ones undefined, 
+# unused ones will do no harm.
+function return_focus {
+    if [[ $TERM_PROGRAM == iTerm.app ]]; then
+        /usr/bin/open -a iTerm
+        # Returns focus to iTerm.app
+        #
+    elif [[ $TERM_PROGRAM == Apple_Terminal ]]; then
+        /usr/bin/open -a Terminal
+        # Returns focus to Terminal.app
+        #
+    else
+        /usr/bin/open -a X11
+        # Returns focus to xterm, i.e., X11.app
+    fi
+}
+
+function GetTheUrl {
+osascript << eof
+tell app "Finder"
+    activate
+    tell app "Finder"
+        do javaScript "document.URL" in document 1
+    end tell
+end tell
+eof
+}
+
+# function GetTheUrl {
+# osascript << eof
+# tell app "Finder"
+#     activate
+#     tell app "Safari"
+#         do javaScript "document.URL" in document 1
+#     end tell
+# end tell
+# eof
+
+# }
+
+
+output=($(GetTheUrl)  )
+
+print "The URL of the page being displayed in Safari is currently: "
+print $output
+print ""
+
+
+relfile=($( print $output | perl -p -e "s;http://(www\.)?$MY_DOMAIN/(%7E|%7e|\~)?$USER;$PUBLIC_HTML;g" ))
+
+
+# print $relfile
+
+if [[ -d $relfile ]];then
+    relfile=$relfile/index.html
+fi
+
+reldir=($(dirname $relfile))
+
+#### set -x
+
+if [[ ! -d $reldir ]];then
+	# Try again
+	relfile=($( print $output | perl -p -e "s;http://(www\.)?$MY_DOMAIN;$PUBLIC_HTML;g" ))
+	if [[ $relfile != *.html ]];then 
+		if [[ -d $relfile ]];then
+		    relfile=$relfile/index.html
+			reldir=($(dirname $relfile))
+		fi
+		#reldir=($(dirname $relfile))
+	else
+		relfile=$relfile
+	fi
+	
+	if [[ ! -d $reldir ]];then
+		# Try swapping Sites for public_html
+		PUBLIC_HTML=/Users/$USER/Sites
+		relfile=($( print $output | perl -p -e "s;http://(www\.)?$MY_DOMAIN;$PUBLIC_HTML;g" ))
+		if [[ -d $relfile ]];then
+		    relfile=$relfile/index.html
+		fi
+		reldir=($(dirname $relfile))
+		if [[ -d $relfile ]];then
+    		print "$reldir does not appear to be part of this file-system"
+    		print "$0 now terminating with extreme prejudice."
+    		print ""
+    		return 99
+		fi
+	fi
+fi
+
+#### set +x
+
+cd $reldir
+return_focus
+print "Changing directories to $PWD"
+PUBLIC_HTML=""
+MY_DOMAIN=""

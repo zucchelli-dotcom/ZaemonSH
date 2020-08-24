@@ -1,0 +1,27 @@
+# https://github.com/drduh/config/blob/master/install.openbsd
+bash
+curl
+enigmail
+ent
+feh
+firefox
+free
+git
+gnupg
+htop
+mpv
+mupdf
+nmap
+p5-Image-ExifTool
+pcsc-tools
+scrot
+thunderbird
+tor
+unzip
+usbutils
+vim
+wireshark
+xclip
+xdotool
+youtube-dl
+zsh

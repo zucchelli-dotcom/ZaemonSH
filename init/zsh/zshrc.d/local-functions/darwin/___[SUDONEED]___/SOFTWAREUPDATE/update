@@ -1,0 +1,246 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# update :
+# Update MacOS.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+
+
+#-------------------------------------------------------------------------------------------#
+#                                               NOTES
+#-------------------------------------------------------------------------------------------#
+# #-------------------------------------------------------------------------------------------#
+# #                                           DESCRIPTION
+# #-------------------------------------------------------------------------------------------#
+# # Z_UpdateOSX :
+#   # Update mac osx, Homebrew, macports, npm, Rubygems, Python (pip, pip3).
+#   # Need power of sudoing. 
+
+# #---------------------------------------------------------------------------------------------------#
+# #                                              TODO
+# #---------------------------------------------------------------------------------------------------#
+# # 10/10/2017 :
+#   # • Continue adding commands variables.
+
+# #----------------------------------------------------------------------------------------------------
+# #                                             CHANGES
+# #----------------------------------------------------------------------------------------------------
+# # 28/09/2017 :
+#   # • Add macport update support.
+# # 10/10/2017 :
+#   # • Unify script presentation.
+#   # • Add commands variables
+ 
+# #-------------------------------------------------------------------------------------------#
+# #                                              CONFIG
+# #-------------------------------------------------------------------------------------------#
+# # VERSION="v1"
+# # ###
+# # UID_ROOT=0     # Seu$LS les utilisateurs avec un $UID valant 0 ont les droits de root.
+# # ###
+# # # PROGRAM
+# # E_XCD=66       # On ne peut pas changer de répertoire ?
+# # E_NONROOT=67   # Code de sortie si non root.
+# # E_MAUVAISARGS=65  # Argument non numérique (mauvais fo$RMat de l'argument)
+
+
+# # clear
+
+# #-------------------------------------------------------------------------------------------#
+# #                                             FUNCTIONS
+# #-------------------------------------------------------------------------------------------#
+# ###
+# #
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage: 
+
+    Examples:
+
+
+  ${NC}
+__EOF__
+}
+
+# info () {
+#   # shellcheck disable=SC2059
+#   printf "[ \033[00;34m...\033[0m ] $1\n"
+# }
+
+# user () {
+#   # shellcheck disable=SC2059
+#   printf "\r  [ \033[0;33m?\033[0m ] $1 "
+# }
+
+# success () {
+#   # shellcheck disable=SC2059
+#   printf "\r\033[2K  [ \033[00;32mOK\033[0m ] $1\n"
+# }
+
+# error () {
+#   # shellcheck disable=SC2059
+#   printf "\r\033[2K  [ \033[0;31mERROR\033[0m ] $1\n"
+#   echo ''
+# }
+
+# # Get OS X Software Updates, and update installed Ruby gems, Homebrew, macport, npm, and their installed packages
+# installed() {
+#   command -v "${1}" >/dev/null 2>&1 && info "${1}" || return false
+# }
+
+# # TODO: verify the error output works correctly...
+# update() {
+#   if [[ "$1" == "-osx" ]]; then
+#     # Keep-alive: update existing `sudo` time stamp until `update` has finished
+#     sudo -v && while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+#     info "OS X Packages" && sudo softwareupdate -i -a || error "Updating OS X packages"
+#   fi
+  
+#   installed "brew" && (brew update; brew upgrade --all; brew cleanup; brew cask cleanup;) && success "Updated brew" || error "Updating brew"
+#   installed "port" && (sudo port selfupdate; port upgrade installed ; port clean --all;) && success "Updated macport" || error "Updating macport"
+#   installed "npm"  && (npm install npm -g; npm update -g;) && success "Updated npm" || error "Updating npm"
+#   installed "gem"  && (sudo gem update --system; sudo gem update) && success "Updated gem" || error "Updating gem"
+#   # upgrade outdated pip packages...
+#   installed "pip" && (pip install --upgrade pip && pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U) && success "Updated pip" || error "Updating pip"
+#   installed "pip3" && (pip3 install --upgrade pip && pip3 freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip3 install -U) && success "Updated pip3" || error "Updating pip3"
+# }
+  
+# updateosx () {
+#   echo -n "Would you like update your system" '[y/n] ' ; read ans
+#     case "$ans" in
+#         y*|Y*)  update && return 0 ;;
+#         *)  && return 1 ;;
+#     esac
+# }  
+# #-------------------------------------------------------------------------------------------#
+# #                                              SCRIPT
+# #-------------------------------------------------------------------------------------------#  
+# banner  
+# isdarwin
+# updateosx
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 05/01/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+  clear
+  echo "${NC}"  
+  echo " ###################################################################################################"
+  echo " #                                                                                                 #"
+  echo " #     ${GREEN}This is ${RED}$FCT_NAME : ${YEL}$VERSION FOR $OSTYPE ${NC}                                                      #"
+  echo " #     CopyL®®v 2019, Zucchelli Bryan                                                              #"
+  echo " #                                                                                                 #"
+  echo " #     Unless required by applicable law or agreed to in writing, software                         #"
+  echo " #     distributed under the License is distributed on an "AS IS" BASIS,                             #"
+  echo " #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.                    #"
+  echo " #     See the License for the specific language governing permissions and                         #"
+  echo " #     limitations under the License.                                                              #"
+  echo " #                                                                                                 #"
+  echo " ###################################################################################################"
+}
+
+help(){
+    cat<<__EOF__
+    ${RED}
+    usage: update [ list | install_all | install_spec | help ]
+
+
+    Examples:
+       update list                                                     # list available updates
+       update install_all                                              # install all the available updates
+       update install_spec iTunesX-12.4.1 RAWCameraUpdate6.20-6.20     # install specific updates
+    ${NC}
+__EOF__
+}
+
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+case $1 in
+    help)
+        help
+        ;;
+    list|ls)
+        sudo softwareupdate --list
+        ;;
+    install_all)
+        shift
+        sudo softwareupdate --install --all
+        ;;
+    install_spec)
+        shift
+        sudo softwareupdate --install "$@"
+        ;;
+    *)
+        help
+        ;;
+
+esac

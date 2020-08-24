@@ -1,0 +1,354 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# disk :
+# Wrapper diskutil script to do essantial disk task on darwin. 
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 15/10/2017 :
+#  • Finished ramdisk option.
+#  • Add core storage support with versions test.
+#  • Add apfs support with versions test
+# 27/07/2019 :
+#  • Test versions : outdated options  
+# 25/01/2020 :
+# 2020-02-23 :
+#  • Need Mounted volumes with simply ls /Volumes/* ???
+#####
+#/!\# 
+#####
+# HARDCODED VALUE FOR "mountPoint" IS SET HERE
+# mountPoint=""
+
+# # CHECK TO SEE IF A VALUE WAS PASSED IN PARAMETER 1 AND, IF SO, ASSIGN TO "mountPoint"
+# if [ "$1" != "" ] && [ "$mountPoint" == "" ];then
+#     mountPoint=$1
+# fi
+# ####################################################################################################
+# # 
+# # SCRIPT CONTENTS - DO NOT MODIFY BELOW THIS LINE
+# #
+# ####################################################################################################
+# if [ "$mountPoint" != "" ]; then
+#   echo "Enabling journaling for the device at $mountPoint..."
+#   /usr/sbin/$DISKUTIL enableJournal $mountPoint
+# else
+#   echo "Error:  The parameter mountPoint'' is blank.  Please specify a mount point."
+# fi
+#####
+#/!\# 
+#####
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 15/10/2017 :
+#  • Modify script presentation (divided section and banner).
+#  • Add local variable.
+#  • Add Core storage disk listing.
+# 13/01/2018 :
+#  • Merge RamDisk function with this one.
+
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local VERSION FCT_NAME DISKUTIL OSASCRIPT CLEAR ECHO pref
+
+DISKUTIL="$(whereis diskutil)"
+OSASCRIPT="$(whereis osascript)"
+CLEAR="$(whereis clear)"
+ECHO="$(whereis echo)"
+
+VERSION="1.0.0"
+FCT_NAME="$(echo $0)"
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+    cat<<__EOF__
+    ${RED}
+    usage: disk [ ls | list | listCore | info | fs | filesystems | ejectall |
+                  verifyvolume | verifydisk |repairvolume | repairdisk | help ]
+
+    Examples:
+      disk ls                                           # List disks.
+      disk list                                         # List disks.
+      disk listCore                                     # Show all CoreStorage partitions and disks.
+      disk list /dev/disk0                              # List a specific disk.
+
+      disk fs                                           # List available filesystems for formatting.
+      disk filesystems                                  # List available filesystems for formatting.
+
+      disk info /dev/disk0                              # Display information
+
+      disk ejectall                                     # Eject all mountable volumes
+
+      disk verifyvolume /Volume/MyVol                   # Verify volume
+      disk verifydisk /dev/disk0                        # Verify disk
+
+      disk repairvolume /Volume/MyVol                   # Repair volume
+      disk repairdisk /dev/disk0                        # Repair disk
+
+      disk format MS-DOS MYNAME /dev/disk2              # Format the entire disk with a windows format (MS-DOS)
+      disk format volume MS-DOS MYNAME /Volumes/myvol   # Format the volume with a windows format (MS-DOS)
+
+      disk reformat /Volumes/myvol                      # Reformat a volume
+      disk rename CURRENTNAME NEWNAME                   # Rename a volume.
+
+
+      disk createram                                    # Create a ramdisk.
+      ${NC}
+__EOF__
+}
+
+disk_ls(){
+    if [ -z "${1}" ]; then
+        $DISKUTIL list
+    else
+        $DISKUTIL list "${1}"
+    fi
+}
+
+disk_lsCore(){
+    $DISKUTIL coreStorage list
+}
+
+disk_info(){
+    [ -z "${2}" ] && help && return 1
+    $DISKUTIL info "${2}"
+}
+
+list_filesystems(){
+    $DISKUTIL listFilesystems
+}
+
+ejectall(){
+    $OSASCRIPT -e 'tell application "Finder" to eject (every disk whose ejectable is true)'
+}
+
+verifyvolume(){
+   [ -z "${1}" ] && help && return 1
+   # $DISKUTIL verifyVolume "${2}"
+   $DISKUTIL verifyVolume "${1}"
+
+}
+verifydisk(){
+   [ -z "${1}" ] && help && return 1
+   $DISKUTIL verifyDisk "${1}"
+}
+
+repairvolume(){
+  [ -z "${1}" ] && help && return 1
+  $DISKUTIL repairVolume "${1}"
+}
+
+repairdisk(){
+ [ -z "${1}" ] && help && return 1
+  $DISKUTIL repairDisk "${1}"
+}
+
+format(){
+
+    [ -z "$1" -o -z "$2" -o -z "$3" ] && help && return 1
+
+    if [ "$1" == "volume" -a ! -z "$4" ]; then
+        $DISKUTIL eraseVolume "${2}" "${3}" "${4}"
+    else
+        $DISKUTIL eraseDisk "${1} "${2} "${3}"
+    fi
+}
+
+reformat(){
+    [ -z "$1" ] && help && return 1
+    $DISKUTIL reformat "${1}"
+}
+
+rename(){
+    [ -z "$1" -o -z "$2" ] && help && return 1
+    $DISKUTIL rename "${1}" "${2}"
+
+}
+
+createRamdisk(){
+  # Actually I want to make a RAM drive related to this script on my Mac.
+  # Here is what I did:
+  # 1. Disabled SIP in recovery mode using command "csrutil"
+
+  # 2. Created a plist file in /Library/LaunchDaemons/
+  # and entered launchctl -w /Library/LaunchDaemons/vn.magik.ramdisk.plist
+  # <?xml version="1.0" encoding="UTF-8"?>
+  # <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com
+  # /DTDs/PropertyList-1.0.dtd">
+  # <plist version="1.0">
+  # <dict>
+  # <key>Label</key>
+  # <string>vn.magik.ramdisk</string>
+  # <key>ProgramArguments</key>
+  # <array>
+  # <string>/Users/khacpm/ramdisk.sh</string>
+  # </array>
+  # <key>RunAtLoad</key>
+  # <true/>
+  # <key>StandardOutPath</key>
+  # <string>/Users/khacpm/ramdisk.log</string>
+  # <key>StandardErrorPath</key>
+  # <string>/Users/khacpm/ramdisk.err</string>
+  # </dict>
+  # </plist>
+  pref='<?xml version="1.0" encoding="UTF-8"?>
+  <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+  <plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>ot.magik.ramdisk</string>
+    <key>ProgramArguments</key>
+      <array>
+      <string>$HOME/ramdisk.zsh</string>
+      </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardOutPath</key>
+      <string>/Users/khacpm/ramdisk.log</string>
+    <key>StandardErrorPath</key>
+      <string>/Users/khacpm/ramdisk.err</string>
+  </dict>
+  </plist>
+  '
+  ramscript='
+  #! /bin/zsh
+  # 3.Created .zsh file and put it in ~/ramdisk.zsh
+  function fstartup()
+  {
+      # put folder into ramdisk
+  }
+  function fshutdown()
+  {
+    # detach ramdisk
+    tail -f /dev/null &
+    wait $!
+  }
+  function framdisk()
+  {
+    #do something
+  }
+  trap fshutdown SIGTERM
+  trap fshutdown SIGKILL
+  fstartup;
+  '
+
+  echo $pref >  ot.magik.ramdisk.plist
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+$CLEAR
+banner
+case $1 in
+    help)
+        help
+        ;;
+    list|ls)
+        shift
+        disk_ls "$@"
+        ;;
+    core)
+        shift
+        disk_lsCore "$@"
+        ;;
+    info)
+        shift
+        disk_info "$@"
+        ;;
+    filesystems|fs)
+        shift
+        list_filesystems
+        ;;
+    ejectall)
+        shift
+        ejectall
+        ;;
+    verifyvolume)
+        shift
+        verifyvolume "$@"
+        ;;
+    verifydisk)
+        shift
+        verifydisk "$@"
+        ;;
+    repairvolume)
+        shift
+        repairvolume "$@"
+        ;;
+    repairdisk)
+        shift
+        repairdisk "$@"
+        ;;
+    format)
+        shift
+        format "$@"
+        ;;
+    reformat)
+        shift
+        reformat "$@"
+        ;;
+    rename)
+        shift
+        rename "$@"
+        ;;
+    createram)
+        shift
+        createRamdisk
+        ;;
+    *)
+        help
+        ;;
+esac

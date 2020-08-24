@@ -1,0 +1,47 @@
+.\" Manpage for user.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH user 7 "06 Feb 2020" "ZaemonSH MacOS" "MacOS ZaemonSH customization"
+.SH NAME
+user \- Manage users with CLI.
+.SH SYNOPSIS
+user [ ls | info | whichGroup | create | createhidden | delete | addToGroup | delToGroup | help ]
+.SH DESCRIPTION
+user \- Manage users with CLI.
+.SH OPTIONS
+
+.IP "user [ls]"
+.B List users.
+
+.IP "user [info] <USERNAME>"
+.B Display user information.
+
+.IP "user [whichGroup] <USERNAME>"
+.B Display which grroups belongs user.
+
+.IP "user [create]"
+.B Create a normal or amdin user, it will ask you the below information.
+.B Username:
+.B Full name:
+.B Shell [/bin/bash]:
+.B Password:
+.B ...
+
+.IP "user [createhidden]"
+.B Create an hidden user.
+
+.IP "user [delete] <USERNAME>"
+.B Delete user.
+
+.IP "user [addToGroup] <GROUP> <USERNAME>"
+.B Add user to group.
+
+.IP "user [delToGroup] <GROUP> <USERNAME>"
+.B Delete user to group.
+
+.IP "user [help]"
+.B Obtain script help.
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

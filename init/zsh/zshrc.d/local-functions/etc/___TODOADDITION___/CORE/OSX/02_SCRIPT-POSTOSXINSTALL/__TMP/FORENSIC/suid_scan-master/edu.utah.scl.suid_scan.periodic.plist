@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>edu.utah.scl.suid_scan.periodic</string>
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>ProgramArguments</key>
+	<array>
+		<!-- Configure these settings according to the built-in documentation. -->
+		<string>/usr/bin/python</string>
+		<string>/usr/local/sbin/suid_scan.py</string>
+		<!-- <string>--input</string><string>/path/to/input/file</string> -->
+		<!-- <string>--output</string><string>/path/to/output/file</string> -->
+		<!-- <string>--mailto</string><string>your.address@email.com</string> -->
+		<!-- <string>--hash</string><string>/path/to/hashfunction with parameters</string> -->
+	</array>
+	<key>StartInterval</key>
+	<!-- Change this value according to your preference. -->
+	<!-- The value is number of seconds between executions. -->
+	<integer>1800</integer>
+</dict>
+</plist>

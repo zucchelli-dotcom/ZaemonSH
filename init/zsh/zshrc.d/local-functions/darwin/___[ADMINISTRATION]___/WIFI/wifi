@@ -1,0 +1,174 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# wifi :
+# Interact with your wifi configuration and informations.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME _W_DEVICE
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+_W_DEVICE=${_W_DEVICE:-en0}
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+
+    cat<<__EOF__
+    ${RED}
+    usage:  wifi [ status | scan | showpassword | history | off | on | connect | help ]
+
+    Examples:
+      wifi status                  # wifi status
+      wifi scan                    # scan wifi
+      wifi showpassword [ESSID]    # show wifi network password (default: current)
+      wifi history                 # wifi connection history
+      wifi off                     # turn off your wifi
+      wifi on                      # turn on your wifi
+      wifi connect ESSID PASSWORD  # join a wifi network
+    ${NC}
+__EOF__
+    echo ${NC}
+}
+
+wifi_status(){
+    /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I
+}
+
+wifi_scan(){
+    /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s
+}
+
+wifi_history(){
+    defaults read /Library/Preferences/SystemConfiguration/com.apple.airport.preferences | grep LastConnected -A 7
+}
+
+wifi_showpassword(){
+    if [ -z "$1" ]
+    then
+        ssid="`/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I | awk '/ SSID/ {print substr($0, index($0, $2))}'`"
+    else
+        ssid=$1
+    fi
+    security find-generic-password -D "AirPort network password" -a "$ssid" -gw
+}
+
+wifi_off(){
+
+         networksetup -setairportpower ${_W_DEVICE} off
+}
+
+wifi_on(){
+    networksetup -setairportpower ${_W_DEVICE} on
+}
+
+connect_network(){
+    [ -z "$1" -o -z "$2" ] && help
+    NETWORK="$1"
+    shift
+    networksetup -setairportnetwork "${_W_DEVICE}" "${NETWORK}" "$@"
+}
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+# case $1 in
+#     help)
+#         help
+#         ;;
+#     scan)
+#         shift
+#         wifi_scan
+#         ;;
+#     status)
+#         shift
+#         wifi_status
+#         ;;
+#     off)
+#         shift
+#         wifi_off
+#         ;;
+#     on)
+#         shift
+#         wifi_on
+#         ;;
+#     connect)
+#         shift
+#         connect_network "$@"
+#         ;;
+#     history)
+#         shift
+#         wifi_history
+#         ;;
+#     showpassword)
+#         shift
+#         wifi_showpassword "$@"
+#         ;;
+#     *)
+#         help
+#         ;;
+# esac
+
+# vim: ts=4 sw=4 softtabstop=4 expandtab

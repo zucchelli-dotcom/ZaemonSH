@@ -1,0 +1,323 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_FunctionlistBySubcat :
+# List ZaemonSH function by system and category
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 19/08/2019 :
+#  • Simplify script with associative array.
+# 27/01/2020 :
+# • Add Plugins extra and P_SYSCONFDIR listing.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 19/10/2017 :
+#  • Create this script.
+# 19/08/2019 :
+#  • Add completion and cosmetics corrections.
+
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+local CLEAR ECHO CAT GREP SED FCT_NAME VERSION
+
+# Define some local command
+CLEAR="$(whereis clear)"
+ECHO="$(whereis echo)"
+CAT="$(whereis cat)"
+GREP="$(whereis grep)"
+SED="$(whereis sed)"
+FCT_NAME="$0" 
+VERSION="1.0.0"
+
+
+local banner help coresublist darwinsublist linuxsublist
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+    echo ${RED}
+    cat<<__EOF__
+    usage:  
+      
+      # Show list of ZEAMONSH core function by category.
+      Z_FunctionBySubcat core [ linux | osx | universal ]                                                
+      # Show list of ZEAMONSH darwin function by category.
+      Z_FunctionBySubcat darwin [ administration | dailyuse | development | media | network | sudoneed ]  
+      # Show list of ZEAMONSH linux function by category.
+      Z_FunctionBySubcat linux [ administration | dailyuse | development | media | network | sudoneed ]
+      # Show list of ZEAMONSH universal function by category.
+      Z_FunctionBySubcat universal [ administration | dailyuse | development | media | network | sudoneed ]
+__EOF__
+    echo ${NC} 
+}
+
+
+coresublist(){   
+      case $1 in
+        linux)
+          shift
+          echo "${GREEN}ZAEMONSH linux core functions Listing :${NC}"
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/core -type f | grep "\_\_\_\[LINUX\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+          ;;
+        osx)
+          shift
+          echo "${GREEN}ZAEMONSH osx core functions Listing :${NC}"
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/core -type f | grep "\_\_\_\[OSX\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        universal)
+          shift
+          echo "${GREEN}ZAEMONSH universal core functions Listing :${NC}"
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/core -type f | grep "\_\_\_\[UNIVERSAL\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        *)
+          help
+        ;;  
+      esac
+}
+
+darwinsublist(){
+      case $1 in
+        administration)
+          shift
+          echo "${GREEN}ZAEMONSH Darwin administration functions Listing :${NC}"
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/darwin -type f | grep "\_\_\_\[ADMINISTRATION\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        dailyuse)
+          shift
+          echo "${GREEN}ZAEMONSH Darwin dailyuse functions Listing :${NC}"
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/darwin -type f | grep "\_\_\_\[DAILYUSE\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        development)
+          shift
+          echo "${GREEN}ZAEMONSH Darwin development functions Listing :${NC}"
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/darwin -type f | grep "\_\_\_\[DEVELOPMENT\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        media)
+          shift
+          echo "${GREEN}ZAEMONSH Darwin media functions Listing :${NC}"
+           
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/darwin -type f | grep "\_\_\_\[MEDIA\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        network)
+          shift
+          echo "${GREEN}ZAEMONSH Darwin network functions Listing :${NC}"
+          
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/darwin -type f | grep "\_\_\_\[NETWORK\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        sudoneed)
+          shift
+          echo "${GREEN}ZAEMONSH Darwin sudoneed functions Listing :${NC}"
+          
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/darwin -type f | grep "\_\_\_\[SUDONEED\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        *)
+          help
+        ;;  
+      esac
+}
+
+linuxsublist(){
+      case $1 in
+        administration)
+          shift
+          echo "${GREEN}ZAEMONSH Linux administration functions Listing :${NC}"
+          echo ""
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/linux -type f | grep "\_\_\_\[ADMINISTRATION\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        dailyuse)
+          shift
+          echo "${GREEN}ZAEMONSH Linux dailyuse functions Listing :${NC}"
+          echo ""
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/linux -type f | grep "\_\_\_\[DAILYUSE\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        development)
+          shift
+          echo "${GREEN}ZAEMONSH Linux development functions Listing :${NC}"
+                    
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/linux -type f | grep "\_\_\_\[DEVELOPMENT\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        media)
+          shift
+          echo "${GREEN}ZAEMONSH Linux media functions Listing :${NC}"
+          echo "" 
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/linux -type f | grep "\_\_\_\[MEDIA\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        network)
+          shift
+          echo "${GREEN}ZAEMONSH Linux network functions Listing :${NC}"
+
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/linux -type f | grep "\_\_\_\[NETWORK\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        sudoneed)
+          shift
+          echo "${GREEN}ZAEMONSH sudoneed network functions Listing :${NC}"
+          echo ""          
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/linux -type f | grep "\_\_\_\[SUDONEED\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        *)
+          help
+        ;;  
+      esac
+}
+
+universalsublist(){
+      case $1 in
+        administration)
+          shift
+          echo "${GREEN}ZAEMONSH cross-platform administration functions Listing :${NC}"
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/universal -type f | grep "\_\_\_\[ADMINISTRATION\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        dailyuse)
+          shift
+          echo "${GREEN}ZAEMONSH cross-platform dailyuse functions Listing :${NC}"
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/universal -type f | grep "\_\_\_\[DAILYUSE\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        development)
+          shift
+          echo "${GREEN}ZAEMONSH cross-platform development functions Listing :${NC}"          
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/universal -type f | grep "\_\_\_\[DEVELOPMENT\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        media)
+          shift
+          echo "${GREEN}ZAEMONSH cross-platform media functions Listing :${NC}" 
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/universal -type f | grep "\_\_\_\[MEDIA\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+        network)
+          shift
+          echo "${GREEN}ZAEMONSH cross-platform network functions Listing :${NC}"
+          echo "${YEL}"
+          find $ZDOT/zshrc.d/local-functions/universal -type f | grep "\_\_\_\[NETWORK\]\_\_\_" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+          echo "${NC}"
+        ;;
+         sudoneed)
+           shift
+           echo "${GREEN}ZAEMONSH sudoneed network functions Listing :${NC}"
+           echo ""
+           echo "${YEL}"
+           find $ZDOT/zshrc.d/local-functions/universal -type f | grep "\_\_\_\[SUDONEED\]\_\_\_" | sed 's/.*\///'   | grep -v '^_' | grep -v .DS_Store | grep -v '.zip' | tr ' ' '\n'  | sort | column
+           echo "${NC}"
+         ;;
+        *)
+          help
+        ;;  
+      esac
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+case $1 in
+    help)
+        help
+        ;;
+    core)
+        shift
+        coresublist "$@"
+        ;;
+    darwin)
+        shift
+        darwinsublist "$@"
+        ;;
+    linux)
+        shift
+        linuxsublist "$@"
+        ;;
+    universal)
+        shift
+        universalsublist "$@"
+        ;;
+    *)
+        help
+        ;;
+esac

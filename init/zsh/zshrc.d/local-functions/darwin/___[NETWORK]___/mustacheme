@@ -1,0 +1,142 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# mustacheme :
+# Expanded from an idea from Rick Olson (@technoweenie)
+#
+# Takes a .gif, splits it into constituent frames, mustaches each, restitches
+# the gif, and uploads to cloudapp.
+#
+# This leverages the nifty service mustachify.me, which will analyze your photo,
+# identify faces, and add a mustache to your image.
+#
+# If the .gif is a remote file, we'll download it and blow it up locally.
+#
+#   $1 - the path of the gif
+#
+# Examples:
+#   mustacheme holman-jumping-off-cliff-into-butter.gif
+#   mustacheme http://github.com/holman/butter/blob/master/holman-butter.gif
+#
+# Dependencies:
+#   - ImageMagick. If you're on a Mac, run:
+#       brew install imagemagick
+#   - wget
+#   - cloudapp: https://github.com/holman/dotfiles/blob/master/bin/cloudapp
+#   - gifme:    https://github.com/holman/gifme
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+
+##
+# set -e
+
+# # Set up mustacheme temporary working directory
+# output=/tmp/mustacheme
+# rm -rf $output
+# mkdir $output
+
+# if [[ $1 == http* ]]
+# then
+#   wget $1 -O /tmp/mustache-download.gif
+#   file=/tmp/mustache-download.gif
+# else
+#   file="$1"
+# fi
+
+# # Blow apart the GIF
+# convert $1 -coalesce $output/frame_%03d.gif
+
+# # Mustache each frame
+# for frame in $output/*.gif
+# do
+#   url=$(cloudapp $frame | grep Uploaded | awk '{print substr($0, index($0, "http://"))}')
+#   url="$url/$(basename $frame)"
+#   wget "http://mustachify.me/?src=$url" -O "$frame-stache"
+# done
+
+# # Ding! Fries are done.
+# gifme $output/*-stache -d 0

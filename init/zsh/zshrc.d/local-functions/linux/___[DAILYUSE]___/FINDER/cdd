@@ -1,0 +1,6 @@
+<#!/usr/bin/env zsh -f
+if [[ "$OSTYPE" =~ ^(linux)+ ]] && [[ "$#" == "1" ]]; then 
+		cd "${@}" ;
+		xdg-open $(pwd) & ;
+		# cddl
+fi

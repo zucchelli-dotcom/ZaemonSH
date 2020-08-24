@@ -1,0 +1,420 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# finder :
+# Set and control Finder.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 16/10/2017 :
+# Add more functionalities.
+
+#--------------------------------------------------------------------- 
+# finder_update function to update desktop and all open Finder windows 
+#--------------------------------------------------------------------- 
+# function finder_update { 
+# osascript <<-eof 
+# tell application "Finder"
+#   update desktop
+#   set allWindows to every window
+#   repeat with aWindow in allWindows
+#     try
+#       update items of aWindow
+#     end try
+#   end repeat
+# end tell
+# eof
+# }
+
+
+# ## Add quitItem to Finder
+# alias FinderQuitMenuItem="command defaults write com.apple.finder QuitMenuItem -bool YES && command killall Finder"
+# alias FinderQuitMenuItemNop="command defaults write com.apple.finder QuitMenuItem -bool NO && command killall Finder"
+
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 16/10/2017 :
+#  • Modify script presentation.
+#  • Define some command variables.
+#  • Add banner.
+# 07/01/2018 :
+#  • Integrated 022_aliases.darwin-specific.additional.zsh finder related alias.
+
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+# Define some local command
+local CLEAR ECHO DEFAULTS OSASCRIPT KILLALL CAT SW_VERS SED banner help hidden_files file_extensions desktop viewcolumn viewlist iconlist view fullpath \
+printselected printp quit VERSION FCT_NAME
+
+PATH=${PATH}
+
+CLEAR="$(whereis clear)"
+ECHO="$(whereis echo)"
+DEFAULTS="$(whereis defaults)"
+OSASCRIPT="$(whereis osascript)"
+KILLALL="$(whereis killall)"
+CAT="$(whereis cat)"
+SW_VERS="$(whereis sw_vers)"
+SED="$(whereis sed)"
+
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+    cat<<__EOF__
+    ${RED}
+    usage: finder [ quitmenu | hiddenfiles | extensions | desktop | view | fullpath | print | quit | help ]
+
+    Examples:
+      finder quitmenu                  # Get the current status of quit item.
+      finder quitmenu      YES         # Active quit item
+      finder quitmenu      NO          # Disable quit item.
+
+      finder hiddenfiles               # Get the current status of hidden files.
+      finder hiddenfiles   YES         # Show hidden files.
+      finder hiddenfiles   NO          # Don't show hidden files.
+
+      finder extensions                # get the current status.
+      finder extensions    YES         # show all file extensions.
+      finder extensions    NO          # don't show all file extensions.
+
+      finder desktop                   # get the current desktop status.
+      finder desktop       YES         # enable the desktop.
+      finder desktop       NO          # disable the desktop.
+
+      finder view column               # Set finder view to column style.
+      finder view list                 # Set finder view to list style.
+      finder view icon                 # Set finder view to icon style.
+
+      finder fullpath                  # Get status of full path in finder title bar.
+      finder fullpath      YES         # Enable full path in finder title bar.
+      finder fullpath      NO          # Disable full path in finder title bar.
+
+      finder print                     # Print Files Selected in Finder.
+
+      finder quit                      # Quit finder.
+
+
+    ${NC}  
+__EOF__
+}
+
+quit_menu(){
+    case $1 in
+        [yY][eE][sS])
+            $ECHO "${GREEN}Add quitItem to Finder: YES${NC}"
+            $DEFAULTS write com.apple.finder QuitMenuItem -bool YES && $KILLALL Finder 2>/dev/null
+            ;;
+        [nN][oO])
+            $ECHO "${GREEN}Add quitItem to Finder: NO${NC}"
+            $DEFAULTS write com.apple.finder QuitMenuItem -bool NO && $KILLALL Finder 2>/dev/null
+            ;;
+        *)
+            QUIT_ITEM_STATUS=$($DEFAULTS read com.apple.finder QuitMenuItem 2>/dev/null)
+
+            case $QUIT_ITEM_STATUS in
+                0|[nN][oO]|[fF][aA][lL][sS][eE])
+                    QUIT_ITEM_STATUS="NO"
+                    ;;
+                1|[yY][eE][sS]|[tT][rU][eE])
+                    QUIT_ITEM_STATUS="YES"
+                    ;;
+                *)
+                    $ECHO "We can't read AppleShowAllFiles property" && return 1
+                    ;;
+            esac
+
+            $ECHO "Show hidden files: $QUIT_ITEM_STATUS"
+            return 0
+            ;;
+    esac
+}
+
+hidden_files(){
+    case $1 in
+        [yY][eE][sS])
+            $ECHO "${GREEN}Show hidden files: YES${NC}"
+            $DEFAULTS write com.apple.finder AppleShowAllFiles -bool true &&  $KILLALL Finder 2>/dev/null
+            ;;
+        [nN][oO])
+            $ECHO "${GREEN}Show hidden files: NO${NC}"
+            $DEFAULTS write com.apple.finder AppleShowAllFiles -bool false &&  $KILLALL Finder 2>/dev/null
+            ;;
+        *)
+            HIDDEN_FILE_STATUS=$($DEFAULTS read com.apple.finder AppleShowAllFiles 2>/dev/null)
+
+            case $HIDDEN_FILE_STATUS in
+                0|[nN][oO]|[fF][aA][lL][sS][eE])
+                    HIDDEN_FILE_STATUS="NO"
+                    ;;
+                1|[yY][eE][sS]|[tT][rU][eE])
+                    HIDDEN_FILE_STATUS="YES"
+                    ;;
+                *)
+                    $ECHO "We can't read AppleShowAllFiles property" && return 1
+                    ;;
+            esac
+
+            $ECHO "Show hidden files: $HIDDEN_FILE_STATUS"
+            return 0
+            ;;
+    esac
+}
+
+file_extensions(){
+    case $1 in
+        [yY][eE][sS])
+            $ECHO "${GREEN}Show file extensions: YES${NC}"
+            $DEFAULTS write NSGlobalDomain AppleShowAllExtensions -bool true && $KILLALL Finder 2>/dev/null
+            ;;
+        [nN][oO])
+            $ECHO "${GREEN}Show file extensions: NO${NC}"
+            $DEFAULTS write NSGlobalDomain AppleShowAllExtensions -bool false && $KILLALL Finder 2>/dev/null
+            ;;
+        *)
+            EXTENSION_STATUS=$($DEFAULTS read NSGlobalDomain AppleShowAllExtensions 2>/dev/null)
+            case $EXTENSION_STATUS in
+                0|[nN][oO]|[fF][aA][lL][sS][eE])
+                    EXTENSION_STATUS="NO"
+                    ;;
+                1|[yY][eE][sS]|[tT][rU][eE])
+                    EXTENSION_STATUS="YES"
+                    ;;
+                *)
+                    $ECHO "${RED}We can't read AppleShowAllExtension property${NC}" && return 1
+                    ;;
+            esac
+            $ECHO "Show file extensions: $EXTENSION_STATUS"
+            return 0
+            ;;
+    esac
+
+}
+
+desktop(){
+    case $1 in
+        [yY][eE][sS])
+            $ECHO "${GREEN}Enable desktop: YES${NC}"
+            $DEFAULTS write com.apple.finder CreateDesktop -bool true && $KILLALL Finder 2>/dev/null
+            ;;
+        [nN][oO])
+            $ECHO "${GREEN}Enable desktop: NO${NC}"
+            $DEFAULTS write com.apple.finder CreateDesktop -bool false && $KILLALL Finder 2>/dev/null
+            ;;
+        *)
+            DESKTOP_STATUS=$($DEFAULTS read com.apple.finder CreateDesktop 2>/dev/null)
+            case $DESKTOP_STATUS in
+                0|[nN][oO]|[fF][aA][lL][sS][eE])
+                    DESKTOP_STATUS="disabled"
+                    ;;
+                1|[yY][eE][sS]|[tT][rU][eE])
+                    DESKTOP_STATUS="enabled"
+                    ;;
+                *)
+                    $ECHO "We can't read CreateDesktop property" && return 1
+                    ;;
+            esac
+            $ECHO "Desktop: $DESKTOP_STATUS"
+            ;;
+    esac
+}
+
+### Set Current Directory's Finder View to Column View
+viewcolumn(){$OSASCRIPT -e 'set cwd to do shell script "pwd"'\
+              -e 'tell application "Finder"'\
+              -e "if (${1-1} <= (count Finder windows)) then"\
+              -e "set the target of window ${1-1} to (POSIX file cwd) as string"\
+              -e "set the current view of the front Finder window to column view"\
+              -e 'else' -e "open (POSIX file cwd) as string"\
+              -e "set the current view of the front Finder window to column view"\
+              -e 'end if' -e 'end tell'}
+
+viewlist(){$OSASCRIPT -e 'set cwd to do shell script "pwd"'\
+                -e 'tell application "Finder"'\
+                -e "if (${1-1} <= (count Finder windows)) then"\
+                -e "set the target of window ${1-1} to (POSIX file cwd) as string"\
+                -e "set the current view of the front Finder window to list view"\
+                -e 'else' -e "open (POSIX file cwd) as string"\
+                -e "set the current view of the front Finder window to list view"\
+                -e 'end if' -e 'end tell'}
+
+
+iconlist(){$OSASCRIPT -e 'set cwd to do shell script "pwd"'\
+              -e 'tell application "Finder"'\
+              -e "if (${1-1} <= (count Finder windows)) then"\
+              -e "set the target of window ${1-1} to (POSIX file cwd) as string"\
+              -e "set the current view of the front Finder window to icon view"\
+              -e 'else' -e "open (POSIX file cwd) as string"\
+              -e "set the current view of the front Finder window to icon view"\
+              -e 'end if' -e 'end tell'}
+
+view(){
+        case $1 in
+        column)
+            viewcolumn
+            ;;
+        list)
+            viewlist
+            ;;
+        icon)
+            iconlist
+            ;;    
+        *)
+            $ECHO "We can't read CreateDesktop property" && return 1
+            ;;
+    esac
+}
+
+#### Put full path in finder title bar
+fullpath(){
+    VERS_ACT=$($SW_VERS -productVersion | $SED 's/^10.//')
+    VERS_MIN=$($ECHO "10.4"  | $SED 's/^10.//')
+
+    if (( $VERS_ACT < $VERS_MIN )); then
+    #if [[ $(sw_vers -productVersion) < 10.5 ]]; then
+        print "Works on 10.5.X and above only."
+        return 10
+    else
+        print "Adds the full path in the Finder title bar"
+        print "To remove, issue \e[1m $0 NO \e[0m "
+    fi
+
+    if [[ $1 == NO || $1 == no || $1 == No ]]; then
+        $DEFAULTS write com.apple.finder _FXShowPosixPathInTitle -bool NO
+        $KILLALL Finder 2>/dev/null
+        #$OSASCRIPT -e 'tell app "Finder" to quit'
+        #sleep 2
+        #open -a Finder
+    else
+        $DEFAULTS write com.apple.finder _FXShowPosixPathInTitle -bool YES
+        $KILLALL Finder 2>/dev/null
+        # $OSASCRIPT -e 'tell app "Finder" to quit'
+        # sleep 2
+        # open -a Finder
+    fi
+    }
+
+### Print Files Selected in Finder
+printselected(){
+      $OSASCRIPT <<EOT
+        tell application "Finder"
+            set theFiles to selection
+            set theList to ""
+            repeat with aFile in theFiles
+                set theList to theList & POSIX path of (aFile as alias) & "\n"
+            end repeat
+            theList
+        end tell
+EOT
+}
+
+printp(){
+    printselected
+}
+
+quit(){
+$OSASCRIPT <<-eof
+tell app "Finder"
+     Quit
+     end
+eof
+}
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+case $1 in
+    help)
+        help
+        ;;
+    quitmenu)
+        shift
+        quit_menu "$@"
+        ;;
+    hiddenfiles)
+        shift
+        hidden_files "$@"
+        ;;
+    extensions)
+        shift
+        file_extensions "$@"
+        ;;
+    desktop)
+        shift
+        desktop "$@"
+        ;;
+    view)
+        shift
+        view "$@"
+        ;;
+    fullpath)
+        shift
+        fullpath "$@"
+        ;;
+    print)
+        printp "$@"
+        shift
+        ;;                  
+    quit)
+        shift
+        quit "$@"
+        ;;
+    *)
+        help
+        ;;
+esac

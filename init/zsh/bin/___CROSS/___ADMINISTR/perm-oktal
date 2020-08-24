@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+#
+# $Id: perm-oktal.pl,v 1.1 2003/12/23 00:32:09 dope Exp dope $
+#
+# Copyright by Christian Schneider <strcat@gmx.net>
+# 
+# Filename       : ~/bin/perm-oktal.pl
+# Purpose        : Display the permissions in octal from given file
+# Author         : Christian Schneider <strcat@gmx.net>
+# Latest release : <http://strcat.neessen.net/>
+#
+# Last modified: [ 2003-12-22 20:04:57 ]
+
+use Getopt::Std;
+getopts("h0");
+
+$PROGNAME="perm-oktal.pl";
+$EXITSTATUS=0;
+$USAGE="Usage: $PROGNAME [-h0] [file ...]
+-h	this usage text
+-0	zero-pad file mode\n";
+
+if ($opt_h) {
+	print($USAGE);
+	exit $EXITSTATUS;
+}
+
+unless (defined($ARGV[0])) { 
+	die($USAGE); 
+}
+
+while ($MYFILE=$ARGV[0]) {
+
+	if (@filestat=stat($MYFILE)) { 
+		print("$MYFILE: ");
+		if ($opt_0) {
+			printf("%04d\n", substr(sprintf("%o", $filestat[2]), -4)); 
+		}
+		else {
+			printf("%d\n", substr(sprintf("%o", $filestat[2]), -4)); 
+		}
+	}
+	else { 
+		warn "$PROGNAME: $MYFILE: can't get permissions\n"; 
+		$EXITSTATUS=1;
+	}
+	shift;
+}
+
+exit($EXITSTATUS);

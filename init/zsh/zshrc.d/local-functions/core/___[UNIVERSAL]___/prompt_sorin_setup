@@ -1,0 +1,110 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# prompt_sorin_setup :
+# A simple theme that only shows relevant information.
+#
+# Authors:
+#   Sorin Ionescu <sorin.ionescu@gmail.com>
+#
+# Screenshots:
+#   http://i.imgur.com/aipDQ.png
+#
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 10/10/2017 :
+#  • Add description.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 10/10/2017 :
+#  • Modifying Script presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+function prompt_sorin_precmd {
+  setopt LOCAL_OPTIONS
+  unsetopt XTRACE KSH_ARRAYS
+
+  if (( $+functions[git-info] )); then
+    git-info
+  fi
+}
+
+function prompt_sorin_setup {
+  setopt LOCAL_OPTIONS
+  unsetopt XTRACE KSH_ARRAYS
+  prompt_opts=(cr percent subst)
+
+  autoload -Uz add-zsh-hook
+  add-zsh-hook precmd prompt_sorin_precmd
+
+  zstyle ':dotzsh:module:editor' completing '%B%F{red}...%f%b'
+  zstyle ':dotzsh:module:editor:keymap:primary' overwrite ' %F{red}♺%f'
+  zstyle ':dotzsh:module:editor:keymap' alternate ' %F{yellow}❮%f%B%F{red}❮%f%b%F{red}❮%f'
+  zstyle ':dotzsh:module:git' action ':%%B%F{yellow}%s%f%%b'
+  zstyle ':dotzsh:module:git' added ' %%B%F{green}✚%f%%b'
+  zstyle ':dotzsh:module:git' ahead ' %%B%F{yellow}⬆%f%%b'
+  zstyle ':dotzsh:module:git' behind ' %%B%F{yellow}⬇%f%%b'
+  zstyle ':dotzsh:module:git' branch ':%F{red}%b%f'
+  zstyle ':dotzsh:module:git' commit ':%F{green}%.7c%f'
+  zstyle ':dotzsh:module:git' deleted ' %%B%F{red}✖%f%%b'
+  zstyle ':dotzsh:module:git' modified ' %%B%F{blue}✱%f%%b'
+  zstyle ':dotzsh:module:git' position ':%F{green}%p%f'
+  zstyle ':dotzsh:module:git' renamed ' %%B%F{magenta}➜%f%%b'
+  zstyle ':dotzsh:module:git' stashed ' %%B%F{cyan}✭%f%%b'
+  zstyle ':dotzsh:module:git' unmerged ' %%B%F{yellow}═%f%%b'
+  zstyle ':dotzsh:module:git' untracked ' %%B%F{white}◼%f%%b'
+  zstyle ':dotzsh:module:git' info \
+    'prompt'  ' %F{blue}git%f$(coalesce "%b" "%p" "%c")%s' \
+    'rprompt' '%A%B%S%a%d%m%r%U%u'
+
+  PROMPT='%F{cyan}%1~%f${git_info:+${(e)git_info[prompt]}} %(!.%B%F{red}#%f%b.%B%F{green}❯%f%b) '
+  RPROMPT='${editor_info[keymap]}${editor_info[overwrite]}%(?:: %F{red}⏎%f)${VIM:+" %B%F{green}V%f%b"}${git_info[rprompt]}'
+  SPROMPT='zsh: correct %F{red}%R%f to %F{green}%r%f [nyae]? '
+}
+
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------##
+
+
+
+prompt_sorin_setup "$@"
+

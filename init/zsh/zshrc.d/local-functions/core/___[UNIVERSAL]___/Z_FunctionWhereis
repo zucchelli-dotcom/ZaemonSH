@@ -1,0 +1,319 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_FunctionWhereis : 
+# Locate and view functions.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 29/07/2019
+# • Add search iunside functions located in $ZDOT/.zshrc.d/local_functions folder. 
+
+# 29/07/2019
+# • Not working with other ZSH_VERSION
+# • Add search on config
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 28/07/2017
+# • Creation of this one
+# • Add search iunside native zsh functions and placed cursor in search on text (vim "+/{$COMTOSEARCH}").
+# • Add better filter for search on $ZDOT/.zshrc.d/local_functions
+# O1/08/2019 :
+# • Add better filter for native zsh funtions.
+# • Correct P_PERSFCTDIR search.
+# • Better EXTRAPLUGINS functions detections.
+# 27/O1/2020 :
+# • Correct PLuginsExtra part..
+# 27/O1/2020 :
+# • ...Re
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local COMTOSEARCH ZSHNATIVEOSXFUNCTIO ISIN_ZSHNATIVEOSXFUNCTIONFILE TGRMLFUNCTIONFILE ISIN_GRMLFUNCTIONFILE SYSFUNCTIONNORMO SYSFUNCTIONNORM SYSFUNCTIONTEST SYSFUNCTIONNB ISIN_SYSFUNCTIONNORM PLUGINSFUNCTION PLUGINSFUNCTIONPATH ISIN_PLUGINSFUNCTION MYFUNCTION ISIN_MYFUNCTION FUNCNAME FUNCNAMECORRECT FUNCPATH FUNCPATHAPROANDNAME TESTNAMECORRECT MYFUNCPATHAPROANDNAME bjracpath bjrac bjracorrec ZSHNATIVEOSXFUNCTIONNAME ZSHNATIVEOSXFUNCTIONINSIDETEST
+
+FCT_NAME=$(echo $0)
+VERSION="0.0.1"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                               VARIABLE
+#-------------------------------------------------------------------------------------------#
+if [[ $# == 1 ]]; then 
+	COMTOSEARCH="${@}"
+        #######################
+	## NATIVE ZSH FUNCTIONS
+	echo $P_NATFCTDIR
+    #ZSHNATIVEOSXFUNCTION=$(find "${P_NATFCTDIR}" -type f -name "${@}")
+    ZSHNATIVEOSXFUNCTION=$(find "${P_NATFCTDIR}" -name "${@}")
+    #####
+    #/!\#
+    #####   
+
+        #######################
+        ## IN NATIVE ZSH FUNCTIONS
+        ZSHNATIVEOSXFUNCTIONNAME=$(basename $ZSHNATIVEOSXFUNCTION 2>/dev/null)
+        ZSHNATIVEOSXFUNCTIONINSIDETEST=$(which $COMTOSEARCH | awk '{ print $7 }')
+        ZSHNATIVEOSXFUNCTIONINSIDETESTZ=$(which $COMTOSEARCH | awk '{ print $7 }' | grep  "$P_NATFCTDIR")
+    	#####
+    	#/!\#
+    	#####
+
+    
+    	ISIN_ZSHNATIVEOSXFUNCTIONFILE=''
+
+	#########################
+	## GRML FUNCTIONS
+	if [[ -f $P_GRMLRCFIL ]]; then
+		TGRMLFUNCTIONFILE=$(grep '()' $P_GRMLRCFIL 2>/dev/null | grep -v "[#;';=]" | sed 's/() //g' | sed 's/{//g' | sed 's/()//g' | grep -v '}' | sed 's/function//g' | grep $COMTOSEARCH | sed 's/^[ \t]*//' | grep "^${COMTOSEARCH}$")
+   	#grep "()" .zshrc | grep -v "[#;';=]" | sed 's/() //g' | sed 's/{//g' | sed 's/()//g' | grep -v "}" | sed 's/function//g'
+	ISIN_GRMLFUNCTIONFILE=''
+	fi
+
+	##########################
+	## ZEAMONSH FUNCTIONS
+	SYSFUNCTIONNORMO=$(ls -A $ZDOT/zshrc.d/local-functions/* | grep -v "audio" | grep -v "xtal" | grep -v README | grep -v "pashua.app" | grep "${@}")
+	#SYSFUNCTIONNORM=$(find $P_SYSFCTDIR/* -type l -name "${@}")
+	SYSFUNCTIONNORM=$(find $P_SYSFCTDIR/* -type l | grep "/$COMTOSEARCH\b")
+	#SYSFUNCTIONTESTO=($(find $P_SYSFCTDIR/* -type l | grep -F "/$COMTOSEARCH" | sed 's/.*\///'))
+	SYSFUNCTIONTESTO=($(find $P_SYSFCTDIR/* -type l | grep -Fw "$COMTOSEARCH" | sed 's/.*\///' | tr '\n' ' '))
+	SYSFUNCTIONTEST=($(find $P_SYSFCTDIR/* -type l | grep -w "$COMTOSEARCH"   | tr '\n' ' '))
+
+	##Print a count of multiple matches.
+	SYSFUNCTIONNB=$(find $P_SYSFCTDIR/* -type f | grep -v "/etc" | grep -wc "${@}")
+
+	ISIN_SYSFUNCTIONNORM=''
+
+	###########################
+	## EXTRAS-PLUGINS FUNCTIONS
+    # PLUGINSFUNCTION=$(grep  -R  -e '() {'  -e '(){'  $P_ZDOTPLUGINSDIR 2>|/dev/null | grep -v -e '.zsh.disabled:' -e '/_' | sed 's/function//'   |  grep -v  '^_'  | grep -v -e "eval " -e '^#'  |  sed 's/^[ \t]*//g' | grep -v '^_' | uniq | sed 's/.*://' | sed 's/^[ \t]*//' | sed 's/() {.*//' |   sed 's/(){.*//'  | grep -v  '^_' | grep  '^[a-z]' | sort -u | sed 's/ //' | grep $COMTOSEARCH)
+    PLUGINSFUNCTION=$(grep  -R  -e '() {'  -e '(){'  $P_ZDOTPLUGINSDIR 2>|/dev/null | grep $COMTOSEARCH)
+
+    # PLUGINSFUNCTION=$(grep -h -R  -e '() {'  -e '(){'  $P_ZDOTPLUGINSDIR 2>|/dev/null  | sed 's/function//'   |  grep -v  '^_' | sed 's/() {.*//' | sed 's/(){//' | grep -v -e "eval " -e '^#'  |  sed 's/^[ \t]*//g' | grep -v '^_' | uniq | sort)
+	# PLUGINSFUNCTION=$(grep -rn '()' $P_ZDOTPLUGINSDIR 2>/dev/null | sed 's/.*://' | grep '^[a-z__]' | grep -v "=()" | sed 's/(.*//' | sed 's/function//' | sed 's/=//' | sed 's/^[ \t]*//' | grep "^${COMTOSEARCH}" | grep "${COMTOSEARCH}$" | grep "$COMTOSEARCH")
+	#PLUGINSFUNCTION=$(grep -r '()' $P_PERSFCTDIR | sed 's/.*://' | sed 's/^[ \t]*//' | grep -v '=()' | grep '^[a-z__]' | sed 's/(.*//' | sed 's/function//' | sed 's/=//' | sed 's/^[ \t]*//' | grep $COMTOSEARCH )
+	# PLUGINSFUNCTIONPATH=$(grep -r $COMTOSEARCH $P_ZDOTPLUGINSDIR 2>/dev/null |  sed 's/:.*//' | sort -u)
+	PLUGINSFUNCTIONPATH=$(grep -r -e "$COMTOSEARCH(" -e "$COMTOSEARCH ("  $P_ZDOTPLUGINSDIR | sed 's/:.*//')
+	ISIN_PLUGINSFUNCTION=''
+
+	########################################
+	## PERSONNAL FUNCTIONS
+	##
+    MYFUNCTION=$(basename $(find $P_PERSFCTDIR -type f -name "${@}"))
+    MYFUNCTIONPATH=$(find $P_PERSFCTDIR -type f -name "${@}")
+	ISIN_MYFUNCTION=''
+
+	#-------------------------------------------------------------------------------------------#
+#                                               SCRIPT	#-------------------------------------------------------------------------------------------#
+	clear
+	echo ""
+	banner
+   	echo ""
+	echo "${LINEE}"
+    echo ""
+    #######################################
+    echo "===  Function ${GREEN} $COMTOSEARCH ${NC} ==="
+	echo ""
+	echo "${LINEE}"
+    echo ""
+    #######################################
+	# echo $ZSHNATIVEOSXFUNCTIONINSIDETEST
+	# echo "---"
+	# echo $(dirname $ZSHNATIVEOSXFUNCTIONINSIDETEST 2>/dev/null)
+	# echo "---"
+	# echo "$P_NATFCTDIR"
+	
+
+    
+    ######################################
+	## NATIVE ZSH FUNCTIONS
+    	if [[ $ZSHNATIVEOSXFUNCTIONNAME != $COMTOSEARCH ]] && [[ ! -f $ZSHNATIVEOSXFUNCTIONINSIDETEST ]] && [[ "$(dirname $ZSHNATIVEOSXFUNCTIONINSIDETEST 2>/dev/null)" != "$P_NATFCTDIR"  ]]; then
+		echo "${RED}•${NC} it isn't in  : ${RED}$P_NATFCTDIR${NC}"
+    	elif  [[ $ZSHNATIVEOSXFUNCTIONNAME != $COMTOSEARCH ]] && [[ -f $ZSHNATIVEOSXFUNCTIONINSIDETEST ]] && [[ "$(dirname $ZSHNATIVEOSXFUNCTIONINSIDETEST 2>/dev/null)" == "$P_NATFCTDIR"  ]]; then
+		echo "${GREEN}•${NC} Is inside a native function : ${GREEN}$ZSHNATIVEOSXFUNCTIONINSIDETEST${NC}"
+
+        	cat $ZSHNATIVEOSXFUNCTIONINSIDETEST
+        #####
+        #/!\#
+        #####
+    	elif [  $ZSHNATIVEOSXFUNCTION ]; then
+		echo "${GREEN}•${NC} Is in folder : ${GREEN}$P_NATFCTDIR${NC}"
+		echo "${CYAN}  $ZSHNATIVEOSXFUNCTION ${MAGENTA}"
+			cat $ZSHNATIVEOSXFUNCTION
+		echo "${NC}"	
+		# echo "${GREEN}•${NC} Contient : ${GREEN}"
+		ISIN_ZSHNATIVEOSXFUNCTIONFILE='YES'
+    	else 
+		echo "${RED}•${NC} it isn't in  : ${RED}$P_NATFCTDIR${NC}"
+
+	fi
+
+	########################################
+	## GRMLRC FUNCTIONS
+	if [[ -f "${HOME}/.zsh/grmladdi" ]] && [[ $LOAD_GRML_ADDITION_FUNCTIONS == "YES" ]];then
+		if [[ "${TGRMLFUNCTIONFILE}" == "${COMTOSEARCH}" ]]; then
+			echo "${GREEN}•${NC} Is in : ${GREEN}$P_GRMLRCFIL${MAGENTA}"
+			# echo "${GREEN}•${NC} Contient : ${GREEN}"
+			cat $P_GRMLRCFIL
+			echo "${NC}"
+			ISIN_GRMLFUNCTIONFILE='YES'
+	    else
+             echo "${RED}•${NC} it isn't in  : ${RED}$P_GRMLRCFIL${NC}"
+        fi
+	else
+		echo "${RED}••${NC} GRML not currently actived.${NC}"
+	fi
+
+    	########################################
+    	## ZAEMONSH FUNCTIONS
+    	if [[ $(basename -a $(find $P_ZDOTCONFDIR -maxdepth 5 -type f) | grep -v '^_' | grep -v ".zip" | sort -fi | grep -wc $COMTOSEARCH) = 1 ]]; then
+        echo "${GREEN}•${NC} Is in folder : ${GREEN}$P_SYSFCTDIR${NC}"
+		echo "${GREEN} ${NC} With this PATH : ${CYAN}$SYSFUNCTIONNORM${MAGENTA}"
+		cat $SYSFUNCTIONNORM
+		echo""
+		ISIN_SYSFUNCTIONNORM='YES'
+    	# In case of not just one function with same name in same  categories (eg. 2 trash functions in darwin category )
+    	elif [[ $(basename -a  $(find $P_ZDOTCONFDIR -maxdepth 5 -type f ) | grep -v '^_' | grep -v ".zip" | sort -fi | grep -wc $COMTOSEARCH) > 1 ]] && [[ $(echo -e $(find $P_ZDOTCONFDIR -maxdepth 5 -type f -name "$COMTOSEARCH" | awk -F'/' '{ print $9 }' | sort -uf | wc -l)) = 1 ]]; then 
+            echo "${RED}• [ WARNING ] ${NC}There is more than one ${RED}$COMTOSEARCH${NC} functions on same category :"
+               for samesystst in $(find $HOME/Library/init/zsh/zshrc.d/local-functions -maxdepth 4 -type f -name $COMTOSEARCH); do
+                   if [[ $(basename -a  $samesystst) == $COMTOSEARCH ]]; then
+                  # echo "${RED}• Warning There is more than one $COMTOSEARCH functions."
+                  echo "${GREEN} ${NC} With that PATH : ${CYAN}$samesystst${MAGENTA}"
+                  sleep 3
+                  cat $samesystst
+                  wait
+                  sleep 1
+               fi
+         done
+    	# In case of not just one function with same name in diferents  categories (eg. 2 cdd functions in linux and darwin categories )
+   	elif [ $SYSFUNCTIONNORM ] && [[ "$SYSFUNCTIONNB" > 1 ]]; then
+     		echo "${GREEN}•${NC} There is ${GREEN}$SYSFUNCTIONNB $COMTOSEARCH functions${NC} in '$P_SYSFCTDIR' on ${GREEN}differents categories.${NC}"
+        	#echo $SYSFUNCTIONTEST
+        	#echo $SYSFUNCTIONNB
+        	for systest in $SYSFUNCTIONTEST; do
+             		if [[ $(basename -a $systest) == $COMTOSEARCH ]]; then
+                 		echo "${NC} With that PATH : ${CYAN}$systest${MAGENTA}"
+                 		sleep 3
+                 		cat $systest
+                 		wait
+                 		sleep 1
+              		fi
+        	done
+   	elif [ $SYSFUNCTIONNORM  ] && [[ "$SYSFUNCTIONNB" < 1 ]]; then
+        	echo "${NC} With this PATH : ${CYAN}$SYSFUNCTIONNORM${MAGENTA}"
+        	cat  $SYSFUNCTIONNORM
+#####
+#/!\#
+#####
+    else
+        	echo "${RED}•${NC} It isn't in folder : ${RED}$P_SYSFCTDIR${NC}"
+    fi
+
+	########################################
+	## $ZDOT/plugins
+	if [[ $LOAD_PLUGINSEXTRA_FUNCTIONS == 'YES' && -f ${HOME}/.zsh/plugextraaddi ]]; then
+        # if [[ "$PLUGINSFUNCTION" == "$COMTOSEARCH" ]] ; then
+        if [[ "$PLUGINSFUNCTION" ]] ; then
+		    echo "${GREEN}•${NC} Is in folder : ${GREEN}$P_ZDOTPLUGINSDIR${NC}"
+			echo "${GREEN} ${NC} with this PATH : ${CYAN}"
+				       #FUNCNAME=$(grep -r '()' $P_ZDOTPLUGINSDIR 2>/dev/null | grep -v '=()' | sed 's/.*://' | sed 's/^[ \t]*//' | grep '^[a-z__]' | sed 's/(.*//' | sed 's/function//' | grep "$COMTOSEARCH" ) ## Pas complet
+			    #FUNCNAMECORRECT=$(grep -r '()' $P_ZDOTPLUGINSDIR 2>/dev/null | grep -v '=()' | grep -v "README" | sed 's/(.*//' | sed 's/function//' | sed 's/=//' | sed 's/^[ \t]*//' | grep "$COMTOSEARCH" | grep "$COMTOSEARCH$" | sed 's/.*://' | sed 's/^[ \t]*//' | grep "^$COMTOSEARCH" )
+					   #FUNCPATH=$(grep -r '()' $P_ZDOTPLUGINSDIR 2>/dev/null | grep -v '=()' | grep -v 'README' | sed 's/(.*//' | sed 's/function//' | sed 's/=//' | sed 's/^[ \t]*//' | grep "$COMTOSEARCH" | grep "$COMTOSEARCH$" | sed 's/:.*//' 2>/dev/null)
+			#FUNCPATHAPROANDNAME=$(grep -r '()' $P_ZDOTPLUGINSDIR 2>/dev/null | grep -v '=()' | grep -v "README" | sed 's/(.*//' | sed 's/function//' | sed 's/=//' | sed 's/^[ \t]*//' | grep "$COMTOSEARCH" | grep "$COMTOSEARCH$" )
+			#TESTPATH=$(grep -r '()' $P_PERSFCTDIR |  grep -v '=()' | sed 's/.*://' | sed 's/^[ \t]*//'  | grep '^[a-z__]' | sed 's/(.*//' | sed 's/function//' | sed 's/=//'  | grep $COMTOSEARCH)	
+			#TESTNAMECORRECT=$(grep -rn '()' $P_ZDOTPLUGINSDIR 2>/dev/null | sed 's/.*://' | grep '^[a-z__]' | grep -v "=()" | sed 's/(.*//' | sed 's/function//' | sed 's/=//' | sed 's/^[ \t]*//' | grep "^${COMTOSEARCH}" | grep "${COMTOSEARCH}$" | grep "$COMTOSEARCH" )
+			#MYFUNCPATHAPROANDNAME=$FUNCPATH:$FUNCNAME
+			#foreach bj in $FUNCPATHAPROANDNAME; do
+				#bjracpath=$(echo "${bj}" | sed 's/:.*//')
+				#bjrac=$(echo "${bj}" | sed 's/.*://')
+				#bjracpathcorrect=$(echo "${bjracpath}:${bjrac}" | grep "${COMTOSEARCH}$" | sed 's/:.*//' | grep "${ZDOT}")
+				#bjracorrec=$(echo "${bjrac}" | sed 's/^[ \t]*//' | grep "^${COMTOSEARCH}")
+				#foreach bz in ${bjrac}; do
+				 	###if [[ "${bjracorrec}" != "${COMTOSEARCH}" ]]; then
+				 	#echo "  ${bjracpathcorrect}${MAGENTA}"
+				#done
+			#done
+            echo "${CYAN} $PLUGINSFUNCTIONPATH${GREEN}"
+			functions $COMTOSEARCH
+			 echo "${NC}"		
+			 # echo "${GREEN}•${NC} Contient : ${GREEN}"
+			 # cat $SYSFUNCTIONNORM
+			 ISIN_MYFUNCTION='YES'
+		else
+	    	echo "${RED}•${NC} It isn't in folder : ${RED}$P_ZDOTPLUGINSDIR${NC}"
+		fi
+	else
+				echo "${RED}••${NC} Plugs-in extra are not currently actived.${NC}"
+
+	fi
+
+
+	########################################
+ 	## /Users/$USER/.zshrc_local.d/site_functions
+    if [[ $MYFUNCTION == "${COMTOSEARCH}" ]]; then
+		echo "${GREEN}•${NC} It isn't in folder : ${GREEN}$P_SYSFCTDIR${NC}"
+        echo "${GREEN} ${NC} With this PATH :${CYAN}$MYFUNCTIONPATH${MAGENTA}"
+        cat "$MYFUNCTIONPATH"
+		echo "${NC}"
+		ISIN_MYFUNCTION='YES'
+    else
+		echo "${RED}•${NC} It isn't in : ${RED}$P_SYSFCTDIR${NC}"
+	fi
+	echo ""
+	echo "${LINEE}"
+else
+    echo ""
+	echo "${RED}USAGE : Z_FunctionEdit [FUNCTION_NAME]${NC}"
+    echo ""
+fi
+

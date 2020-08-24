@@ -1,0 +1,8 @@
+if [[ $EUID != 0 ]] && (($+commands[sudo])); then
+	typeset -xT SUDO_PATH sudo_path
+	typeset -U sudo_path
+	sudo path=({,/usr/local,/usr}/sbin(N-/))
+fi
+
+zstyle ':completion:*:sudo:*' environ
+PATH="SUDO_PATH:$PATH"

@@ -1,0 +1,152 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_Banner :
+# Show banner at ZeamonSH starting.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 09/10/2017 :
+  # • x11 ou xquartz pour variable $DISPLAY
+  # • Problem with Linux : option id -p not found
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 11/11/2017 :
+#  • Add wheel admin option condition to linux. 
+# 2020-03-04 :
+#  • Add ON OFF options
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+# Define local
+local  disp_no CONDCOLOR acidmessage
+
+clear
+if [[ -z $DISPLAY && -z $SSH_CONNECTION && $IS_MAC ]]; then
+  disp_no=($( ps -wwx | grep -F X11.app | awk '{print }' | grep -e ":[0-9]"  ))
+    if [[ -n $disp_no ]];then
+        export DISPLAY=${disp_no}.0
+        CONDCOLOR="${MAGENTA}"
+    else
+        export DISPLAY=:0.0
+        CONDCOLOR="${MAGENTA}"
+    fi
+    echo "DISPLAY has been set to $DISPLAY"
+fi
+#####
+#/!\#
+#####
+
+### Change banner to green if staff.
+if [[ ! $IS_ROOT ]] && [[ ! $IS_ADMIN ]]; then
+        CONDCOLOR="${GREEN}"
+fi
+
+### Change banner to yellow if admin.
+#Problem with Linux : option id -p not found
+if [[ $IS_ADMIN ]] || [[ -n $(groups | grep -w wheel ) ]]; then
+        CONDCOLOR="${YEL}"
+fi
+
+### Change banner to red if root.
+#if [[ $UID == 0 ]]; then
+if [[ $IS_ROOT ]]; then
+        CONDCOLOR="${RED}"
+fi
+
+#### Change banner to magenta for ssh on.
+#CONDCOLOR=''
+if [[ $SSH_CONNECTION ]]; then
+       	export DISPLAY=SSH
+       	CONDCOLOR="${MAGENTA}"
+fi
+
+echo $CONDCOLOR
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banneer(){
+echo ""
+echo -e "${CONDCOLOR}${LINE}"
+echo -e '                      ______                                   _____ __      '
+echo -e '                     /___   / ____  ___  ____ ___  ____  _____/ ___// /__   '
+echo -e '                       /   / / __ `/ _ \/ __ `__ \/ __ \/ __  \__ \/ __  / '
+echo -e '                      /   /_/ /_/ /  __/ / / / / / /_/ / / / /__/ / / / / '
+echo -e "                     /______\__,_/\___/_/ /_/ /_/\____/_/ /_/____/_/ /_/ ${NC}"
+echo -e "                      ${RED}This is ZAEMONSH-${YEL}${ZAEMONBASENB}v${ZAEMONSHVERSION}${RED} on ZSH ${YEL}${ZSH_VERSION%.*}${RED} - DISPLAY on ${YEL}$(print -rP "%23<..<$DISPLAY")${NC}"
+#####
+#/!\#
+#####
+#Problem with Linux : command tclsh not found
+if [[ $IS_MAC ]]; then
+  acidmessage="                                  ### HF + H2O H3O+ + F− ###"; for ((i=0; i<${#acidmessage}; i++)); do echo "after 0" | tclsh; printf  ${GREEN}"${acidmessage:$i:1}"${NC}; done; echo;
+else
+  acidmessage="                                   ### HF + H2O H3O+ + F− ###"; for ((i=0; i<${#acidmessage}; i++)); do printf  ${GREEN}"${acidmessage:$i:1}"${NC}; done; echo;
+
+fi
+echo -e "${CONDCOLOR}${LINE}${NC}"
+}
+banneroff(){
+    perl -p -i -e 's/^Z_Banner/#Z_Banner/g' "$HOME/.zshrc"
+    Z_Restart
+    return 1
+}
+banneron(){
+    perl -p -i -e 's/^#Z_Banner/Z_Banner/g' "$HOME/.zshrc"
+    Z_Restart
+    return 1
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+
+ (( $# == 0 )) && banneer
+ case $1 in
+     ON)
+         echo ${NC}
+         banneron 
+         return 1
+         ;;
+     OFF)
+         echo ${NC}
+         banneroff
+         return 1
+         ;;
+     *)
+        return 0 
+         ;;
+ esac

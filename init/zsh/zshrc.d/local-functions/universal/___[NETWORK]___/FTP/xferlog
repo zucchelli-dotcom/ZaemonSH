@@ -1,0 +1,145 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# xferlog : Analyze and summarize the FTP transfer log. A good doc 
+# detailing the log format: http://aolserver.am.net/docs/2.3/ftp-ch4.htm
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME=""
+
+stdxferlog="/var/log/xferlog"
+temp="/tmp/$(basename $0).$$"
+nicenum="$HOME/bin/nicenumber"
+
+trap "/bin/rm -f $temp" 0
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+  clear
+  echo "${NC}"  
+  echo " ###################################################################################################"
+  echo " #                                                                                                 #"
+  echo " #     ${GREEN}This is ${RED}$FCT_NAME : ${YEL}$VERSION FOR $OSTYPE ${NC}                                #"
+  echo " #     CopyL®®v 2019, Zucchelli Bryan                                                              #"
+  echo " #                                                                                                 #"
+  echo " #     Unless required by applicable law or agreed to in writing, software                         #"
+  echo " #     distributed under the License is distributed on an "AS IS" BASIS,                             #"
+  echo " #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.                    #"
+  echo " #     See the License for the specific language governing permissions and                         #"
+  echo " #     limitations under the License.                                                              #"
+  echo " #                                                                                                 #"
+  echo " ###################################################################################################"
+  echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+###### the main script block
+case $# in
+  0 ) log=$stdxferlog		;;
+  1 ) log="$1"			;;
+  * ) echo "Usage: $(basename $0) {xferlog name}" >&2
+      exit 1
+esac
+
+if [ ! -r $log ] ; then
+  echo "$(basename $0): can't read $log." >&2
+  exit 1
+fi
+
+# Ascertain whether it's an abbreviated or standard ftp log file format. If 
+# it's the abbreviated format, output some minimal statistical data and quit: 
+# the format is too difficult to analyze in a short script, unfortunately.
+
+if [ ! -z $(awk '$6 == "get" { short=1 } END{ print short }' $log) ] ; then
+  bytesin="$(awk 'BEGIN{sum=0} $6 == "get" {sum += $9} END{ print sum }' $log )"
+  bytesout="$(awk 'BEGIN{sum=0} $6 == "put" {sum += $9} END{ print sum }' $log )"
+
+  echo -n "Abbreviated ftpd xferlog from "
+  echo -n $(head -1 $log | awk '{print $1, $2, $3 }')
+  echo    " to $(tail -1 $log | awk '{print $1, $2, $3}')"
+  echo "       bytes in: $($nicenum $bytesin)"
+  echo "      bytes out: $($nicenum $bytesout)"
+  exit 0
+fi
+  
+bytesin="$(awk 'BEGIN{sum=0}   $12 == "i" {sum += $8} END{ print sum }' $log )"
+bytesout="$(awk 'BEGIN{sum=0} $12 == "o" {sum += $8} END{ print sum }' $log )"
+time="$(awk 'BEGIN{sum=0} {sum += $6} END{ print sum }' $log)"
+
+echo -n "Summary of xferlog from "
+echo -n $(head -1 $log | awk '{print $1, $2, $3, $4, $5 }')
+echo    " to $(tail -1 $log | awk '{print $1, $2, $3, $4, $5}')"
+echo "       bytes in: $($nicenum $bytesin)"
+echo "      bytes out: $($nicenum $bytesout)"
+echo "  transfer time: $time seconds"
+
+accessmode="$(awk '{print $13}' $log | sort -u)"
+
+extract "a" "Anonymous Access"
+extract "g" "Guest Account Access"
+extract "r" "Real User Account Access"
+
+exit 0

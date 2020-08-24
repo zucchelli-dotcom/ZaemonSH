@@ -1,0 +1,138 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_whatsnew :
+# Compare ZaemonSH directory with template to view news
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 10/10/2017 :
+#  • Add description.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 10/10/2017 :
+#  • Modifying Script presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+autoload -U Z_Help_zsh_templates Z_Help_template_functions
+
+ VERSION="0.0.1"
+ FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+message() {
+print "\e[1m ***************************************************************************\e[0m " 
+print ""
+print "    Type \e[1m fink describe zsh-templates \e[0m or \e[1m man zsh-templates \e[0m "
+print "    for a brief description."
+print ""
+print "    Type \e[1m Z_Help_template_functions\e[0m  for a 1-line description of each function."
+print ""
+print "    Type \e[1m Z_Help_zsh_templates\e[0m  for access to a website-based detailed description."
+print ""
+print "\e[1m ***************************************************************************\e[0m " 
+
+ }
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+# Z_Banner
+# if [[ -d $ZDOT && -d $ZDOT_TEMPLATE ]];then
+#      diff -durp --speed-large-files "$ZDOT_TEMPLATE" "$ZDOT"
+#      # opendiff $ZDOT $ZDOT_TEMPLATE 
+#      print ""
+#      print "Using /usr/bin/opendiff to compare files."
+#      print ""
+#      print "Click on the \e[1m'Exclude: identical'\e[0m checkbox to see which files have changed"
+#      print ""
+#      print "issue \e[1m sudo cp \$ZDOT_TEMPLATE/foo \$ZDOT/foo\e[0m to update a changed file foo."
+#      print ""
+     
+# else
+#      echo ""
+#      echo ""
+#      echo ""
+#      print "The directories \$ZDOT_TEMPLATE/ and \$ZDOT must both exist/ for this to work."
+#      print "Type \e[1m fink describe zsh-templates\e[0m  for a description of how to do this."
+#      echo ""
+#      echo ""
+#      echo ""
+# fi
+# message
+
+Z_Banner
+if [[ -d $ZDOT && -d $ZDOT_ORIG ]];then
+     diff -durp --speed-large-files "$ZDOT_ORIG" "$ZDOT"
+     # opendiff $ZDOT $ZDOT_ORIG 
+     print ""
+     print "Using /usr/bin/opendiff to compare files."
+     print ""
+     print "Click on the \e[1m'Exclude: identical'\e[0m checkbox to see which files have changed"
+     print ""
+     print "issue \e[1m sudo cp \$ZDOT_ORIG/foo \$ZDOT/foo\e[0m to update a changed file foo."
+     print ""
+     
+else
+     echo ""
+     echo ""
+     echo ""
+     print "The directories \$ZDOT_ORIG/ and \$ZDOT must both exist/ for this to work."
+     print "Type \e[1m fink describe zsh-templates\e[0m  for a description of how to do this."
+     echo ""
+     echo ""
+     echo ""
+fi
+message
+

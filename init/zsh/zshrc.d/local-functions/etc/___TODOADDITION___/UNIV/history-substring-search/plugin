@@ -1,0 +1,42 @@
+### history-substring-search / zeesh! plugin
+
+[ -d "$plugin_dir/lib" ] || source "$plugin_dir/install"
+
+source "$plugin_dir/lib/zsh-$plugin.zsh"
+
+if [ "$EDITOR" = "vim" ]; then
+    # arrow key bindings delay escape so you might want to unbind them:
+    # bindkey -r "^[[0A"
+    # bindkey -r "^[[0B"
+    # bindkey -r "^[[A"
+    # bindkey -r "^[[B"
+
+    # disable normal history search
+    bindkey -r "^R"
+
+    # search up/down history with ^n/p
+    bindkey -M viins '^j' history-substring-search-up
+    bindkey -M viins '^k' history-substring-search-up
+
+    bindkey -M viins '^p' history-substring-search-down
+    bindkey -M viins '^p' history-substring-search-down
+
+    bindkey -M vicmd '^n' history-substring-search-up
+    bindkey -M vicmd '^p' history-substring-search-down
+
+    bindkey -M viins "^[[0A" history-substring-search-up
+    bindkey -M viins "^[[0B" history-substring-search-down
+    bindkey -M viins "OA" history-substring-search-up
+    bindkey -M viins "OB" history-substring-search-down
+    bindkey -M viins "^[[A"  history-substring-search-up
+    bindkey -M viins "^[[B"  history-substring-search-down
+
+    bindkey -M vicmd "^[[0A" history-substring-search-up
+    bindkey -M vicmd "^[[0B" history-substring-search-down
+    bindkey -M vicmd "^[[A"  history-substring-search-up
+    bindkey -M vicmd "^[[B"  history-substring-search-down
+    bindkey -M vicmd "OA" history-substring-search-up
+    bindkey -M vicmd "OB" history-substring-search-down
+fi
+
+# vim: ft=zsh

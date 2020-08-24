@@ -1,0 +1,396 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# gitx :
+# The stupid content tracker utility
+
+
+#----------------------------------------------------------------------------------------------------#
+#                                               NOTES
+#----------------------------------------------------------------------------------------------------#
+#--------------------------------------------------------------------
+# Git Utilities
+#--------------------------------------------------------------------
+
+# case "$fn" in
+
+#     # Display local Git configuration
+#     "brew:git:config")
+
+#         if [ "$echocommand" == "true" ]; then
+#             echo "${GREEN}git config --list\n\n${NC}"
+#         fi
+#         git config --list
+#     ;;
+
+
+#     # Open current Git repository on Github
+#     "git:open")
+
+#         giturl=$(git config --get remote.origin.url)
+#           if [ "$giturl" == "" ]
+#             then
+#              echo "Not a git repository or no remote.origin.url set"
+#              exit 1;
+#           fi
+#           giturl=${giturl/git\@github\.com\:/https://github.com/}
+#           giturl=${giturl/\.git/\/}
+#           branch="$(git symbolic-ref HEAD 2>/dev/null)" ||
+#           branch="(unnamed branch)"     # detached HEAD
+#           branch=${branch##refs/heads/}
+#           giturl=$giturl
+#           open $giturl
+#     ;;
+
+
+#     # Create Git branch based on current branch
+#     "git:create:branch")
+
+#         if [ ! -z "$firstParameter" -a "$firstParameter" != " " ]; then
+#             if [ "$echocommand" == "true" ]; then
+#                 echo "${GREEN}git checkout -b ${GRAY}$firstParameter\n\n${NC}"
+#             fi
+#             git checkout -b $firstParameter
+
+#         else
+#             echo "Please specify the name for the new branch"
+#             echo "E.g.: git:create:branch sample-branch"
+#         fi
+#     ;;
+
+
+#     # Get last update date for all branches in current project
+#     "git:branches")
+
+#         git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'
+#     ;;
+
+
+#     # Undo latest commit
+#     "git:undo-commit")
+
+#         if [ "$echocommand" == "true" ]; then
+#             echo "${GREEN}git reset --soft HEAD~\n\n${NC}"
+#         fi
+#         git reset --soft HEAD~
+#     ;;
+
+
+#     # See latest commits IDs and titles for current branch
+#     "git:log")
+
+#         if [ "$echocommand" == "true" ]; then
+#             echo "${GREEN}git log --pretty=oneline\n\n${NC}"
+#         fi
+#       git log --pretty=oneline
+#     ;;
+
+
+#     # See all branches
+#     "git:branch")
+
+#         if [ "$echocommand" == "true" ]; then
+#             echo "${GREEN}git branch -a\n\n${NC}"
+#         fi
+#         git branch -a
+#     ;;
+
+
+#     # Rename Git branch
+#     "git:branch:rename")
+
+#          if [ ! -z "$firstParameter" -a "$firstParameter" != " " ]; then
+#             if [ "$echocommand" == "true" ]; then
+#                 echo "${GREEN}git branch -m ${GRAY}$firstParameter\n\n${NC}"
+#             fi
+#             git branch -m $firstParameter
+
+#         else
+#             echo "Please specify the name of the branch to rename"
+#             echo "E.g.: git:branch:rename sample-branch"
+#         fi
+#     ;;
+
+
+#     # Remove local Git branch
+#     "git:branch:remove-local")
+
+#          if [ ! -z "$firstParameter" -a "$firstParameter" != " " ]; then
+#             if [ "$echocommand" == "true" ]; then
+#                 echo "${GREEN}git branch -d ${GRAY}$firstParameter\n\n${NC}"
+#             fi
+#             git branch -d $firstParameter
+
+#         else
+#             echo "Please specify the name of the branch to remove"
+#             echo "E.g.: git:branch:remove-local sample-branch"
+#         fi
+#     ;;
+
+
+#     # Remove local and remote Git branch
+#     "git:branch:remove-remote")
+
+#          if [ ! -z "$firstParameter" -a "$firstParameter" != " " ]; then
+#             if [ "$echocommand" == "true" ]; then
+#                 echo "${GREEN}git branch -d ${GRAY}$firstParameter\n\n${NC}"
+#             fi
+#             git branch -d $firstParameter
+#             if [ "$echocommand" == "true" ]; then
+#                 echo "${GREEN}git push origin --delete ${GRAY}$firstParameter\n\n${NC}"
+#             fi
+#             git push origin --delete $firstParameter
+
+#         else
+#             echo "Please specify the name of the branch to remove"
+#             echo "E.g.: git:branch:remove-remote sample-branch"
+#         fi
+#     ;;
+
+
+#     # Check Git settings
+#     "git:config")
+
+#         if [ "$echocommand" == "true" ]; then
+#             echo "${GREEN}git config --list\n\n${NC}"
+#         fi
+#         git config --list
+#     ;;
+
+
+#     # Add removed files to staged files
+#     "git:add-removed")
+
+#         if [ "$echocommand" == "true" ]; then
+#             echo "${GREEN}git add -u\n\n${NC}"
+#         fi
+#         git add -u
+#     ;;
+
+
+#     # Remove Git from current project
+#     "git:remove")
+
+#         if [ "$echocommand" == "true" ]; then
+#             echo "${GREEN}find . -name '.git' -exec rm -rf {} \;\n\n${NC}"
+#         fi
+#         find . -name '.git' -exec rm -rf {} \;
+#     ;;
+
+
+#     # Open current Git repository URL
+#     "git:open")
+
+#         open `git remote -v | awk '/fetch/{print $2}' | sed -Ee 's#(git@|git://)#http://#' -e 's@com:@com/@'`| head -n1
+#     ;;
+
+
+#     # Get size of current Git repository
+#     "git:size")
+
+#         git bundle create tmp.bundle --all
+#         echo "\n\nCurrent Git repository size: "
+#         du -sh tmp.bundle
+#         rm tmp.bundle
+#     ;;
+
+
+# esac
+
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 2020-08-06 :
+# • Make Completion.
+# • To finish.
+
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME PULL_ARGS branch count  curr_branch remote_branch origin merge
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+PULL_ARGS="$@"
+
+branch=$(git rev-parse --abbrev-ref HEAD)
+count=$(git rev-list --count HEAD origin/$branch...HEAD)
+
+curr_branch=$(git symbolic-ref -q HEAD | sed -e 's|^refs/heads/||')
+
+remote_branch=$(git branch -r | grep "origin/${curr_branch}")
+[ -z "${remote_branch}" ] && ( git push origin "${curr_branch}" )
+
+origin=$(git config --get "branch.${curr_branch}.remote")
+[ -z "${origin}" ] && ( git config --add "branch.${curr_branch}.remote" origin )
+
+merge=$(git config --get "branch.${curr_branch}.merge")
+[ -z "${merge}" ] && ( git config --add "branch.${curr_branch}.merge" "refs/heads/${curr_branch}" )
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+git-up(){
+  # Usage: git-up
+  #        git-reup
+  #
+  # Like git-pull but show a short and sexy log of changes
+  # immediately after merging (git-up) or rebasing (git-reup).
+  #
+  # Inspired by Kyle Neath's `git up' alias:
+  # http://gist.github.com/249223
+  #
+  # Stolen from Ryan Tomayko
+  # http://github.com/rtomayko/dotfiles/blob/rtomayko/bin/git-up
+  set -e
+  # when invoked as git-reup, run as `git pull --rebase'
+  test "$(basename $0)" = "git-reup" &&
+  PULL_ARGS="--rebase $PULL_ARGS"
+
+  git pull $PULL_ARGS
+
+  # show diffstat of all changes if we're pulling with --rebase. not
+  # sure why git-pull only does this when merging.
+  test "$(basename $0)" = "git-reup" && {
+      echo "Diff:"
+      git --no-pager diff --color --stat HEAD@{1}.. |
+      sed 's/^/ /'
+  }
+
+  # show an abbreviated commit log of stuff that was just merged.
+  echo "Log:"
+  git log --color --pretty=oneline --abbrev-commit HEAD@{1}.. |
+  sed 's/^/  /' 
+}
+
+git-unpushed-stat(){
+  # Show the diffstat of everything you haven't pushed yet.
+  if [ "$count" -eq "1" ]; then
+    s=''
+  else
+    s='s'
+  fi
+
+  git diff --stat origin/$branch..HEAD
+  echo " $count commit$s total" 
+}
+
+
+git-promote(){
+
+}
+
+git-nuke(){
+  git branch -D $1
+  git push origin :$1 
+}
+
+git-credit(){
+  # git-credits :
+  # A very slightly quicker way to credit an author on the latest commit.
+  #
+  # $1 - The full name of the author.
+  # $2 - The email address of the author.
+  #
+  # Examples
+  #
+  #   git credit "Zach Holman" zach@example.com
+   git commit --amend --author "$1 <$2>" -C HEAD
+
+}
+
+git-authoe-rewrite(){
+  git filter-branch --env-filter '
+
+  OLD_EMAIL="neil@wire.im"
+  CORRECT_NAME="Neil Pankey"
+  CORRECT_EMAIL="npankey@gmail.com"
+
+  if [ "$GIT_COMMITTER_EMAIL" = "$OLD_EMAIL" ]
+  then
+      export GIT_COMMITTER_NAME="$CORRECT_NAME"
+      export GIT_COMMITTER_EMAIL="$CORRECT_EMAIL"
+  fi
+  if [ "$GIT_AUTHOR_EMAIL" = "$OLD_EMAIL" ]
+  then
+      export GIT_AUTHOR_NAME="$CORRECT_NAME"
+      export GIT_AUTHOR_EMAIL="$CORRECT_EMAIL"
+  fi
+  ' --tag-name-filter cat -- --branches --tags
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+#
+

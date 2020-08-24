@@ -1,0 +1,99 @@
+#compdef vpn
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _vpn :
+# Completion for vpn. Play VPN on CLI.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify completion presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+_vpn(){
+  local -a _1st_arguments
+  _1st_arguments=(
+    'ls:list VPN connections'
+    'list:list VPN connections'
+    'start:start vpn connection'
+    'stop:stop vpn connection'
+    'status:status vpn connection named VPN'
+    'help:view this help'
+  )
+
+  #
+  local curcontext="$curcontext" state line expl
+
+  _arguments -C '*:: :->subcmds'
+
+  if (( CURRENT == 1 )); then
+    _describe -t commands "vpn subcommands" _1st_arguments
+    return
+  fi
+
+  case "$words[1]" in
+      ls)
+       _arguments && return 0
+       ;;
+      list)
+       _arguments && return 0
+       ;;
+      start)
+       _arguments && return 0
+       ;;
+      stop)
+       _arguments && return 0
+       ;;
+      status)
+       _arguments && return 0
+       ;;
+      *)
+       _message "unknown vpn command: $words[1]"
+         _default
+        ;;
+  esac
+  return 1
+}
+
+#----------------------------------------------------------------------------------------#
+#                                      COMPLETION
+#----------------------------------------------------------------------------------------#
+_vpn "$@"

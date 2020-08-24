@@ -1,0 +1,147 @@
+#!/usr/bin/en zsh -f
+
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# make_app :
+# Create an application with an executable with CLI.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local VERSION
+
+VERSION="0.0.1"
+FCT_NAME="make_app"
+
+local banner
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+
+
+echo "What should the Application be called (no spaces allowed e.g. GCal)?"
+read inputline
+name=$inputline
+
+echo "What is the url (e.g. https://www.google.com/calendar/render)?"
+read inputline
+url=$inputline
+
+echo "What is the full path to the icon (e.g. /Users/username/Desktop/icon.png)?"
+read inputline
+icon=$inputline
+
+
+
+
+chromePath="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
+appRoot="/Applications"
+
+
+
+# various paths used when creating the app
+resourcePath="$appRoot/$name.app/Contents/Resources"
+execPath="$appRoot/$name.app/Contents/MacOS" 
+profilePath="$appRoot/$name.app/Contents/Profile"
+plistPath="$appRoot/$name.app/Contents/Info.plist"
+
+# make the directories
+mkdir -p  $resourcePath $execPath $profilePath
+
+# convert the icon and copy into Resources
+if [ -f $icon ] ; then
+    sips -s format tiff $icon --out $resourcePath/icon.tiff --resampleWidth 128 >& /dev/null
+    tiff2icns -noLarge $resourcePath/icon.tiff >& /dev/null
+fi
+
+# create the executable
+cat >$execPath/$name <<EOF
+#!/bin/sh
+exec $chromePath  --app="$url" --user-data-dir="$profilePath" "\$@"
+EOF
+chmod +x $execPath/$name
+
+# create the Info.plist 
+cat > $plistPath <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" “http://www.apple.com/DTDs/PropertyList-1.0.dtd”>
+<plist version=”1.0″>
+<dict>
+<key>CFBundleExecutable</key>
+<string>$name</string>
+<key>CFBundleIconFile</key>
+<string>icon</string>
+</dict>
+</plist>
+EOF
+

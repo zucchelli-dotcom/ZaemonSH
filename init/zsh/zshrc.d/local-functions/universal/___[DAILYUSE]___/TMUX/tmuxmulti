@@ -1,0 +1,185 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# tmuxmulti  :
+# Launch multiple tmux session with commands.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+ #!/usr/bin/env zsh -f
+ ##
+ # tmux new -d -s my-session 'echo window-1 pane-1; sleep 8' \
+ #            slit-window -d 'echo window-1 pane-1; sleep 6' \
+ #            new-window 'echo window-1 pane-1; sleep 4'     \
+ #            attach \;
+
+ # rm -Rf /private/tmp/tmux-*
+
+
+ # local PAT1 PAT2 PAT3 PAT4
+ # PAT1="$P_ZDOTCONFDIR"
+ # PAT2="$P_ZDOTCONFDIR/local-functions/darwin/___\[ADMINISTRATION\]___/HOMEBREW"
+ # PAT3="$P_ZDOTCONFDIR/local-functions/darwin/___\[SUDONEED\]___/"
+ # PAT4="$P_ZDOTCONFDIR/local-functions/etc/___TODOADDITION___/"
+
+ # tmux new-session -d -s test "ranger $PAT1 ; read" \; attach \; new-window "ranger $PAT2" \; attach \; new-    window "ranger $PAT3" \; attach \; new- window "ranger $PAT4" \; attach \;  && return 0
+ # tmux new-session -d -s test "ranger $PAT1 ; read" \; attach \; new-window "ranger $PAT2" \; attach \; new-    window "ranger $PAT3" \; attach \; new-window "ranger $PAT4" \; attach  && return 0
+
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 2020-07-22 :
+#  • Create this one .
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  echo "${RED}"
+  cat<<__EOF__
+    usage: $0 <command1> <command2> ...
+
+    Examples: $0 Zrc Zrda
+                                                 # .
+
+
+__EOF__
+echo ${NC}
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+emulate -L zsh
+banner
+
+## loop on parameters and associate command 
+# tmux new-session -d -s test "$(whence $argv[1]) ; read" \; attach \; 
+# for com in $argv; do
+#     for ((i=2; i<=$ARGC; i++)); do
+#         ## Verify parameters correspond to something
+#         if [[ $(whence $argv[$i]) ]]; then
+#             echo $argv[$i]
+#             # new-window "$(whence $argv[$i])" \; attach \;
+#             tmux new-window "$(whence $argv[$i])" \; attach \;
+#         #     return 0
+#         fi
+#     done
+# break
+# done
+
+ # local PAT1 PAT2 PAT3 PAT4
+ # PAT1="$P_ZDOTCONFDIR"
+ # PAT2="$P_ZDOTCONFDIR/local-functions/darwin/___\[ADMINISTRATION\]___/HOMEBREW"
+ # PAT3="$P_ZDOTCONFDIR/local-functions/darwin/___\[SUDONEED\]___/"
+ # PAT4="$P_ZDOTCONFDIR/local-functions/etc/___TODOADDITION___/"
+
+ # tmux new-session -d -s test "ranger $PAT1 ; read" \; attach \;
+ #      new-window "ranger $PAT2" \; attach \; 
+ #      new-window "ranger $PAT3" \; attach \;
+ #      new-window "ranger $PAT4" \; attach \;  && return 0
+ # tmux new-session -d -s test "ranger $PAT1 ; read" \; attach \; new-window "ranger $PAT2" \; attach \; new-    window "ranger $PAT3" \; attach \; new-window "ranger $PAT4" \; attach  && return 0
+
+#################################################
+#tmux new-session -d -s tmuxmulti
+
+#tmux new-window -t tmuxmulti:1 -n 'code'
+#tmux select-window -t tmuxmulti:1
+#tmux rename-window 'code'
+
+#tmux new-window -t tmuxmulti:2 -n 'logs'
+#tmux select-window -t tmuxmulti:2
+#tmux send-keys "tail -f /var/log/dnf.log" C-m
+
+#tmux new-window -t tmuxmulti:3 -n 'zsh'
+#tmux select-window -t tmuxmulti:3
+#tmux rename-window 'zsh'
+#tmux attach -t tmuxmulti
+#################################################
+
+################################################
+## loop on parameters and associate command 
+# tmux new-session -d -s test "$(whence $argv[1]) ; read" \; attach \; 
+tmux new-session -d -s tmuxmulti
+for com in $argv; do
+    for ((i=1; i<=$ARGC; i++)); do
+        ## Verify parameters correspond to something
+        if [[ $(whence $argv[$i]) ]]; then
+            echo $argv[$i]
+            tmux new-window -t tmuxmulti:"$i" -n "$argv[$i]"
+            tmux select-window -t tmuxmulti:"$i"
+            # tmux rename-window 'code'
+            tmux send-keys "$argv[$i]" C-m
+        fi
+    done
+break
+done
+tmux attach -t tmuxmulti
+
+
+ 
+
+
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:
+### }}}

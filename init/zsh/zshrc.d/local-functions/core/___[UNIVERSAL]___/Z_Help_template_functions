@@ -1,0 +1,102 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_Help_template_functions :
+# list the argument(s) of a supplied function.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 28/07/2019
+# • Rplace "whatis $1" by  "whatis $1 | cat".Wathis alone clear screen not good effect on 
+#   Z_Functionutil that use this functions.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+function usage { print "Usage: Z_Help_template_functions [function name]" }
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+# Describe named function located in $ZDOT_TEMPLATE/local-functions/*
+if [[ $# == 0 ]];then
+	#command open http://xanana.ucsc.edu/~wgscott/xtal/wiki/index.php/ZSH_Template_Function_Suites
+	if  [[ $? == 0 ]];then
+			print ""; usage;
+			return 0
+	else
+			print ""; usage;
+			return 1
+	fi
+    foreach file in $ZDOT/man/man7/*.7
+	    echo ${GREEN}
+        whatis $(basename $file:r) 2>/dev/null | cat
+	    echo ${NC}
+    end
+#     if [[ -f $ZDOT/zshrc.d/local-functions/etc/README.functions ]];then
+#         more $ZDOT/zshrc.d/local-functions/etc/README.functions
+#     elif [[ -f $ZDOT_TEMPLATE/zshrc.d/local-functions/etc/README.functions ]];then
+#         more $ZDOT_TEMPLATE/zshrc.d/local-functions/etc/README.functions
+#     file
+#    print ""; usage; return 0
+elif [[ $# == 1 ]];then
+    #command open http://xanana.ucsc.edu/Library/init/zsh/man/html/$1.html
+	if  [[ $? == 0 ]];then
+	        echo ${GREEN}
+            whatis $1 2>/dev/null | cat	
+	        echo ${NC}
+            return 0
+	else
+	        echo ${GREEN}
+			whatis $1 2>/dev/null | cat
+            echo ${NC}
+			print ""; usage;
+			return 1
+	fi
+#    if [[ -f $ZDOT/zshrc.d/local-functions/etc/README.functions ]];then
+#        grep "$@" $ZDOT/zshrc.d/local-functions/etc/README.functions
+#    elif [[ -f $ZDOT_TEMPLATE/zshrc.d/local-functions/etc/README.functions ]];then
+#        grep "$@" $ZDOT_TEMPLATE/zshrc.d/local-functions/etc/README.functions    
+#    fi
+ 
+else
+    usage
+    return 1
+fi

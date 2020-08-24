@@ -1,0 +1,42 @@
+#!/usr/bin/python
+# Usage is:
+
+#   labelcolor.py [color] *.jpg
+
+
+import sys
+import subprocess
+
+def colorizeFile(ColorName,FileName):
+    ReverseTable = {
+         "clear"  :  "01",
+         "gray"   :  "03",
+         "green"  :  "04",
+         "purple" :  "06",
+         "blue"   :  "09",
+         "yellow" :  "0A",
+         "red"    :  "0C",
+         "orange" :  "0E",
+         "c"      :  "01",
+         "a"      :  "03",
+         "g"      :  "04",
+         "p"      :  "06",
+         "b"      :  "09",
+         "y"      :  "0A",
+         "r"      :  "0C",
+         "o"      :  "0E",
+    }
+
+    HexString = 18*"0" + ReverseTable.get(ColorName) + 44*"0"
+    Xcommand = 'xattr -wx com.apple.FinderInfo {0} {1}'.format(HexString,FileName)
+    ProcString = subprocess.check_call(Xcommand, stderr=subprocess.STDOUT,shell=True) 
+
+if __name__ == "__main__":
+    if len(sys.argv)<3:
+        sys.stderr.write(__doc__.format(sys.argv[0]))
+    else:
+        Cname = sys.argv[1]
+        Flist = sys.argv[2:]
+        for File in Flist:
+            colorizeFile(Cname.lower(),File)
+        sys.stderr.write("## Colorized {0} file(s) as {1}\n".format(len(Flist),Cname))

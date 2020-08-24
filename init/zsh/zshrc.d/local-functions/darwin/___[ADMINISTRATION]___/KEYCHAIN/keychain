@@ -1,0 +1,144 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# keychains :
+# Configure, list and manipulate keychains.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 18/10/2017 :
+# • Clean script.
+# • Add command
+
+# alias SecurityShowDefaultKeychain="command security default-keychain"
+# alias SecurityShowDefaultCommonKeychain="command security default-keychain -d common"
+# alias SecurityShowDefaultSystemKeychain="command security default-keychain -d system"
+# alias SecurityLockAllKeychain="command security lock-keychain -a"
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 17/10/2017 :
+#  • Modify script presentation.
+#  • Define some command variables.
+#  • Add banner.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+# Define some local command
+local CLEAR ECHO SECURITY CAT VERSION FCT_NAME
+
+CLEAR="$(whereis clear)"
+ECHO="$(whereis echo)"
+SECURITY="$(whereis security)"
+CAT="$(whereis cat)"
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+    $CAT<<__EOF__
+    ${RED}
+    usage: keychain [ list | lock | unlock | help ]
+
+    Examples:                      
+        keychain list                    # Display or manipulate the keychain search list.
+        keychain lock	                 # Lock the specified keychain.
+        keychain unlock                  # Unlock the specified keychain.   
+    ${NC}
+__EOF__
+} 
+
+list_keychains(){
+	# Show keychain search list.
+	$SECURITY list-keychains
+}
+
+lock_loginKeychain(){
+  # Lock your login Keychain.
+  $SECURITY lock-keychain login.keychain
+}
+
+unlock_loginKeychain(){
+  # Lock your login Keychain.
+  $SECURITY unlock-keychain login.keychain
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+echo ""
+case $1 in
+    help)
+        help
+        ;;
+    list)
+        shift
+        list_keychains
+        ;;
+    lock)
+        shift
+        lock_loginKeychain
+        ;;
+    unlock)
+        shift
+        unlock_loginKeychain
+        ;;
+    *)
+        help
+        ;;
+esac
+
+
+

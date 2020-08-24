@@ -1,0 +1,9 @@
+rationalize-dot() {
+    if [[ $LBUFFER = *.. ]]; then
+        LBUFFER+=/..
+    else
+        LBUFFER+=.
+    fi
+}
+
+# vim: ft=zsh

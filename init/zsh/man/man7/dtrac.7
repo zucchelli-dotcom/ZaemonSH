@@ -1,0 +1,103 @@
+.\" Manpage for dtrac.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH dtrac 7 "06 Feb 2020" "ZaemonSH MacOS" "MacOS ZaemonSH customization"
+.SH NAME
+dtrac \- Wrapper dtrace command.
+.SH SYNOPSIS
+dtrac [ ShowCPUProceesRunOn | ShowErrorInfo | ExecSnoop | ShowUseOfFileDescriptors | SnoopOpenFileByProcess |
+FindDiskHotspot | IOSnoop | IOTop | IOBytes | IOWFileWaits | SnoopProcessRT | Load | SnoopNewProcess |
+OpenSnoop | PathOpens | PIDs | ProcessPriority | ProcessPriorityByTrace | RWByPid | DispatcherOccupancy |
+SeekSize | SetUIDCall | SignalDistriByProcess | SysCallsByPID | SyscallsByProcess | SyscallsBySyscall |
+WebLatency | help ]
+.SH DESCRIPTION
+dtrac \- Wrapper dtrace command.
+.SH OPTIONS
+
+.IP "dtrac [ShowCPUProceesRunOn]"
+.B Show which CPUs processes run on (five second walk used as example).
+
+.IP "dtrac [ShowErrorInfo]"
+.B Show syscall failures and error messages.
+
+.IP "dtrac [ExecSnoop]"
+.B Snoop on new processes.
+
+.IP "dtrac [ShowUseOfFileDescriptors]"
+.B Show use of file descriptors.
+
+.IP "dtrac [SnoopOpenFileByProcess]"
+.B Snoop file opens by process name (needs Terminal).
+
+.IP "dtrac [FindDiskHotspot]"
+.B Find disk hotspots.
+
+.IP "dtrac [IOSnoop]"
+.B Show I/O events in realtime.
+
+.IP "dtrac [IOTop]"
+.B Show top I/O events (needs Terminal).
+
+.IP "dtrac [IOBytes]"
+.B Show I/O bytes (needs Terminal).
+
+.IP "dtrac [IOWFileWaits]"
+.B Show I/O wait times (needs Terminal).
+
+.IP "dtrac [SnoopProcessRT]"
+.B Snoop process signals in realtime (needs Terminal).
+
+.IP "dtrac [Load]"
+.B Show load averages.
+
+.IP "dtrac [SnoopNewProcess]"
+.B Snoop new processes.
+
+.IP "dtrac "OpenSnoop""
+.B Snoop file opens in realtime.
+
+.IP "dtrac [PathOpens]"
+.B Show count of full path opens.
+
+.IP "dtrac [PIDs]"
+.B Show new PIDs per second.
+
+.IP "dtrac [ProcessPriority]"
+.B Show process priority distribution (needs Terminal).
+
+.IP "dtrac [ProcessPriorityByTrace]"
+.B Show priority distribution by scheduling class (needs Terminal).
+
+.IP "dtrac [RWByPid]"
+.B Show read/write calls by PID (needs Terminal).
+
+.IP "dtrac [DispatcherOccupancy]"
+.B Show dispatcher run queue occupancy.
+
+.IP "dtrac [SeekSize]"
+.B Show disk event seek report (needs Terminal).
+
+.IP "dtrac [SetUIDCall]"
+.B Snoop set UID calls in realtime.
+
+.IP "dtrac [SignalDistriByProcess]"
+.B Show signal distribution by process (needs Terminal).
+
+.IP "dtrac [SysCallsByPID]"
+.B Show syscalls by PID (needs Terminal).
+
+.IP "dtrac [SyscallsByProcess]"
+.B Show syscalls by process (name) (needs Terminal).
+
+.IP "dtrac [SyscallsBySyscall]"
+.B Show syscalls by syscall (needs Terminal).
+
+.IP "dtrac [WebLatency]"
+.B Show website latency stats (needs Terminal).
+
+.IP dtrac [help]
+.B Obtain script help.
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

@@ -1,0 +1,6 @@
+# check uptime on windows
+cyg-uptimg() {
+    systeminfo | grep 'Boot Time' | cut -c28-
+}
+
+# vim: ft=zsh

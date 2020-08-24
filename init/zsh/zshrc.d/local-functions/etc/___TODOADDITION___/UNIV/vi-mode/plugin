@@ -1,0 +1,180 @@
+### vi-mode / zeesh! plugin
+
+fpath=( $plugin_dir/func $fpath )
+autoload -U $plugin_dir/func/*(:t)
+
+## exports
+export EDITOR=vim
+export GIT_EDITOR=$EDITOR
+
+hash vimpager 2>/dev/null && export PAGER=vimpager
+export GIT_PAGER=$PAGER
+
+# You can use KEYTIMEOUT to lower the time it takes us to get into escape mode
+# but it will break a lot of widgets.
+# export KEYTIMEOUT=2
+
+## aliases
+alias v=vim
+alias vi=vim
+alias vm=vim
+alias less=$PAGER
+
+if [ `uname` = 'Darwin' ]; then
+    alias m=mvim-wrapper
+else
+    alias g=gvim-wrapper
+fi
+autoload -U edit-command-line
+zle -N edit-command-line
+
+# switch vi mode mappings
+bindkey -v
+
+# unbind escape key combinations
+bindkey -rpM viins '^['
+bindkey -rpM vicmd '^['
+bindkey -rpM viins ''
+bindkey -rpM vicmd ''
+
+# i think we could alternately bind to bell (which is generally silenced), not
+# sure what advantage is yet.
+# bindkey -sM vicmd '^[' '^G'
+
+# bind keys
+bindkey -M vicmd u vi-undo-change
+bindkey -M vicmd '^R' redo
+bindkey -M vicmd '^m' accept-line
+
+bindkey -M vicmd 'ga' what-cursor-position
+bindkey -M vicmd 'g~' vi-oper-swap-case
+
+bindkey -M vicmd 'gg' vi-beginning-of-line
+bindkey -M vicmd 'G' end-of-line
+
+bindkey -M vicmd 'dd' kill-whole-line
+bindkey -M vicmd 'd$' vi-kill-eol
+# bindkey -M vicmd 'd^' vi-kill-line
+#
+bindkey -M vicmd 'yy' vi-yank-whole-line
+bindkey -M vicmd 'Y' vi-yank-eol
+# bindkey -M vicmd 'y.' vi-yank-whole-line
+# bindkey -M vicmd 'c.' vi-change-whole-line
+
+bindkey -M viins '^k' history-search-backward
+bindkey -M vicmd '^k' history-search-backward
+bindkey -M viins '^j' history-search-forward
+bindkey -M vicmd '^j' history-search-forward
+bindkey -M viins '^n' history-search-backward
+bindkey -M vicmd '^n' history-search-backward
+bindkey -M viins '^p' history-search-forward
+bindkey -M vicmd '^p' history-search-forward
+
+bindkey -M viins '^U' vi-change-whole-line
+bindkey -M vicmd '^U' vi-change-whole-line
+
+bindkey -M viins '' backward-delete-char
+bindkey -M vicmd '' backward-delete-char
+bindkey '^?' backward-delete-char
+bindkey '^H' backward-delete-char
+
+bindkey -M viins "^[[0C" forward-char
+bindkey -M viins "^[[0D" backward-char
+bindkey -M viins "^[[C"  forward-char
+bindkey -M viins "^[[D"  backward-char
+bindkey -M viins "OC"  forward-char
+bindkey -M viins "OD"  backward-char
+
+bindkey -M vicmd "^[[0C" forward-char
+bindkey -M vicmd "^[[0D" backward-char
+bindkey -M vicmd "^[[C"  forward-char
+bindkey -M vicmd "^[[D"  backward-char
+bindkey -M vicmd "OC"  forward-char
+bindkey -M vicmd "OD"  backward-char
+
+bindkey -M vicmd ""  vi-beginning-of-line
+bindkey -M vicmd ""  vi-end-of-line
+bindkey -M vicmd "^A"  vi-beginning-of-line
+bindkey -M vicmd "^E"  vi-end-of-line
+
+bindkey -M viins ""  vi-beginning-of-line
+bindkey -M viins ""  vi-end-of-line
+bindkey -M viins "^A"  vi-beginning-of-line
+bindkey -M viins "^E"  vi-end-of-line
+
+bindkey -M vicmd "^[[H"  vi-beginning-of-line
+bindkey -M vicmd "^[[F"  vi-end-of-line
+bindkey -M vicmd "OH"  vi-beginning-of-line
+bindkey -M vicmd "OF"  vi-end-of-line
+
+bindkey -M viins "^[[H"  vi-beginning-of-line
+bindkey -M viins "^[[F"  vi-end-of-line
+bindkey -M viins "OH"  vi-beginning-of-line
+bindkey -M viins "OF"  vi-end-of-line
+
+# zle widget to enter normal mode without moving cursor back
+zle-esc-in-place() {
+    zle -K vicmd
+}
+zle -N zle-esc-in-place
+bindkey -M viins '' zle-esc-in-place
+bindkey -M vicmd '' zle-esc-in-place
+bindkey -M viins '^[' zle-esc-in-place
+bindkey -M vicmd '^[' zle-esc-in-place
+
+# delete from cursor position to end of word and stay in normal mode
+zle-vicmd-de() {
+    zle kill-word
+}
+zle -N zle-vicmd-de
+bindkey -M vicmd 'de' zle-vicmd-de
+
+# delete from cursor position to end of word + surrounding whitespace and stay in normal mode
+zle-vicmd-dw() {
+    zle kill-word
+    zle vi-delete-char
+}
+zle -N zle-vicmd-dw
+bindkey -M vicmd 'dw' zle-vicmd-dw
+
+# delete from cursor position to end of word and stay in normal mode
+zle-vicmd-db() {
+    zle vi-backward-kill-word
+    zle vi-backward-delete-char
+}
+zle -N zle-vicmd-db
+bindkey -M vicmd 'db' zle-vicmd-db
+
+# delete current word and stay in normal mode
+zle-vicmd-diw() {
+    zle vi-backward-word
+    zle kill-word
+}
+zle -N zle-vicmd-diw
+bindkey -M vicmd 'diw' zle-vicmd-diw
+
+# # delete from current positon to end of word and change to insert mode
+# zle-vicmd-cw() {
+#     zle kill-word
+#     zle -K viins
+# }
+# zle -N zle-vicmd-cw
+# bindkey -M vicmd 'cw' zle-vicmd-cw
+
+# delete current word and change to insert mode
+zle-vicmd-ciw() {
+    zle kill-word
+    zle -K viins
+}
+zle -N zle-vicmd-ciw
+bindkey -M vicmd 'ciw' zle-vicmd-ciw
+
+# delete current word and surrounding whitespace and change to insert mode
+zle-vicmd-caw() {
+    zle kill-word
+    zle vi-delete-char
+    zle -K viins
+}
+zle -N zle-vicmd-caw
+bindkey -M vicmd 'caw' zle-vicmd-caw
+# vim: ft=zsh

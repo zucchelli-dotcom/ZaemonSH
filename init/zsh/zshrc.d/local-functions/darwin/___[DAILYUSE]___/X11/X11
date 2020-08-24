@@ -1,0 +1,802 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# X11 :
+# Command for X11 or Xorg or Xquartz Desktop.
+
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 13/01/2018 :
+#  • Continue this one and corresponding completion.
+# 2020-08-01 : 
+# • To Finish
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/01/2018 :
+#  • Modify function presentation.
+#  • Merge all relative X11 functions (open-x11, 8bitx, newx, remotex, xtwit, startremote
+#    startenlightenment, startwm ) with this one .
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.7"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+open-X11(){
+  # Initialize Fink 
+
+   # If the user has installed fink, find it.
+  if [[ -z $SWPREFIX ]]; then   
+      if [[ -d /sw/fink ]]; then
+          export SWPREFIX='/sw'
+      else
+          SWPREFIX=$(dirname $(dirname $(locate bin/fink | head -n 1 ) ) ) 2>| /dev/null 
+      fi       
+  fi
+  # If the fink directory exists, then source init.sh to set the PATH and ENV vars.         
+  if [[ -d $SWPREFIX ]];then
+      source $SWPREFIX/bin/init.sh
+  fi
+
+  ###################################################################################
+  # Initialize X11  
+  #--------------------
+  # X-windows DISPLAY
+  #--------------------
+  # Set DISPLAY variable to allow X-windows programs to run from Terminal.app
+  # Fast User Switching creates the problem of multiple simultaneous instances of
+  # X11.app running and how to find the appropriate DISPLAY value to assign to 
+  # each.
+  # Currently this is only done for X11.app.  It should be done for XDarwin, etc.,
+  # but I can't get XDarwin to work with multiple users.
+
+  # {====>}
+
+  # If the user has Apple's X11 installed, assume that the user wants to use it.
+  # If it is not open, open it, and then try to find the appropriate DISPLAY value
+  # consistent with multiple instances of X11 running simultaneously.
+
+  # If the user doesn't have X11.app installed, the user probably uses a different     
+  # X11 application. We then simply set DISPLAY to :0.0 if it is not already set.
+  if [[ -z $SSH_CONNECTION ]]; then 
+      # Find out if user has Apple's X11:
+      # First attempt -- look in the canonical location:
+      if [[ -d /Applications/Utilities/X11.app ]]; then
+          X11APPDIR=/Applications/Utilities/X11.app
+      else
+          X11APPDIR=""
+      fi    
+      
+      # Second attempt:
+      if [[ ! -d $X11APPDIR ]];then
+          if [[ -x /usr/bin/mdfind ]];then
+              X11APPDIR=$( mdfind -onlyin /Applications X11 | grep X11.app )
+          else
+              X11APPDIR=$(/usr/bin/locate X11.app | head -n 1 )
+          fi
+      fi
+      
+      # Third attempt
+      if [[  ! -d $X11APPDIR ]];then
+          # If locate or mdfind didn't work, try hunting for it in the usual places:
+          if [[ -d /Applications/Utilities/X11.app ]]; then
+              X11APPDIR=/Applications/Utilities/X11.app
+          elif [[ -d /Applications/X11.app ]]; then
+              X11APPDIR=/Applications/X11.app
+          elif [[ -d /Applications/Utilities/XQuartz.app ]]; then
+              X11APPDIR=/Applications/Utilities/XQuartz.app    
+          else
+              X11APPDIR=''
+              print "It does not appear that you have X11.app installed on your system."
+
+          fi
+      fi
+          
+      # If we found that the computer has X11.app, assume this is what the
+      # user will want to use to start X11.
+      if [[ -d $X11APPDIR ]];then 
+          # First see if this user has started X11. If not, start it.
+          # Then get the DISPLAY the output of the command "ps"
+          # This guarantees we use the correct DISPLAY number.
+          # If the user has multiple instances of X11 running, take the 
+          # last process using $x11_display_number_array[-1] .  
+          already_running_x11=$( /bin/ps -xwc | grep -v X11DO | grep X11 | head -n 1 | awk '{print $NF}' )
+          if [[ -z $already_running_x11  ]]; then
+              # if [[ $open_apple_x11 != skip ]]; then
+                  /usr/bin/open -a X11; print "opening X11"; sleep 3
+                  if [[ $TERM_PROGRAM == iTerm.app ]]; then
+                      /usr/bin/open -a iTerm
+                      # Returns focus to iTerm.app
+                      #
+                  elif [[ $TERM_PROGRAM == Apple_Terminal ]]; then
+                      /usr/bin/open -a Terminal
+                      # Returns focus to Terminal.app
+                      #
+                  else
+                      /usr/bin/open -a X11
+                      # Returns focus to xterm, i.e., X11.app
+                  fi
+              #fi
+          fi
+          
+          x11_display_number_array=( $( /bin/ps -xw -o command \
+                       | /usr/bin/sed -n 's/.*\/X11.* \(:[0-9]\{1,2\}\)$/\1/p' ) )
+              
+          if [[ -n $x11_display_number_array ]];then
+             export DISPLAY=$x11_display_number_array[-1].0
+             print "DISPLAY has been set to $DISPLAY "
+          else
+             print "Failed to read DISPLAY from ps"
+             export DISPLAY=:0.0
+             print "DISPLAY has been set to $DISPLAY "
+             print "This may cause problems with Fast User Switching."
+          fi
+                  
+      fi # [[ -d $X11APPDIR ]]
+  fi   # initial DISPLAY test
+
+  # If this did not succeed, just set it to :0.0
+  if [[ -z $DISPLAY && -z $SSH_CONNECTION ]];then 
+      # In the case of non-Apple X11, just set the display to :0.0
+      # junk=( $( ps -xw -o command | grep xinit | grep XDarwin | \
+      #        awk '{print $5}' ))
+      # DISPLAY=$junk[-1]  works for XDarwin, but I can't get XDarwin
+      # to permit multiple simultaneous users.  Same with OroborOSX.
+      export DISPLAY=:0.0
+      print "DISPLAY has been set to $DISPLAY "
+  fi # second DISPLAY test
+
+  if [[ ! -d $X11APPDIR ]]; then
+      x11_app=X11
+  else
+      x11_app="$X11APPDIR"
+  fi
+
+  ###################################
+  # Initialize PATH  
+
+  ###################################
+  #                                 #
+  #     Here we set the PATH:       #
+  #                                 #
+  ###################################
+  # You should, as a bare minimum, have these in your OS X $PATH:
+  MIN_PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/libexec
+
+  # Note that $SWPREFIX/bin and $SWPREFIX/sbin were *prepended* at the top of the file
+  # if you installed fink in $SWPREFIX, so you don't need to add these again.  However,
+  # to ensure the desired priority ordering, I do the following, which together with the
+  # typeset -U command, allows fine-tuning of the order without either duplicating or
+  # accidently deleting anything from $PATH :
+  if [[ -d $SWPREFIX/bin ]]; then
+      PREPEND_PATH=$SWPREFIX/bin:$SWPREFIX/sbin:$MIN_PATH
+  else
+      PREPEND_PATH=$MIN_PATH
+  fi
+      
+  # Then PREPEND or APPEND these to $PATH only if they exist:
+  if [[ -d /usr/X11/bin ]]; then
+      PREPEND_PATH=$PREPEND_PATH:/usr/X11/bin 
+  elif  [[ -d /usr/X11R6/bin ]]; then
+    PREPEND_PATH=$PREPEND_PATH:/usr/X11R6/bin
+  fi
+
+  if [[ -d /Developer/Tools ]]; then
+      PREPEND_PATH=$PREPEND_PATH:/Developer/Tools
+  fi
+
+  if [[ -d /opt/local/bin ]]; then
+      APPEND_PATH=$APPEND_PATH:/opt/local/bin
+  fi
+
+  if [[ -d /opt/local/sbin ]]; then
+      APPEND_PATH=$APPEND_PATH:/opt/local/sbin
+  fi
+
+  if [[ -d /usr/local/bin ]]; then
+      APPEND_PATH=$APPEND_PATH:/usr/local/bin
+  fi
+
+  if [[ -d /usr/local/sbin ]]; then
+      APPEND_PATH=$APPEND_PATH:/usr/local/sbin
+  fi
+
+  if [[ -d ~/bin ]]; then
+      APPEND_PATH=$APPEND_PATH:~/bin
+  fi
+  # Append current directory at the very end of the path, not the beginning.  
+  # Some people consider this to be a minor security hazard.  Putting it at the
+  # end of the path minimizes the potential hazard.  Comment it out if this
+  # worries you.
+      APPEND_PATH=$APPEND_PATH:.
+
+  # This is taken from the original open-x11 script:       
+      # fix $PATH to include X sub-directories
+      # (not a single one of these exist on my machine)
+
+      for d in /usr/X11/bin /usr/X11R6/bin /usr/bin/X11 /usr/local/bin/X11; do
+        if [ -d $d ]; then
+          case $PATH in
+            '')
+          PATH=$d
+          ;;
+            $d|$d:*|*:$d|*:$d:*)
+          : do nothing
+          ;;
+            *)
+          PATH=$PATH:$d
+          ;;
+          esac
+        fi
+      done  
+  # Now generate the ordered PATH:
+      PATH=$PREPEND_PATH:$PATH:$APPEND_PATH
+  #
+  # Export PATH as separate command to avoid dollar signs in export line
+  #
+          export PATH
+  #
+  # Avoid repeats in the path
+  #
+          typeset -U path   
+  ###################################################################################
+  # Main 
+
+  "$@" &
+
+  # try to launch each app
+
+  # If there is one, run it in the foreground, otherwise launch each program
+  # and background it so they can be run simultaneously.
+
+  # I think it is a bad idea to have this launch more than one program at a time,
+  # but this preserves the original functionality of open-x11.
+
+
+  #if [[ $# == 0 ]];then
+  #    print "Usage: openx11 foo1 [[foo2] foo3] ..."
+  #elif [[ $# == 1 ]];then
+  #    "$1"
+  #else
+  #    while [ $# -ge 1 ]; do
+  #      app="$1"; shift
+  #      "$app"  &
+  #    done
+  #fi
+}
+
+8bitx(){
+  #  Function to run a program in an 8-bit (256 colors) X11 display
+  #  without disturbing the default 24-bit X11.
+  #  Created by William Scott on 2007-04-26.
+  #  Copyright (c) 2007. All rights reserved.
+
+  version="0.0.1"
+
+  #  Check to make sure /usr/X11R6/bin/Xquartz is present
+
+  if [[ ! -x /usr/X11R6/bin/Xquartz && ! -x /usr/X11/bin/Xquartz  ]];then
+    print "Requires Apple's X11 with  Xquartz to run"
+    return 1
+  fi
+
+  if [[ $# == 0 ]];then
+    print "Usage:  $0 x-windowsprogram"
+    return 42
+  fi
+
+  # Do all of this as a subprocess:
+
+  (
+      # set the DISPLAY to a two-digit random value
+      # note that this is zsh-specific code
+
+       DISPLAY=:$$[3]$$[4]
+
+      # start Xquartz on this display in 8-bit mode
+
+       Xquartz $DISPLAY  -depth 8 2>/dev/null  & 
+
+      sleep 1
+
+      # start an instance of the quartz window manager
+
+       quartz-wm &
+
+      sleep 1
+
+      # start the desired program in the foreground
+      # the kill commands terminate the background
+      # processes when the foreground process is terminated.
+
+       "$@" ; kill -9 %1
+  )
+}
+
+newx(){
+  #  Function to run a program in second X11 display
+  #  without disturbing the default 24-bit X11.
+  #  See also 8bitx
+
+  #  Created by William Scott on 2007-04-26.
+  #  Copyright (c) 2007. All rights reserved. 
+  #  Check to make sure /usr/X11R6/bin/Xquartz is present
+  if [[ ! -x /usr/X11/bin/Xquartz  &&  ! -x /usr/X11R6/bin/Xquartz ]];then
+    print "Requires Apple's X11 with Xquartz to run"
+    return 1
+  fi
+
+  if [[ $# == 0 ]];then
+    print "Usage:  $0 x-windowsprogram"
+    return 42
+  fi
+
+  # Do all of this as a subprocess :
+  (
+      # set the DISPLAY to a two-digit random value
+      # note that this is zsh-specific code
+       DISPLAY=:$$[3]$$[4]
+
+      # start Xquartz on this display  
+       Xquartz $DISPLAY    2>/dev/null  & 
+      # Xquartz $DISPLAY  -depth 8 2>/dev/null  & 
+      sleep 1
+
+      # start an instance of the quartz window manager
+       quartz-wm &
+       sleep 1
+
+      # start the desired program in the foreground
+      # the kill commands terminate the background
+      # processes when the foreground process is terminated.
+       "$@" ; kill -9 %1
+  )
+}
+
+remotex(){
+  #  Created by William Scott on 2007-04-26.
+  #  Copyright (c) 2007. All rights reserved.
+  #  Function to run a program in second X11 display
+  #  using the specified remove host x-server (eg: startkde, startxfce4)
+  #  without disturbing the default 24-bit X11.
+  #  See also 8bitx
+  #  Check to make sure /usr/X11R6/bin/Xquartz is present
+  if [[ ! -x /usr/X11/bin/Xquartz && ! -x /usr/X11R6/bin/Xquartz ]];then
+    print "Requires Apple's X11 with Xquartz to run"
+    return 1
+  fi
+
+  if [[ $# == 0 ]];then
+    print "Usage:  $0 remotehost remoteXwindowingsystem"
+    return 42
+  fi
+
+  # Do all of this as a subprocess:
+  (
+      # set the DISPLAY to a two-digit random value
+      # note that this is zsh-specific code
+       DISPLAY=:$$[3]$$[4]
+      # start Xquartz on this display  
+      Xquartz $DISPLAY    2>/dev/null  & 
+      # Xquartz $DISPLAY  -depth 8 2>/dev/null  & 
+      sleep 1
+      # start an instance of the quartz window manager
+      # quartz-wm &
+      # sleep 1
+      # start the desired program in the foreground
+      # the kill commands terminate the background
+      # processes when the foreground process is terminated.
+       ssh -Y "$@" ; kill -9 %1
+  )
+}
+
+xwit(){
+  #  Focus Xwindow.
+  prompt_text="Select Xwindow to focus:"
+
+  # Associative array key-value pairs:
+  typeset -A windowarray
+  windowarray=($( xwininfo -root -children -tree | awk '! NF == 0' | \
+      awk '! /(has no name|0x0|child|\"mozilla-bin\"\:|\"firefox-bin\"\:)/ {y = NF-3; print $1 " " $y}' | \
+      perl -p -e 's|[\",\(]||g' ))
+
+  # Define two indexed arrays from the above:
+
+  keyarray=( ${(k)windowarray}  )
+  valuearray=( ${(v)windowarray}  )
+
+  # Now generate the list for the GUI:
+   
+  list_items=()
+  LIMIT=$#keyarray
+  for ((i = 1; i <= $LIMIT; i++ )) do
+          list_items=( $list_items \"$valuearray[i] $keyarray[i]\"\, )
+  done
+   
+  list=$list_items
+  final_list=$list[1,-2] 
+
+  if [[ $list == "" ]];then
+    print ""
+    print "\e[1m No X-windows apprear to be active.\e[0m "
+    print ""
+    return 1
+  fi
+
+  function Z_Osa_choose_list {
+      osascript <<< "    tell app \"Finder\"
+          activate
+          choose from list { $final_list } with prompt \"$prompt_text\"
+          end tell"
+  }
+
+  answer=( $(Z_Osa_choose_list ))
+  xwit -pop -id "$answer[2]"
+}
+
+startremote(){
+  # startremote :
+  # Start a remote xwindowmanager session but in a nested window.
+  local CLEAR ECHO CAT WHICH PRINT banner VERSION FCT_NAME
+
+  # Define some local command
+  CLEAR="$(whereis clear)"
+  ECHO="$(whereis echo)"
+  CAT="$(whereis cat)"
+  PRINT="$(whereis print)"
+  WHICH="$(whereis which)"
+  MKDIR="$(whereis mkdir)"
+  SSH="$(whereis ssh)"
+  SYSTEM_PROFILER="$(whereis system_profiler)"
+  XINIT="$(whereis xinit)"
+  UNAME="$(whereis uname)"
+
+  VERSION="0.0.1"
+  FCT_NAME="startremote"
+
+  # Uncommant for debugging
+  # set -x
+  #-------------------------------------------------------------------------------------------#
+  #                                              FUNCTIONS
+  #-------------------------------------------------------------------------------------------#
+  banner () {
+    clear
+    echo "${NC}"  
+    echo " ###################################################################################################"
+    echo " #                                                                                                 #"
+    echo " #     ${GREEN}This is ${RED}$FCT_NAME : ${YEL}$VERSION FOR $OSTYPE ${NC}                                #"
+    echo " #     CopyL®®v 2019, Zucchelli Bryan                                          #"
+    echo " #                                                                                                 #"
+    echo " #     Unless required by applicable law or agreed to in writing, software                         #"
+    echo " #     distributed under the License is distributed on an "AS IS" BASIS,                             #"
+    echo " #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.                    #"
+    echo " #     See the License for the specific language governing permissions and                         #"
+    echo " #     limitations under the License.                                                              #"
+    echo " #                                                                                                 #"
+    echo " ###################################################################################################"
+  }
+  } 
+
+  #-------------------------------------------------------------------------------------------#
+  #                                               SCRIPT
+  #-------------------------------------------------------------------------------------------#
+  banner
+
+
+  ###############################################################################
+  # Do some reality checks:
+
+  # if [[ ! -x $(which Xnest) &&  ! -x  /usr/X11/bin/Xephyr  ]];then
+  if [[ ! -x $(which Xnest) ]];then
+      $PRINT "Xnest and Xephyr do not appear to be on this system"
+      $PRINT "running the vanilla $0 command"
+      command $0
+      return 42
+  fi
+
+  #  if [[ $# != 1 ]];then
+  #   $PRINT "Usage: $0 windowmanager-executable-name"
+  #   $PRINT "where the argument is eg: enlightenment, twm, startkde, or a similar command."
+  #   return 100
+  #  fi
+
+  # No point in using this unless we are on OS X:
+  if [[ $(uname) != Darwin ]];then
+    $PRINT "This only works for OS X. This does not appear to be OS X."
+    $PRINT "Don't use this.  Use the real $0"
+    return 42
+  fi
+
+  # The window manager must be present.
+  #  if [[ ! -x $(which $1) ]]; then
+  #   $PRINT "I cannot find the $1 window manager."
+  #   $PRINT "Please make sure it is installed properly and in your PATH."
+  #   return 43
+  #  fi
+
+  # The resolution will not be teleported.
+  if [[ -n $SSH_TTY ]]; then
+    $PRINT "This won't work on a remote display"
+    return 44
+  fi
+  ###############################################################################
+
+
+  ################ Make a ~/.$XINITrc file for the specific wm on the fly ####################
+  ################ unless one already exists in your home directory      ####################
+
+  #if [[ ! -f ~/.x$1 ]]; then
+
+  $MKDIR -p /tmp/$USER
+  $CAT >| /tmp/$USER/.x$1  << eof
+  #!/usr/bin/env zsh -f
+
+  $SSH -Y $1 $2   
+
+  eof
+
+  #fi
+  ###############################################################################
+
+
+  # Find the resolution of the monitor:
+  res_array=($($SYSTEM_PROFILER -detailLevel mini | grep Resolution | awk '{$PRINT $2 "  "  $4}'))
+   
+  # Shave off 100 or 200 pixels in each dimension
+  adj_horiz=$((res_array[1]-200))
+  adj_vert=$((res_array[2]-100))
+
+
+  # set -x
+
+  if [[  -x  /usr/X11/bin/Xnest   ]]; then
+       $XINIT /tmp/$USER/.x$1 -- /usr/X11/bin/Xnest :$$[3]$$[4]  -br -name "$1 nested session (initiated in $PWD on $HOST)" \
+                        -geometry ${adj_horiz}x${adj_vert}+100+0 2>| /dev/null & 
+    
+  elif [[ -x  /usr/X11R6/bin/Xnest  ]]; then
+       $XINIT /tmp/$USER/.x$1 -- /usr/X11/bin/Xnest :$$[3]$$[4]  -br  -name "$1 nested session (initiated in $PWD on $HOST)" \
+                        -geometry ${adj_horiz}x${adj_vert}+100+0 2>| /dev/null & 
+
+  else
+    $PRINT "Could not find Xnest or Xephyr"
+    return 1000
+  fi
+}
+
+startenlightenment(){
+  # # Start a full-screen enlightenment session but in a nested window.
+  # ###############################################################################
+  # # Do some reality checks:
+
+  # # No point in using this unless we are on OS X:
+  # if [[ $(uname) != Darwin ]];then
+  #   print "This only works for OS X. This does not appear to be OS X."
+  #   print "Don't use this.  Use the real $0"
+  #   return 42
+  # fi
+
+  # # enlightenment must be present.
+  # if [[ ! -x $(which enlightenment) ]]; then
+  #   print "I cannot find the ENLIGHTENMENT window manager."
+  #   print "Please make sure it is installed properly and in your PATH."
+  #   return 43
+  # fi
+
+  # # The resolution will not be teleported.
+  # if [[ -n $SSH_TTY ]]; then
+  #   print "This won't work on a remote display"
+  #   return 44
+  # fi
+  # ###############################################################################
+
+
+  # ################ Make a ~/.xinitrc file on the fly ####################
+  # ################ unless one already exists in your home directory #############
+
+  # if [[ ! -f ~/.xenlightenment ]]; then
+
+  # cat >| ~/.xenlightenment  << eof
+  # #!/bin/zsh -f
+  # # Execute enlightenment. ALWAYS make sure this is at the end of this
+  # # startup file - and ALWAYS run things before it with an & at the end.
+  # # For example:
+  # #   xterm &
+  # #   kpanel &
+  # # It is suggested to use Enlightenment's Remember dialog for having apps
+  # # spawned automatically on login.
+
+  # # Check for fink
+  # if [[ -d /sw/bin ]];then
+  #   source /sw/bin/init.sh &
+  # fi
+
+  # # Check for rxvt ( or put your favorite xterminal here)
+  # alias rxvt="" ; unalias rxvt
+
+  # if [[ -x \$(which rxvt) ]];then
+  #   command rxvt -T "\$PWD" -bg black -fg white -cr grey -ls -geometry 80X25+100+50 -colorBD yellow -troughColor grey -font 9x15 -sr -scrollColor RoyalBlue3 -internalBorder 5 & 
+  #   command rxvt -T "\$PWD" -bg black -fg white -cr grey -ls -geometry 80X25+125+75 -colorBD yellow -troughColor grey -font 9x15 -sr -scrollColor RoyalBlue3 -internalBorder 5 & 
+  # else
+  #   command xterm -geometry 80X25+100+50 -bg black -fg white -sb -sl 1000 -rightbar  -T "\$PWD" &
+  #   command xterm -geometry 80X25+125+75 -bg black -fg white -sb -sl 1000 -rightbar  -T "\$PWD" &
+  # fi
+
+
+  # exec enlightenment
+
+
+  # eof
+
+  # fi
+  # ###############################################################################
+
+
+  # # Find the resolution of the monitor:
+  # res_array=($(system_profiler -detailLevel mini | grep Resolution | awk '{print $2 "  "  $4}'))
+   
+  # # Shave off 100 or 200 pixels in each dimension
+  # adj_horiz=$((res_array[1]-200))
+  # adj_vert=$((res_array[2]-100))
+
+   
+  # xinit ~/.xenlightenment --  Xnest :9$$[4] -name "ENLIGHTENMENT nested session (initiated in $PWD on $HOST)" \
+  #                       -geometry ${adj_horiz}x${adj_vert}+100+0  2>| /dev/null &
+}
+
+startwm(){
+  # set -x
+  ###############################################################################
+  # Do some reality checks:
+  if [[ ! -x $(which Xnest) &&  ! -x  /usr/X11/bin/Xephyr  ]];then
+      print "Xnest and Xephyr do not appear to be on this system"
+      print "running the vanilla $0 command"
+      command $0
+      return 42
+  fi
+
+  if [[ $# != 1 ]];then
+    print "Usage: $0 windowmanager-executable-name"
+    print "where the argument is eg: enlightenment, twm, startkde, or a similar command."
+    return 100
+  fi
+
+  # No point in using this unless we are on OS X:
+  if [[ $(uname) != Darwin ]];then
+    print "This only works for OS X. This does not appear to be OS X."
+    print "Don't use this.  Use the real $0"
+    return 42
+  fi
+
+  # The window manager must be present.
+  if [[ ! -x $(which $1) ]]; then
+    print "I cannot find the $1 window manager."
+    print "Please make sure it is installed properly and in your PATH."
+    return 43
+  fi
+
+  # The resolution will not be teleported.
+  if [[ -n $SSH_TTY ]]; then
+    print "This won't work on a remote display"
+    return 44
+  fi
+
+  ################ Make a ~/.xinitrc file for the specific wm on the fly ####################
+  ################ unless one already exists in your home directory      ####################
+  if [[ ! -f ~/.x$1 ]]; then
+    cat >| ~/.x$1  << eof
+    #!/bin/zsh -f
+
+    # Check for fink
+    if [[ -d /sw/bin ]];then
+      source /sw/bin/init.sh &
+    fi
+
+    # Check for rxvt ( or put your favorite xterminal here)
+    alias rxvt="" ; unalias rxvt
+    if [[ -x \$(which rxvt) ]];then
+      command rxvt -T "\$PWD" -bg black -fg white -cr grey -ls -geometry 80X25+100+50 -colorBD yellow -troughColor grey -font 9x15 -sr -scrollColor RoyalBlue3 -internalBorder 5 & 
+      command rxvt -T "\$PWD" -bg black -fg white -cr grey -ls -geometry 80X25+125+75 -colorBD yellow -troughColor grey -font 9x15 -sr -scrollColor RoyalBlue3 -internalBorder 5 & 
+    else
+      command xterm -geometry 80X25+100+50 -bg black -fg white -sb -sl 1000 -rightbar  -T "\$PWD" &
+      command xterm -geometry 80X25+125+75 -bg black -fg white -sb -sl 1000 -rightbar  -T "\$PWD" &
+    fi
+    exec $1
+    eof
+  fi
+
+  # Find the resolution of the monitor:
+  res_array=($(system_profiler -detailLevel mini | grep Resolution | awk '{print $2 "  "  $4}'))
+   
+  # Shave off 100 or 200 pixels in each dimension
+  adj_horiz=$((res_array[1]-200))
+  adj_vert=$((res_array[2]-100))
+
+  # Do this as a subprocess to avoid noise about the process finishing.
+  # set -x
+  if [[  -x  /usr/X11/bin/Xephyr   ]]; then
+      ( xinit ~/.x$1 -- /usr/X11/bin/Xephyr :$$[3]$$[4]  -screen ${adj_horiz}x${adj_vert}+100+0 -br  -I  2>| /dev/null & )
+  elif [[  -x  /usr/X11/bin/Xnest   ]]; then
+      ( xinit ~/.x$1 -- /usr/X11/bin/Xnest :$$[3]$$[4]  -br  -name "$1 nested session (initiated in $PWD on $HOST)" \
+                        -geometry ${adj_horiz}x${adj_vert}+100+0 2>| /dev/null & ) 
+  elif [[ -x  /usr/X11R6/bin/Xnest  ]]; then
+      ( xinit ~/.x$1 -- /usr/X11/bin/Xnest :$$[3]$$[4]  -br  -name "$1 nested session (initiated in $PWD on $HOST)" \
+                        -geometry ${adj_horiz}x${adj_vert}+100+0 2>| /dev/null & )
+  else
+    print "Could not find Xnest or Xephyr"
+    return 1000
+  fi
+}
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner

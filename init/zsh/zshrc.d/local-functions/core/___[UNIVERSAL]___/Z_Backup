@@ -1,0 +1,388 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_Backup v0.0.2 :
+# Zucchelli Bryan, nov 09 2016
+# Create a backup of ZaemonSH.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 27/10/2017 :
+#  • Verify if another instance of Z_Backup is in progress.
+#  • Change the installation destination path for init folder on linux (to $HOME/.config/init)
+#    update configuration filea nd test.
+#    Verify if [buf] is in the path.
+# 03/02/2020 :
+#  • Add dots files.
+# 2020-02-21 :
+#  • Add remove undodir
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 09/10/2017 :
+#  • Unify script presentation.
+#  • Add banner.
+# 20/10/2017 :
+#  • Better scripting for darwin part.(Add readable variables correponding to those find in InstallZaemonSH.zsh)
+#  • Correct problem with zip wich was includind all files on Desktop and not just Zeamon.
+#  • if a glitch happen (backup aborted) and the backup folder already exist, erase that shit.
+# 21/10/2017 :
+#  • Better scripting for linux part and testing.(Add readable variables correponding
+#   to those find in InstallZaemonSH.zsh)
+#  • Test on Darwin and Linux.
+#  • Backup on $HOME folder in linux, because there is no universal languages Desktop path on linux.
+#  • Add restart after backup to refres ZaemonSH version number.
+# 22/07/2019 :
+#  • Increment the ZAEMONBASENB++ when ZAEMONSHVERSION=99
+# 03/02/2020 :
+#  • Add (ssh emacs ranger curl wget gdbinit.local git and tmux ) config files.
+# 2020-03-15 :
+#  • Add "${ZDOT:h}" for init path folder 
+#
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+## DARWIN ZAEMON BACKUP VARIABLES ## {{{
+
+local ZAEM_ZSHRC_PATH ZAEM_ACTNB_VERS ZAEM_NEWNB_VERS ZAEM_INIT_PATH ZAEM_INST_SCPT ZAEM_VIMRC_PATH \
+ZAEM_VIMFOLD_PATH ZAEM_NANORC_PATH ZAEM_NANOFOLD_PATH ZAEM_BCK_FOLDNAME ZAEM_BCK_DEST ZAEM_ACTNB_BASE ZAEM_NEWNB_BASE
+
+## ZAEMONSH VARIABLES ##
+ZAEM_ZSHRC_PATH="$HOME/.zshrc"
+ZAEM_ACTNB_BASE=$(grep "ZAEMONBASENB=" $ZAEM_ZSHRC_PATH 2>/dev/null | sed 's/.*=//')
+ZAEM_ACTNB_VERS=$(grep "ZAEMONSHVERSION=" $ZAEM_ZSHRC_PATH 2>/dev/null | sed 's/.*=//')
+#####
+echo "ZAEM_ACTNB_BASE=$ZAEM_ACTNB_BASE"
+echo "ZAEM_ACTNB_VERS=$ZAEM_ACTNB_VERS"
+
+#####
+#/!\#
+#####
+if [[ $ZAEM_ACTNB_VERS == 99 ]]; then
+    echo "---------------------------------"
+    echo "ZAEM_ACTNB_BASE=$ZAEM_ACTNB_BASE"
+    ZAEM_NEWNB_BASE=$(($ZAEM_ACTNB_BASE+1))
+    ZAEM_NEWNB_VERS=0
+    echo "ZAEM_NEWNB_BASE=$ZAEM_NEWNB_BASE"
+    echo "ZAEM_NEWNB_VERS=$ZAEM_NEWNB_VERS"
+
+    rm $HOME/.zshrc.temp $HOME/.zshrc.temp1 2>/dev/null
+	sed "s/ZAEMONBASENB=$ZAEM_ACTNB_BASE/ZAEMONBASENB=$ZAEM_NEWNB_BASE/g" "$ZAEM_ZSHRC_PATH" 1> $HOME/.zshrc.temp
+	sed "s/ZAEMONSHVERSION=$ZAEM_ACTNB_VERS/ZAEMONSHVERSION=$ZAEM_NEWNB_VERS/g"  $HOME/.zshrc.temp 1> $HOME/.zshrc.temp1
+	wait && rm $HOME/.zshrc $HOME/.zshrc.temp && mv $HOME/.zshrc.temp1 $HOME/.zshrc 
+else
+	ZAEM_NEWNB_VERS=$(( $ZAEM_ACTNB_VERS+1 ))
+fi
+#####
+#/!\#
+#####
+
+ZAEM_INIT_PATH="${ZDOT:h}"
+ZAEM_INST_SCPT="$ZDOT/zshrc.d/local-functions/etc/installer/InstallZaemonSH.zsh"
+
+## VIM VARIABLES ##
+ZAEM_VIMRC_PATH="$HOME/.vimrc"
+ZAEM_VIMFOLD_PATH="$HOME/.vim_runtime"
+
+## NANO VARIABLES ##
+ZAEM_NANORC_PATH="$HOME/.nanorc"
+ZAEM_NANOFOLD_PATH="$HOME/.nano"
+
+## 
+ZAEM_BCK_FOLDNAME=ZAEMONSH-${ZAEM_ACTNB_BASE}_v${ZAEM_ACTNB_VERS}
+ZAEM_BCK_DEST="$HOME/Desktop"
+
+#}}}
+
+## LINUX ZAEMON BACKUP VARIABLES ##{{{
+###################################
+## LINUX ZAEMON BACKUP VARIABLES ##
+###################################
+local ZAEM_BCK_L_DEST ZAEM_INIT_L_PATH
+
+## ZAEMONSH VARIABLES ##
+ZAEM_BCK_L_DEST="$DESKTOP"
+ZAEM_INIT_L_PATH="${ZDOT:h}"
+
+## local function
+local BackupDarwinZaemonSH BackupLinuxZaemonSH
+
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="Z_Backup"
+
+local banner
+#}}}
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+
+# function BackupDarwinZaemonSH {{{
+BackupDarwinZaemonSH(){
+	## Create ZAEMONSHNEWNB backup folder.
+	if [[ -e "$ZAEM_BCK_DEST" ]]; then
+		cd "$ZAEM_BCK_DEST"
+		
+		## If a glitch happen (backup aborted) and the backup or zip folder already exist, erase that shit.  
+		if [ "$ZAEM_BCK_FOLDNAME" ]; then
+			rm -Rf "$ZAEM_BCK_FOLDNAME"
+		fi
+		if [ "$ZAEM_BCK_FOLDNAME.zip" ]; then
+			rm -Rf "$ZAEM_BCK_FOLDNAME.zip"
+		fi
+		#####
+		#/!\#
+		#####
+
+		mkdir "$ZAEM_BCK_FOLDNAME"
+	else
+		echo "ERROR : $ZAEM_BCK_DEST n'exite pas."
+		return 0	  
+	fi
+
+	# ## Create new fresh .zshrc
+	## We update  ZAEMONSH numbers version on .zshrc backup.
+	sed  "s/ZAEMONSHVERSION=$ZAEM_ACTNB_VERS/ZAEMONSHVERSION=$ZAEM_ACTNB_VERS/g" "$ZAEM_ZSHRC_PATH" 1> "$ZAEM_BCK_FOLDNAME"/.zshrc
+	rm "$ZAEM_ZSHRC_PATH"
+	## We increment actual ZAEMONSH numbers version on .zshrc.
+	sed  "s/ZAEMONSHVERSION=$ZAEM_ACTNB_VERS/ZAEMONSHVERSION=$ZAEM_NEWNB_VERS/g" "$ZAEM_BCK_FOLDNAME"/.zshrc 1> "$ZAEM_ZSHRC_PATH" 
+	## Add date to zshrc backup.
+	buf "$ZAEM_BCK_FOLDNAME"/.zshrc 
+	## Erase non compress .zshrc backup.
+	rm  "$ZAEM_BCK_FOLDNAME"/.zshrc 
+	## Copy install script on ZAEMONSH backup folder.
+	cp "$ZAEM_INST_SCPT" "$ZAEM_BCK_FOLDNAME"/ 
+	## Make it executable.
+	chmod +x "$ZAEM_BCK_FOLDNAME"/InstallZaemonSH.zsh
+	## Backup Zaemon config
+	#cp -Rf "$HOME/.zsh" $ZAEM_BCK_FOLDNAME/
+
+	## Copy vim config folder on ZAEMONSH backup folder.
+	cp -Rf "$ZAEM_VIMFOLD_PATH" "$ZAEM_BCK_FOLDNAME"/
+	wait &&
+	cp -Rf "$ZAEM_VIMRC_PATH" "$ZAEM_BCK_FOLDNAME"/
+	wait &&
+
+	## Copy nano config folder on ZAEMONSH backup folder.
+	cp -Rf "$ZAEM_NANOFOLD_PATH" "$ZAEM_BCK_FOLDNAME"/
+	wait &&
+	cp -Rf "$ZAEM_NANORC_PATH" "$ZAEM_BCK_FOLDNAME"/
+	wait &&
+
+#############################################################
+    ## Copy ssh config folder on ZAEMONSH backup folder.
+#############################################################
+    cp -Rf $HOME/.ssh "$ZAEM_BCK_FOLDNAME"/
+    wait &&
+#############################################################
+    ## Copy emacs config folder on ZAEMONSH backup folder.
+#############################################################
+    cp -Rf $HOME/.emacs.d "$ZAEM_BCK_FOLDNAME"/
+    wait &&
+
+#############################################################
+    ## Copy ranger config folder on ZAEMONSH backup folder.
+#############################################################
+    cp -Rf $HOME/.config/ranger "$ZAEM_BCK_FOLDNAME"/
+    wait && 
+
+#############################################################
+    ## COPY DOTSFILES..
+#############################################################
+    cp -Rf $HOME/.curlrc "$ZAEM_BCK_FOLDNAME"/
+    wait &&
+    cp -Rf $HOME/.gdbinit.local "$ZAEM_BCK_FOLDNAME"/
+    wait &&
+    cp -Rf $HOME/.gitconfig "$ZAEM_BCK_FOLDNAME"/
+    wait &&
+    cp -Rf $HOME/.gitignore "$ZAEM_BCK_FOLDNAME"/
+    wait &&
+    cp -Rf $HOME/.tmux.conf "$ZAEM_BCK_FOLDNAME"/
+    wait &&
+    cp -Rf $HOME/.wgetrc "$ZAEM_BCK_FOLDNAME"/
+    wait &&
+
+#############################################################
+    
+	## Copy init folder on ZAEMONSH backup folder.
+	cp -Rf "$ZAEM_INIT_PATH" "$ZAEM_BCK_FOLDNAME"/
+	wait &&
+
+	## zip backup folder. 
+    zip -r --symlinks "$ZAEM_BCK_FOLDNAME" "$ZAEM_BCK_FOLDNAME" 
+
+	## Erase backup folder.
+    rm -Rf "$ZAEM_BCK_DEST/$ZAEM_BCK_FOLDNAME"
+	return 0 
+}
+#}}}
+
+# function BackupLinuxZaemonSH {{{
+#############################################
+###      LINUX BACKUP FUNCTION.           ###
+#############################################
+BackupLinuxZaemonSH(){
+	if [[ -e "$ZAEM_BCK_L_DEST" ]]; then
+		cd "$ZAEM_BCK_L_DEST"
+
+		## If a glitch happen (backup aborted) and the backup or zip folder already exist, erase that shit.  
+		if [ "$ZAEM_BCK_FOLDNAME" ]; then
+			rm -Rf "$ZAEM_BCK_FOLDNAME"
+		fi
+		if [ "$ZAEM_BCK_FOLDNAME.zip" ]; then
+			rm -Rf "$ZAEM_BCK_FOLDNAME.zip"
+		fi
+		#####
+		#/!\#
+		#####
+		mkdir "$ZAEM_BCK_FOLDNAME"
+	else
+		echo "ERROR : $ZAEM_BCK_DEST n'exite pas."
+		return 0 
+	fi
+
+	# ## Create new fresh .zshrc
+	## We update  ZAEMONSH numbers version on .zshrc backup.
+	sed  "s/ZAEMONSHVERSION=$ZAEM_ACTNB_VERS/ZAEMONSHVERSION=$ZAEM_ACTNB_VERS/g" "$ZAEM_ZSHRC_PATH" 1> "$ZAEM_BCK_FOLDNAME"/.zshrc
+	rm "$ZAEM_ZSHRC_PATH"
+	## We increment actual ZAEMONSH numbers version on .zshrc.
+	sed  "s/ZAEMONSHVERSION=$ZAEM_ACTNB_VERS/ZAEMONSHVERSION=$ZAEM_NEWNB_VERS/g" "$ZAEM_BCK_FOLDNAME"/.zshrc 1> "$ZAEM_ZSHRC_PATH" 
+	## Add date to zshrc backup.
+	buf "$ZAEM_BCK_FOLDNAME"/.zshrc
+	## Erase non compress .zshrc backup.
+	rm "$ZAEM_BCK_FOLDNAME"/.zshrc
+	## Copy install script on ZAEMONSH backup folder.
+	cp "$ZAEM_INST_SCPT" "$ZAEM_BCK_L_DEST/$ZAEM_BCK_FOLDNAME"
+	## Make it executable.
+	chmod +x "$ZAEM_BCK_FOLDNAME"/InstallZaemonSH.zsh &&
+	
+	## Copy vim config folder on ZAEMONSH backup folder.
+	cp -Rf "$ZAEM_VIMFOLD_PATH" "$ZAEM_BCK_FOLDNAME"/
+	wait &&
+	cp -Rf "$ZAEM_VIMRC_PATH" "$ZAEM_BCK_FOLDNAME"/
+	wait &&
+
+	# Copy nano config folder on ZAEMONSH backup folder.
+	cp -Rf "$ZAEM_NANOFOLD_PATH" "$ZAEM_BCK_FOLDNAME"/
+	wait &&
+	cp -Rf "$ZAEM_NANORC_PATH" "$ZAEM_BCK_FOLDNAME"/
+	wait &&
+#############################################################
+    ## Copy ssh config folder on ZAEMONSH backup folder.
+#############################################################
+    cp -Rf $HOME/.ssh "$ZAEM_BCK_FOLDNAME"/
+    wait &&
+#############################################################
+    ## Copy emacs config folder on ZAEMONSH backup folder.
+#############################################################
+    cp -Rf $HOME/.emacs.d "$ZAEM_BCK_FOLDNAME"/
+    wait &&
+
+#############################################################
+    ## Copy ranger config folder on ZAEMONSH backup folder.
+#############################################################
+    cp -Rf $HOME/.config/ranger "$ZAEM_BCK_FOLDNAME"/
+    wait && 
+
+#############################################################
+    ## COPY DOTSFILES..
+#############################################################
+    cp -Rf $HOME/.curlrc "$ZAEM_BCK_FOLDNAME"/
+    wait &&
+    cp -Rf $HOME/.gdbinit.local "$ZAEM_BCK_FOLDNAME"/
+    wait &&
+    cp -Rf $HOME/.gitconfig "$ZAEM_BCK_FOLDNAME"/
+    wait &&
+    cp -Rf $HOME/.gitignore "$ZAEM_BCK_FOLDNAME"/
+    wait &&
+    cp -Rf $HOME/.tmux.conf "$ZAEM_BCK_FOLDNAME"/
+    wait &&
+    cp -Rf $HOME/.wgetrc "$ZAEM_BCK_FOLDNAME"/
+    wait &&
+
+#############################################################
+
+	## Copy init folder on ZAEMONSH backup folder.
+	cp -Rf "$ZAEM_INIT_L_PATH" $ZAEM_BCK_FOLDNAME/ &&
+	wait &&
+
+	## zip backup folder. 
+    zip -r --symlinks "$ZAEM_BCK_FOLDNAME" "$ZAEM_BCK_FOLDNAME" 
+	
+	## Erase backup folder.
+	rm -Rf "$ZAEM_BCK_L_DEST/$ZAEM_BCK_FOLDNAME" &&
+	return 0
+}
+#}}}
+#-------------------------------------------------------------------------------------------#
+#                                             SCRIPT
+#-------------------------------------------------------------------------------------------#
+##############################################
+###           DARWIN INSTALLATION.         ###
+##############################################
+if [[ $IS_MAC ]]; then
+	 banner
+	 BackupDarwinZaemonSH
+	 Z_Restart
+fi
+
+if [[ $IS_LINUX ]]; then
+	 banner
+	 BackupLinuxZaemonSH
+	 Z_Restart
+fi
+
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:
+### }}}
+

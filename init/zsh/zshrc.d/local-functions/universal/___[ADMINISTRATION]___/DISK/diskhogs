@@ -1,0 +1,135 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# diskhogs :
+# Disk quota analysis tool for Unix, assumes all user 
+# accounts are >= UID 100. Emails message to each violating user
+# and reports a summary to the screen
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME MAXDISKUSAGE violators
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+MAXDISKUSAGE=20
+violators="/tmp/diskhogs0.$$"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+trap "/bin/rm -f $violators" 0
+
+for name in $(cut -d: -f1,3 /etc/passwd | awk -F: '$2 > 99 { print $1 }')
+do
+  echo -n "$name "
+  
+  # find / /usr /var /Users -user $name -xdev -type f -ls | \
+  find / /usr /var /Users -user $name -xdev -type f -ls 2>/dev/null| \
+      awk '{ sum += $7 } END { print sum / (1024*1024) }'
+
+done | awk "\$2 > $MAXDISKUSAGE { print \$0 }" > $violators
+
+if [ ! -s $violators ] ; then
+  echo "No users exceed the disk quota of ${MAXDISKUSAGE}MB"
+  cat $violators
+  exit 0
+fi
+
+while read account usage ; do
+
+   cat << EOF | fmt | mail -s "Warning: $account Exceeds Quota" $account
+Your disk usage is ${usage}MB but you have only been allocated 
+${MAXDISKUSAGE}MB.  This means that either you need to delete some of 
+your files, compress your files (see 'gzip' or 'bzip2' for powerful and
+easy-to-use compression programs), or talk with us about increasing
+your disk allocation.
+
+Thanks for your cooperation on this matter.
+
+Dave Taylor @ x554
+EOF
+
+  echo "Account $account has $usage MB of disk space. User notified."
+
+done < $violators
+
+exit 0

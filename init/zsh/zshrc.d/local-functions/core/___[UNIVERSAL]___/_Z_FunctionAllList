@@ -1,0 +1,73 @@
+#compdef Z_FunctionWhereis Z_FunctionEdit
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _Z_FunctionWhereis :
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 28/07/2019
+# • Add better listo ()o_0) 
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local _genfunc listo
+#listo="$(functions | grep "() {" | sed 's/(.*//' | sed -e 's/^[ \t]*//' |  sed '/^_/ d'  | sort -f | column)"
+#listo="$(functions | grep "() {" | sed 's/(.*//'  |  sed '/^_/ d'  | sort -f | column)"
+listo="$(print -l ${(ko)functions} | grep -v "^_")"
+
+function _genfunc() {compadd -X %B"--- Available functions  ---"%b $(echo $listo)  && return 0 }
+_genfunc && return 0
+
+#----------------------------------------------------------------------------------------#
+#                                      COMPLETION
+#----------------------------------------------------------------------------------------#
+# local expl ffilt
+
+# zstyle -t ":completion:${curcontext}:functions" prefix-needed && \
+#  [[ $PREFIX != [_.]* ]] && \
+#  ffilt='[(I)[^_.]*]'
+
+# _wanted functions expl 'shell function' compadd -k "$@" - "functions$ffilt"
+
+
+# local expl ffilt
+
+# zstyle -t ":completion:${curcontext}:functions" prefix-needed && \
+#  [[ $PREFIX != [_.]* ]] && \
+#  ffilt='[(I)[^_.]*]'
+
+# _wanted functions expl 'shell function' compadd -k "$@" - "functions$ffilt"

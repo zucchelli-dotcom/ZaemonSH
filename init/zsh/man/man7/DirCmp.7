@@ -1,0 +1,32 @@
+.\" Manpage for DirCmp.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH DirCmp 7 "06 Feb 2020" "ZaemonSH Universal" "universal ZaemonSH customization"
+.SH NAME
+DirCmp \- Compare the files in two directories
+.SH SYNOPSIS
+DirCmp [-v] [dir1] dir2
+.SH DESCRIPTION
+DirCmp \- This command compares the files in two directories and lists the files that are not the same.  There will be three separate lists for:
+
+    1. Files not in the first directory, but in the second
+    2. Files not in the second directory, but in the first
+    3. Files in both directories, but not the same
+
+    -v   Verbose option.  This option prints the lines that
+         are different rather than just the name of the
+         file when the file is in both directories, but the
+         files are not the same.
+
+ RETURN VALUE
+    0    The directories are the same
+    1    Usage error or abnormal termination
+    2    The directories are not the same
+
+.SH OPTIONS
+
+.IP "DirCmp [-v] <dir1> <dir2>"
+.B  Verbose option.  This option prints the lines that are different rather than just the name of the file when the file is in both directories, but the files are not the same.
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

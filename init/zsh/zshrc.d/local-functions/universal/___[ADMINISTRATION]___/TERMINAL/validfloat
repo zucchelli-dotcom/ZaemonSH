@@ -1,0 +1,188 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# validfloat :
+# Test whether a number is a valid floating point value.
+# Note that this cannot accept scientific (1.304e5) notation.
+
+# To test whether an entered value is a valid floating point number, we
+# need to split the value at the decimal point, then test the first part
+# to see if it's a valid integer, then the second part to see if it's a 
+# valid >=0 integer, so -30.5 is valid, but -30.-8 isn't.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="validfloat"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+validint()
+{
+  # validate first field. Optionally test against min value $2 and/or
+  # max value $3: if you'd rather skip these tests, send "" as values.
+  # returns 1 for error, 0 for success.
+  number="$1";      min="$2";    max="$3"
+  if [ -z $number ] ; then
+    echo "You didn't enter anything. Unacceptable." >&2 ; return 1
+  fi
+
+  if [ "${number%${number#?}}" = "-" ] ; then # first char '-' ?
+    testvalue="${number#?}"   # all but first character
+  else
+    testvalue="$number"
+  fi
+
+  nodigits="$(echo $testvalue | sed 's/[[:digit:]]//g')"
+
+  if [ ! -z $nodigits ] ; then
+    echo "Invalid number format! Only digits, no commas, spaces, etc." >&2
+    return 1
+  fi
+
+  if [ ! -z $min ] ; then
+    if [ "$number" -lt "$min" ] ; then
+       echo "Your value is too small: smallest acceptable value is $min" >&2
+       return 1
+    fi
+  fi
+  if [ ! -z $max ] ; then
+     if [ "$number" -gt "$max" ] ; then
+       echo "Your value is too big: largest acceptable value is $max" >&2
+       return 1
+     fi
+  fi
+  return 0
+}
+
+validfloat()
+{
+  fvalue="$1"
+
+  if [ ! -z $(echo $fvalue | sed 's/[^.]//g') ] ; then
+
+    decimalPart="$(echo $fvalue | cut -d. -f1)"
+    fractionalPart="$(echo $fvalue | cut -d. -f2)"
+
+    if [ ! -z $decimalPart ] ; then
+      if ! validint "$decimalPart" "" "" ; then
+        return 1
+      fi 
+    fi
+
+    if [ "${fractionalPart%${fractionalPart#?}}" = "-" ] ; then
+      echo "Invalid floating point number: '-' not allowed \
+  after decimal point" >&2 
+      return 1
+    fi 
+    if [ "$fractionalPart" != "" ] ; then 
+      if ! validint "$fractionalPart" "0" "" ; then
+        return 1
+      fi
+    fi
+
+    if [ "$decimalPart" = "-" -o -z $decimalPart ] ; then
+      if [ -z $fractionalPart ] ; then
+        echo "Invalid floating point format." >&2 ; return 1
+      fi 
+    fi
+
+  else
+    if [ "$fvalue" = "-" ] ; then
+      echo "Invalid floating point format." >&2 ; return 1
+    fi
+
+    if ! validint "$fvalue" "" "" ; then
+      return 1
+    fi
+  fi
+
+  return 0
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+
+
+autoload -U validint && validint # load validint function
+
+if validfloat $1 ; then
+  echo "$1 is a valid floating point value"
+fi
+
+return 0

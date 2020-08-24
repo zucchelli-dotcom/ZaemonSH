@@ -1,0 +1,87 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_Keep :
+# Author:  Bart Schaefer
+# The "keeper" function suite originally appeared in several zsh-users
+# posts in the fall of 2004.  It was published in summary form in the
+# Shell Corner column on UnixReview.com in January 2005 at the URL
+# <http://www.unixreview.com/documents/s=9513/ur0501a/ur0501a.htm>
+#
+# The "Z_Keep" function accepts a set of file patterns as the positional
+# parameters or a series of lines (expected to represent file names) on
+# standard input.  It stores the expansion of those patterns, or the input
+# lines, in the global variable $kept, and then displays the result
+# formatted in columns, similar to an "ls" listing.  Its alias, also named
+# "keep", prevents the file patterns from being expanded when the command
+# line is executed; they're expanded in the assignment to $kept instead,
+# so that the local settings of nonomatch etc. are applied.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+setopt localoptions nomarkdirs nonomatch nocshnullglob nullglob
+setopt noksharrays noshwordsplit
+kept=()
+kept=($~*)
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+if [[ ! -t 0 ]]; then
+    local line
+    while read -r line; do
+        kept+=( $line )
+    done
+fi
+print -Rc - ${^kept%/}(T)
+
+zle -C insert-kept-result complete-word _generic
+zstyle ':completion:insert-kept-result:*' completer _insert_kept 
+bindkey '^Xk' insert-kept-result
+
+zle -C expand-kept-result complete-word _generic
+zstyle ':completion:expand-kept-result:*' completer _insert_kept
+bindkey '^XK' expand-kept-result
+
+zle -C _expand_word complete-word _expand_word_and_keep

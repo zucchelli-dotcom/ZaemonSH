@@ -1,0 +1,27 @@
+.\" Manpage for timestamp.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH timestamp 7 "06 Feb 2020" "1.0" "timestamp man page"
+.SH NAME
+timestamp \- Reinitialize timestamp_timeout between 0 to 5 min in /etc/sudoers
+.SH SYNOPSIS
+timestamp [ default | strict | status |  help ]
+.SH DESCRIPTION
+timestamp \- Reinitialize timestamp_timeout between 0 to 5 min in /etc/sudoers
+.SH OPTIONS
+
+.IP "timestamp [ default ]"
+.B Initialize timestamp_timeout 5 min in /etc/sudoers
+
+.IP "timestamp [ strict ]"
+.B Initialize timestamp_timeout 0 min in /etc/sudoers
+
+.IP "timestamp [ status ]"
+.B Get timestamp_timeout status
+
+.IP "timestamp [ help ]"
+.B Obtain program help info.
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli bryan (zucchelli.bryan@gmail.com)

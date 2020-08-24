@@ -1,0 +1,88 @@
+#!/usr/bin/env zsh
+
+autoload -U allopt
+
+ZSH_OPT_ALL_LIST=(` allopt >1 `)
+ZSH_OPT_ON_LIST=(`allopt >1 | grep -v on | awk '{ print $1 }'`)
+ZSH_OPT_OFF_LIST=(`allopt >1 | grep -v on | awk '{ print $1 }'`)
+ZSH_ALLOPT=`echo "$ZSH_OPT_ALL_LIST | tr ' ' '\n' | column"`
+ZSH_ONOPT=`echo "$ZSH_OPT_ON_LIST | tr ' ' '\n' | column"`
+ZSH_OFFOPT=`echo "$ZSH_OPT_OFF_LIST | tr ' ' '\n' | column"`
+
+## LIST
+
+function list () {
+echo "${YEL}Choose what kind of zsh opt listing you want to view${NC}"
+select anwser in "ON" "OFF" "ALL"; do
+	case anwser in 
+	## • ON	
+		ON)
+	 	echo ""
+	 	echo ""
+	 	echo "-------------------------------------------------------------------------------------"	 	
+	 	echo "           ZSH ACTIVE OPTIONS LIST                                    "
+	 	echo "-------------------------------------------------------------------------------------"	 	
+	 	echo ""
+	 	echo "$ZSH_ONOPT"
+	 	echo ""
+	 	echo "-------------------------------------------------------------------------------------"	 	
+
+	 	return 0
+	 	;;
+	## • OFF
+		OFF) 
+	 	echo ""
+	 	echo ""
+	 	echo "-------------------------------------------------------------------------------------"	 	
+	 	echo "           ZSH INACTIVE OPTIONS LIST                                    "
+	 	echo "-------------------------------------------------------------------------------------"	 	
+	 	echo ""
+	 	echo "$ZSH_OFFOPT"
+	 	echo ""
+	 	echo "-------------------------------------------------------------------------------------"	
+	 	return 0
+	 	;;
+	## • ALL
+		ALL)
+	 	echo ""
+	 	echo ""
+	 	echo "-------------------------------------------------------------------------------------"	 	
+	 	echo "           ZSH COMPLETE OPTIONS LIST                                    "
+	 	echo "-------------------------------------------------------------------------------------"	 	
+	 	echo ""
+	 	echo "$ZSH_ALLOPT"
+	 	echo ""
+	 	echo "-------------------------------------------------------------------------------------"	
+	 	return 0
+	 	;;
+	 	*)
+		return 0
+		;;
+	esac
+done
+}
+
+## DISABLE
+disable () {
+	# for opton in ZSH_ONOPT 
+}
+
+
+ 
+## ENABLE
+
+clear
+# echo "All list"
+# allopt | tr ' ' '\n' | column"
+echo "-------------------------------------------------------------------------------------"	
+echo "ON list"
+echo "-------------------------------------------------------------------------------------"	
+echo "$ZSH_OPT_ON_LIST"
+echo "-------------------------------------------------------------------------------------"	
+echo ""
+echo ""
+echo "-------------------------------------------------------------------------------------"	
+echo "OFF list"
+echo "-------------------------------------------------------------------------------------"	
+echo "$ZSH_OPT_OFF_LIST"
+#list

@@ -1,0 +1,27 @@
+
+#! /usr/bin/env /bin/bash
+DATE=$(date +'%F-%H-%M-%S')
+time {
+  COUNT=$(
+    curl http://www.commandlinefu.com/commands/browse | 
+    grep "Terminal - All commands" | 
+    awk ' {
+      for(i=1;i<=NF;i++)
+        if($i ~ /[0-9]/) {
+          gsub(/','/, "", $i);
+          print $i;
+        }
+    }'
+  )
+  TOTAL=$(( $COUNT / 25 + 1 ))
+  NUM=1
+  for I in $(seq 0 25 $COUNT); do 
+    echo; echo; echo "=== Download: $NUM / $TOTAL ==="
+    curl http://www.commandlinefu.com/commands/browse/sort-by-votes/plaintext/$I >> /tmp/commandlinefures.txt
+    NUM=$(( $NUM + 1 ))
+  done
+
+
+}
+awk '!/tech@commandlinefu.com|AD: Diff 2/' /tmp/commandlinefures.txt > commandlinefu-${DATE}.txt
+rm /tmp/commandlinefures.txt

@@ -1,0 +1,33 @@
+.\" Manpage for Z_Session.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH Z_Session 7 "06 Feb 2020" "ZaemonSH" "ZaemonSH customization"
+.SH NAME
+Z_Session \- Save your session and manipulate multiple desktop with CLI.
+.SH SYNOPSIS
+Z_Session [init | (list|ls) | (.|go) | run | edit | help]
+.SH DESCRIPTION
+Z_Session \- Work with  multiple desktop with CLI.
+.SH OPTIONS
+
+.IP "Z_Session [init]"
+.B Initialize desk configuration.
+
+.IP "Z_Session  (list|ls)"
+.B List all desks along with a description.
+
+.IP "Z_Session (.|go) [<desk-name-or-path> [shell-args ...]]"
+.B Activate a desk. Extra arguments are passed onto shell. If called with no arguments, look for a Deskfile in the current directory. If not a reconuized desk, try as a path directory containinbg a deskFile.
+
+.IP "Z_Session run <desk-name> <cmd>"
+.B Run a command within a desk's environment then exit. Think '\$$SHELL -c'.
+
+.IP "Z_Session edit [desk-name]"
+.B Edit (or create) a deskfile with the name specified, otherwise edit the active deskfile.
+
+.IP "Z_Session help"
+.B Obtain program help info.
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli bryan (zucchelli.bryan@gmail.com)

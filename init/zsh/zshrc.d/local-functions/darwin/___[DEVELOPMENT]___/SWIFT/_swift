@@ -1,0 +1,132 @@
+#compdef swift
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _swift  :
+# Completion for swift
+
+# -----------------------------------------------------------------------------
+# Copyright (c) 2015 Keith Smiley (http://keith.so)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the 'Software'), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# -----------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 02/08/2020 :
+#  • Create this one.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+_sdks() {
+  local -a sdks
+  sdks=$(xcodebuild -showsdks | grep -o "\-sdk.*" | cut -f 2 -d ' ')
+  echo $sdks
+}
+
+#----------------------------------------------------------------------------------------#
+#                                     COMPLETION
+#----------------------------------------------------------------------------------------#
+_arguments \
+  '*: :->files' \
+  '-assert-config[Assert configuration replacement]:Assert configuration:(Debug Release Replacement)' \
+  '-D[Build configuration option(s)]:Build configuration option(s):' \
+  '-emit-assembly[Emit assembly]' \
+  '-emit-library[Emit library]' \
+  '-emit-object[Emit object]' \
+  '-F[Add framework search path]:Framework search path:->files' \
+  '-framework[Framework to link]:Framework to link:->files' \
+  '-g[Emit debug info]' \
+  '-gline-tables-only[Debug info for backtraces]' \
+  '-gnone[Do not emit debug info]' \
+  '-help[Print help]' \
+  '-I[Add import search path]:Import search path:->files' \
+  '-j[Commands to execute in parallel]:Number of parallel commands:' \
+  '-L[Add library search path]:Library search path:->files' \
+  '-l[Library to link]:Library to link:->files' \
+  '-module-cache-path[Clang module cache path]:Clang module cache path:->files' \
+  '-module-link-name[Library to link against with module]:Library to link against with module:' \
+  '-module-name[Name of module to build]:Name of module to build:' \
+  '-nostdimport[Do not search standard library for modules]' \
+  '-O[Compile with optimizations]' \
+  '-o[Output file]:Output file:->files' \
+  '-Onone[Compile without optimizations]' \
+  '-Ounchecked[Compile with optimizations remove runtime safety checks]' \
+  '-sdk[SDK to compile with]:SDK to compile with:->sdks' \
+  '-target-cpu[Generate code for specific CPU]:CPU to generate for:' \
+  '-target[Generate code for specific target]:Target to generate for:' \
+  '-v[Run with verbose output]' \
+  '-version[Print version]' \
+  '-Xcc[Arguments for the C compiler]:C compiler arguments:' \
+  '-Xlinker[Options for the linker]:Linker options:'
+
+case "$state" in
+  files)
+    _files
+    ;;
+  sdks)
+    if ([[ ${+_installed_sdks} -eq 0 ]] || _cache_invalid SDKS) && ! _retrieve_cache SDKS; then
+      _installed_sdks=($(_sdks))
+      _store_cache SDKS _installed_sdks
+    fi
+
+    _values "SDK to compile with" $_installed_sdks
+    ;;
+esac
+
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:
+### }}}

@@ -1,0 +1,117 @@
+#compdef srm
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+#  _srm :
+
+# Description
+# -----------
+#
+#  Completion script for srm.
+#
+#  It is based on the rm completion script from Zsh.
+#
+#
+# Authors
+# -------
+#
+#  * Sorin Ionescu <sorin.ionescu@gmail.com>
+#
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify completion presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local -a opts args
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      COMPLETION
+#----------------------------------------------------------------------------------------#
+args=(
+  '(-f --force)'{-f,--force}'[ignore nonexistent files, never prompt]'
+  '(-r --interactive)'{-i,--interactive}'[prompt before any removal]'
+  '(-r -R --recursive)'{-r,-R,--recursive}'[remove the contents of directories recursively]'
+  '(-s --simple)'{-s,--simple}'[only overwrite with a single pass of random data]'
+  '(-v --verbose)'{-v,--verbose}'[explain what is being done]'
+  '(- *)--help[display help message and exit]'
+  '(- *)--version[output version information and exit]'
+  '*::files:->file'
+)
+
+if _pick_variant gnu=gnu unix --help; then
+  args+=(
+    '(-x --one-file-system)'{-x,--one-file-system}'[stay within filesystems of files given as arguments]'
+    '(-P --openbsd)'{-P,--openbsd}'[overwrite the file 3 times (0xff, 0x00, 0xff)]'
+    '(-D --dod)'{-D,--dod}'[overwrite the file with 7 US DoD compliant passes (0xF6, 0x00, 0xFF, random, 0x00, 0xFF, random)]'
+    '(-E --doe)'{-E,--doe}'[overwrite the file with 3 US DoE compliant passes (random, random, DoE)]'
+  )
+else
+  args+=(
+    '(-m --medium)'{-m,--medium}'[overwrite the file with 7 US DoD compliant passes (0xF6, 0x00, 0xFF, random, 0x00, 0xFF, random)]'
+    '(-z --zero)'{-z,--zero}'[after overwriting, zero blocks used by file]'
+    '(-n --nounlink)'{-n,--nounlink}'[overwrite file, but do not rename or unlink it]' 
+  )
+fi
+
+local curcontext=$curcontext state line ret=1
+local -A opt_args
+
+_arguments -s -S -C $opts \
+  $args && ret=0
+
+case $state in
+  (file)
+    local -a ignored
+    ignored=()
+    ((CURRENT > 1)) &&
+      ignored+=(${line[1,CURRENT-1]//(#m)[\[\]()\\*?#<>~\^]/\\$MATCH})
+    ((CURRENT < $#line)) &&
+      ignored+=(${line[CURRENT+1,-1]//(#m)[\[\]()\\*?#<>~\^]/\\$MATCH})
+    _files -F ignored && ret=0
+    ;;
+esac
+return $ret
+
+
+
+

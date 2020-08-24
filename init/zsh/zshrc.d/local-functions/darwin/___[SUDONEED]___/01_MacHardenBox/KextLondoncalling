@@ -1,0 +1,248 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# KextLondoncalling  :
+# Activate/deactivate MacOS kext extensions.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# kextfind \( -nonloadable -or -warnings \) -print -print-diagnostics
+# Print a list of all kexts that aren't loadable or that have any warnings,
+# along with what's wrong with each.
+# ls -al /System/Library/Extensions | awk '{ print $9 }'  | grep -v ".disabled" | sort -
+# 2020-02-29 :
+# • Make log
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 29/02/2020 :
+#  • Create this one .
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+if [[ $P_SYSETCDIR/Harden/KextConfig.lxl ]]; then
+    source $P_SYSETCDIR/Harden/KextConfig.lxl
+else
+    echo "${WB} Error with config file.${NC}"
+fi
+
+# Set the colours you can use
+black='\033[0;30m'
+white='\033[0;37m'
+red='\033[0;31m'
+green='\033[0;32m'
+yellow='\033[0;33m'
+blue='\033[0;34m'
+magenta='\033[0;35m'
+cyan='\033[0;36m'
+
+# Resets the style
+reset=`tput sgr0`
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+# Color-echo. Improved. [Thanks @joaocunha]
+# arg ( = message
+# arg [ = Color
+cecho() {
+    echo -e "${2}${1}${reset}"
+    return
+}
+
+
+
+if [[ ! $IS_ADMIN ]]; then
+    clear
+    cecho "You are to be root to run the script..." $red
+    echo ""
+    echo ""
+    cecho "macOS KextLondonCalling by @n@tome" $reset
+    cecho "version 1.0"
+    echo ""
+    cecho "Available commands"
+    cecho "disable - Disable list of specified extensions"
+    cecho "enable - Enable list of specified extensions"
+    cecho "help - help message"
+    return 0
+fi
+
+
+check(){
+  if csrutil status | grep -q 'enabled'
+  then
+    cecho "SIP is enabled. It may not fully work." $red
+    if sw_vers -productVersion | grep -q '10.13'
+    then #high sierra
+      cecho "High Sierra (10.13.X) requires to have SIP DISABLED" $red
+      cecho "Boot into recovery mode and type csrutil disable. It's nice to enable it afterwards." $red
+      return 1
+    fi
+  fi
+}
+help_msg(){
+  clear
+  echo ""
+  echo "macOS ${YEL}LondonCalling${NC} by @n@tome"
+  echo "version 1.0"
+  echo ""
+  echo "Available commands"
+  echo "${GREEN}audit${NC} - print current settings"
+  echo "${GREEN}disable${NC} - disable your macOS to stop/limit invasions of your privacy"
+  echo "${GREEN}enable${NC} - restore to default settings"
+  echo "${GREEN}help${NC} - help message"
+}
+
+dis(){
+echo ""
+for kext in "${KEXTS[@]}"
+do
+  if [ -d /System/Library/Extensions/${kext} ]; then
+      # sudo kextunload /System/Library/Extensions/${kext}
+      # wait
+      trap "sudo mv /System/Library/Extensions/${kext} /System/Library/Extensions/${kext}.disabled" INT TERM
+      echo -e  "${green}[ OK ]${reset} Kext ${kext} disabled"
+  elif [ -d  /System/Library/Extensions/${kext}.disabled ]; then
+      echo -e "${blue}[ NOTHING TO DO! ]${reset} Kext ${kext} already disabled"
+  else
+      cecho "${red}[ WARNING ]${reset} Kext ${kext} not founded on your system"
+  fi
+done
+echo $LINEE
+KEXTSLIB=('ACS6x.kext' 'ATTOCelerityFC8.kext' 'ATTOExpressSASHBA2.kext' 'ATTOExpressSASRAID2.kext' 'ArcMSR.kext' 'CalDigitHDProDrv.kext' 'HighPointIOP.kext' 'HighPointRR.kext' 'PromiseSTEX.kext')
+for kextlib in "${KEXTSLIB[@]}"
+do
+   if [ -d /Library/Extensions/${kextlib} ]; then
+       trap "sudo mv /Library/Extensions/${kextlib} /Library/Extensions/${kextlib}.disabled" INT TERM
+       echo -e  "${green}[ OK ]${reset} Kext ${kextlib} disabled"
+   elif [ -d  /Library/Extensions/${kextlib}.disabled ]; then
+   echo -e "${blue}[ NOTHING TO DO! ]${reset} Kext ${kextlib} already disabled"
+   else
+       cecho "${red}[ WARNING ]${reset} Kext ${kextlib} not founded on your system"
+   fi
+done
+
+echo ""
+  cecho "Specified kexts have been disabled. We reboot the system now ..." $green
+ # sync ; sync ; shutdown -r now
+}
+
+ena(){
+  echo ""
+  for kext in "${KEXTS[@]}"
+  do
+    if [ -d /System/Library/Extensions/${kext}.disabled ]; then
+        trap "sudo mv /System/Library/Extensions/${kext}.disabled /System/Library/Extensions/${kext}" INT TERM
+        # wait
+        # sudo kextload /System/Library/Extensions/${kext}
+        echo -e "${green}[ OK ]${reset} Kext ${kext} enabled"
+    elif [ -d /System/Library/Extensions/${kext} ]; then
+        echo -e "${blue}[ NOTHING TO DO! ]${reset} Kext ${kext} already enabled."
+    else
+        echo -e "${red}[ WARNING ]${reset} Kext ${kext} not founded on your system"
+    fi
+  done
+
+echo $LINEE
+  KEXTSLIB=('ACS6x.kext' 'ATTOCelerityFC8.kext' 'ATTOExpressSASHBA2.kext' 'ATTOExpressSASRAID2.kext' 'ArcMSR.kext' 'CalDigitHDProDrv.kext' 'HighPointIOP.kext' 'HighPointRR.kext' 'PromiseSTEX.kext')
+ for kextlib in "${KEXTSLIB[@]}"
+ do
+    if [ -d /Library/Extensions/${kextlib}.disabled ]; then
+        trap "sudo mv /Library/Extensions/${kextlib}.disabled /Library/Extensions/${kextlib}" INT TERM
+        echo -e  "${green}[ OK ]${reset} Kext ${kextlib} enabled"
+    elif [ -d  /Library/Extensions/${kextlib} ]; then
+        echo -e "${blue}[ NOTHING TO DO! ]${reset} Kext ${kextlib} already enabled"
+    else
+        cecho "${red}[ WARNING ]${reset} Kext ${kextlib} not founded on your system"
+    fi
+  done
+  echo ""
+  cecho "Specified kexts have been enabled. We reboot the system now ..." $green
+ # sync ; sync ; shutdown -r now
+  echo ""
+}
+
+## Tmp Patch to PAH_Extensions
+#mvs /System/Library/Input\ Methods/PressAndHold.app /System/Library/Input\ Methods/PressAndHold.app.disabled
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+emulate -L zsh
+case $1 in
+  "disable")
+    check
+    dis
+    ;;
+  "help")
+    help_msg
+    ;;
+  "enable")
+    check
+    ena
+    ;;
+  *)
+    help_msg
+    ;;
+esac
+

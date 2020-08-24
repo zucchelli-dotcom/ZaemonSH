@@ -1,0 +1,612 @@
+#! /usr/bin/env zsh -f
+
+
+ ##########################################################################################
+ #                                                                                        #
+ #  ZaemonSH created by :                                                                 #
+ #  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+ #  Copyright (c) 2019. All rights reserved.                                              #
+ #  Inspired by zsh-templates created by :                                                #
+ #  William Scott on May 11, 2007.                                                        #
+ #  Copyright (c) 2007. All rights reserved.                                              #
+ #                                                                                        #
+ #                                                                                        #
+ #  This program is free software; you can redistribute it and/or modify it under         #
+ #  the terms of the GNU General Public License as published by the Free Software         #
+ #  Foundation; either version 2 of the License, or (at your option) any later version.   #
+ #                                                                                        #
+ #  This program is distributed in the hope that it will be useful, but WITHOUT           #
+ #  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+ #  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+ #  See the GNU General Public License for more details.                                  #
+ #                                                                                        #
+ #  You should have received a copy of the GNU General Public License                     #
+ #  along with this program ; if not, write to the Free Software Foundation,              #
+ #  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+ #                                                                                        #
+ #  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+ #                                                                                        #
+ ##########################################################################################
+
+#-----------------------------------------------------------------------------------------#
+#                                           DESCRIPTION
+#-----------------------------------------------------------------------------------------#
+ #  2```   		╚⊙ ⊙╝
+ #  2         ╚═(███)═╝  
+ #  2        ╚═(███)═╝   
+ #  2       ╚═(███)═╝     
+ #  2      ╚═(███)═╝
+ #  2    ╚═(███)═╝
+ #  2  ╚═(███)═╝
+ #  2 ╚═(███)═╝
+ #  2  ╚═(███)═╝
+ #  2    ╚═(███)═╝
+ #  2     ╚═(███)═╝
+ #  2  	    ╚═(███)═╝
+ #  2``		 ╚═(███)═╝
+ # 
+# MacOSDoctor :
+# Run some osx maintenance.
+
+#-----------------------------------------------------------------------------------------#
+#                                               TODO
+#-----------------------------------------------------------------------------------------#
+		# ### macOS attaches metadata
+		# # /Library/Preferences/com.apple.Bluetooth.plist` contains Bluetooth metadata, 
+		# # including device history. If Bluetooth is not used, the metadata can be cleared with
+		# sudo defaults delete /Library/Preferences/com.apple.Bluetooth.plist DeviceCache
+		# sudo defaults delete /Library/Preferences/com.apple.Bluetooth.plist IDSPairedDevices
+		# sudo defaults delete /Library/Preferences/com.apple.Bluetooth.plist PANDevices
+		# sudo defaults delete /Library/Preferences/com.apple.Bluetooth.plist PANInterfaces
+		# sudo defaults delete /Library/Preferences/com.apple.Bluetooth.plist SCOAudioDevices
+
+
+		# `/var/spool/cups` contains the CUPS printer job cache. To clear it, use the commands:
+
+		# ````
+		# sudo rm -rfv /var/spool/cups/c0*
+		# sudo rm -rfv /var/spool/cups/tmp/*
+		# sudo rm -rfv /var/spool/cups/cache/job.cache*
+		# ````
+
+		# To clear the list of iOS devices connected, use:
+
+		# ````
+		# sudo defaults delete /Users/$USER/Library/Preferences/com.apple.iPod.plist "conn:128:Last Connect"
+		# sudo defaults delete /Users/$USER/Library/Preferences/com.apple.iPod.plist Devices 
+		# sudo defaults delete /Library/Preferences/com.apple.iPod.plist "conn:128:Last Connect"
+		# sudo defaults delete /Library/Preferences/com.apple.iPod.plist Devices
+		# sudo rm -rfv /var/db/lockdown/*
+		# ````
+
+		# QuickLook thumbnail data can be cleared using the `qlmanage -r cache` command, but this writes to the file `resetreason` in the Quicklook directories, and states that the Quicklook cache was manually cleared. It can also be manually cleared by getting the directory names with `getconf DARWIN_USER_CACHE_DIR` and `sudo getconf DARWIN_USER_CACHE_DIR`, then removing them:
+
+		# ````
+		# rm -rfv $(getconf DARWIN_USER_CACHE_DIR)/com.apple.QuickLook.thumbnailcache/exclusive 
+		# rm -rfv $(getconf DARWIN_USER_CACHE_DIR)/com.apple.QuickLook.thumbnailcache/index.sqlite 
+		# rm -rfv $(getconf DARWIN_USER_CACHE_DIR)/com.apple.QuickLook.thumbnailcache/index.sqlite-shm 
+		# rm -rfv $(getconf DARWIN_USER_CACHE_DIR)/com.apple.QuickLook.thumbnailcache/index.sqlite-wal 
+		# rm -rfv $(getconf DARWIN_USER_CACHE_DIR)/com.apple.QuickLook.thumbnailcache/resetreason 
+		# rm -rfv $(getconf DARWIN_USER_CACHE_DIR)/com.apple.QuickLook.thumbnailcache/thumbnails.data 
+		# ````
+
+		# Similarly, for the root user:
+
+		# ````
+		# sudo rm -rfv $(getconf DARWIN_USER_CACHE_DIR)/com.apple.QuickLook.thumbnailcache/thumbnails.fraghandler 
+		# sudo rm -rfv $(getconf DARWIN_USER_CACHE_DIR)/com.apple.QuickLook.thumbnailcache/exclusive 
+		# sudo rm -rfv $(getconf DARWIN_USER_CACHE_DIR)/com.apple.QuickLook.thumbnailcache/index.sqlite 
+		# sudo rm -rfv $(getconf DARWIN_USER_CACHE_DIR)/com.apple.QuickLook.thumbnailcache/index.sqlite-shm
+		# sudo rm -rfv $(getconf DARWIN_USER_CACHE_DIR)/com.apple.QuickLook.thumbnailcache/index.sqlite-wal
+		# sudo rm -rfv $(getconf DARWIN_USER_CACHE_DIR)/com.apple.QuickLook.thumbnailcache/resetreason
+		# sudo rm -rfv $(getconf DARWIN_USER_CACHE_DIR)/com.apple.QuickLook.thumbnailcache/thumbnails.data
+		# sudo rm -rfv $(getconf DARWIN_USER_CACHE_DIR)/com.apple.QuickLook.thumbnailcache/thumbnails.fraghandler
+		# ````
+
+		# To clear Finder preferences:
+
+		# ````
+		# defaults delete ~/Library/Preferences/com.apple.finder.plist FXDesktopVolumePositions
+		# defaults delete ~/Library/Preferences/com.apple.finder.plist FXRecentFolders
+		# defaults delete ~/Library/Preferences/com.apple.finder.plist RecentMoveAndCopyDestinations
+		# defaults delete ~/Library/Preferences/com.apple.finder.plist RecentSearches
+		# defaults delete ~/Library/Preferences/com.apple.finder.plist SGTRecentFileSearches
+		# ````
+
+		# Additional diagnostic files may be found in the following directories - but caution should be taken before removing any, as it may break logging or cause other issues:
+
+		# ````
+		# /var/db/CoreDuet/
+		# /var/db/diagnostics/
+		# /var/db/systemstats/
+		# /var/db/uuidtext/
+		# /var/log/DiagnosticMessages/
+		# ````
+
+		# macOS stored preferred Wi-Fi data (including credentials) in nvram. To clear it, use the following commands:
+
+		# ````
+		# sudo nvram -d 36C28AB5-6566-4C50-9EBD-CBB920F83843:current-network
+		# sudo nvram -d 36C28AB5-6566-4C50-9EBD-CBB920F83843:preferred-networks
+		# sudo nvram -d 36C28AB5-6566-4C50-9EBD-CBB920F83843:preferred-count 
+
+
+		# macOS may collect sensitive information about what you type, even if user dictionary and suggestions are off. To remove them, and prevent them from being created again, use the following commands:
+
+		# ````
+		# rm -rfv "~/Library/LanguageModeling/*" "~/Library/Spelling/*" "~/Library/Suggestions/*"
+		# chmod -R 000 ~/Library/LanguageModeling ~/Library/Spelling ~/Library/Suggestions
+		# chflags -R uchg ~/Library/LanguageModeling ~/Library/Spelling ~/Library/Suggestions
+		# ````
+
+		# QuickLook application support metadata can be cleared and locked with the following commands:
+
+		# ````
+		# rm -rfv "~/Library/Application Support/Quick Look/*"
+		# chmod -R 000 "~/Library/Application Support/Quick Look"
+		# chflags -R uchg "~/Library/Application Support/Quick Look"
+		# ````
+			
+		# Document revision metadata is stored in `/.DocumentRevisions-V100` and can be cleared and locked with the following commands - caution should be taken as this may break some core Apple applications:
+
+		# ````
+		# sudo rm -rfv /.DocumentRevisions-V100/*
+		# sudo chmod -R 000 /.DocumentRevisions-V100
+		# sudo chflags -R uchg /.DocumentRevisions-V100
+		# ````
+
+		# Saved application state metadata may be cleared and locked with the following commands:
+
+		# ````
+		# rm -rfv "~/Library/Saved Application State/*"
+		# rm -rfv "~/Library/Containers/<APPNAME>/Saved Application State"
+		# chmod -R 000 "~/Library/Saved Application State/"
+		# chmod -R 000 "~/Library/Containers/<APPNAME>/Saved Application State"
+		# chflags -R uchg "~/Library/Saved Application State/"
+		# chflags -R uchg "~/Library/Containers/<APPNAME>/Saved Application State"
+		# ````
+
+		# Autosave metadata can be cleared and locked with the following commands:
+
+		# ````
+		# rm -rfv "~/Library/Containers/<APP>/Data/Library/Autosave Information"
+		# rm -rfv "~/Library/Autosave Information"
+		# chmod -R 000 "~/Library/Containers/<APP>/Data/Library/Autosave Information"
+		# chmod -R 000 "~/Library/Autosave Information"
+		# chflags -R uchg "~/Library/Containers/<APP>/Data/Library/Autosave Information"
+		# chflags -R uchg "~/Library/Autosave Information"
+		# ````
+
+		# The Siri analytics database, which is created even if the Siri launch agent disabled, can be cleared and locked with the following commands:
+
+		# ````
+		# rm -rfv ~/Library/Assistant/SiriAnalytics.db
+		# chmod -R 000 ~/Library/Assistant/SiriAnalytics.db
+		# chflags -R uchg ~/Library/Assistant/SiriAnalytics.db
+		# ````
+
+		# `~/Library/Preferences/com.apple.iTunes.plist` contains iTunes metadata. Recent iTunes search data may be cleared with the following command:
+
+		# ````
+		# defaults delete ~/Library/Preferences/com.apple.iTunes.plist recentSearches
+		# ````
+
+		# If you do not use Apple ID-linked services, the following keys may be cleared, too, using the following commands:
+
+		# ````
+		# defaults delete ~/Library/Preferences/com.apple.iTunes.plist StoreUserInfo
+		# defaults delete ~/Library/Preferences/com.apple.iTunes.plist WirelessBuddyID
+		# ````
+
+		# `~/Library/Containers/com.apple.QuickTimePlayerX/Data/Library/Preferences/com.apple.QuickTimePlayerX.plist` contains all media played in QuickTime Player.
+
+		# Additional metadata may exist in the following files:
+
+		# ````
+		# ~/Library/Containers/com.apple.appstore/Data/Library/Preferences/com.apple.commerce.knownclients.plist
+		# ~/Library/Preferences/com.apple.commerce.plist
+		# ~/Library/Preferences/com.apple.QuickTimePlayerX.plist 
+	# ````
+
+#-----------------------------------------------------------------------------------------#
+#                                              CHANGES
+#-----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify function presentation.
+
+# 29/07/2019 :
+#  • Correct script to make it runnabled with mojove
+#  • Remove collision (double) with command sleep.and function sleep
+#  • No need to use sudo_fct anymore.
+
+#-----------------------------------------------------------------------------------------#
+#                                               CONFIG
+#-----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME UID bE eE bH eH bK eK bW eW b5 bS eS EX_OK EX_USAGE EX_ERR EX_SOFTWARE EX_OSERR SED LOGFILE GREEN YEL RED BLUE CYAN MAGENTA NC WHITE ZER
+
+VERSION="7.5.0"
+FCT_NAME="$(echo $0)"
+
+# bE="\033[31m*** "	#	Start formatting for "errors"
+# eE=" ***\033[0m"	#	End of format for errors.
+# bH="\033[35m\033[1m\033[4m"	#	Color code for key highlights
+# eH="\033[0m"	#	End of color code for key highlights
+# bK="\033[35m\033[1m"	#	Color code for key entry
+# eK="\033[0m"	#	End of formatting for key entry
+# bW="\033[33m"	#	formatting for "warnings"
+# eW="!\033[0m"	#	End of formatting for warnings.
+# bS="\033[1m"	#	Begin strong
+# eS="\033[0m"	#	End strong
+
+# standard exit code for usage error [from C, /usr/include/sysexits.h]
+EX_OK=0 # successful termination
+EX_ERR=1 # general error
+EX_USAGE=64	# user error
+EX_SOFTWARE=70	# internal software error
+EX_OSERR=71	# system error [e.g., can't fork]
+
+#SED=$(command sed)
+
+LOGFILE="/private/var/log/OSXDOCTOR.log"
+
+#TIME=$(echo (date +%Y%m%d_%H:%M:%S))
+
+#WRITEABLEROOT=1
+
+# Define some colors first:
+#GREY=$'\033[1;30m'
+GREEN=$'\033[1;32m'
+YEL=$'\033[1;33m'
+#red='\e[0;31m'
+RED=$'\033[1;31m'
+#blue='\e[0;34m'
+BLUE=$'\033[1;34m'  
+#cyan='\e[0;36m'
+CYAN=$'\033[1;36m'
+MAGENTA=$'\033[1;35m'
+NC=$'\033[0m'              # No Color
+WHITE=$'\033[1'
+
+#ZER=$(id -p | grep login | awk '{ print $2 }')
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+#trap quitScript INT
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+#-----------------------------------------------------------------------------------------#
+#                                              FUNCTIONS
+#-----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+killrunning_apps() {
+
+#-------------------------
+# Defining local variables
+#-------------------------
+
+ local process_list num_process line process pid tsess app_result kiu main
+#---------------------------------------------------------------------
+# A list of currently running applications is stored in $process_list
+# A series of grep commands filter processes from the list that cannot
+# (or should not) be quitted by an osascript or a kill command.  Edit
+# them to make it work properly on your computer.
+#--------------------------------------------------------------------
+#if [ ! $ZER ]; then return 0; fi
+#process_list=$( /bin/ps -U $ZER -wwwxo pid,tsess,command \
+if [ ! $USER ]; then return 0; fi
+process_list=$( ps -U $USER -wwwxo pid,tsess,command | grep -v '/usr/libexec/' \
+     | grep -v "/System/Library/Services/AppleSpell.service" \
+     | grep -v "/System/Library/Frameworks" \
+     | grep -v "/System/Library/PrivateFrameworks" \
+     | grep -v "/usr/sbin/cfprefsd" \
+ 	 | grep -v "/System/Library/CoreServices/NotificationCenter.app" \
+ 	 | grep -v "Calculator.app/Contents/MacOS/CalcEngine" \
+ 	 | grep -v "DashboardClient.app/Contents/MacOS" \
+ 	 | grep -v "iTunes.app/Contents/Resources/iTunesHelper.app" \
+ 	 | grep -v "Microsoft Office 2004/Office/Microsoft Database Daemon" \
+ 	 | grep -v "X11.app/Contents/MacOS/X11 -auth" \
+ 	 | grep -v "Library/PreferencePanes" \
+ 	 | grep -v "quartz-wm" \
+ 	 | grep -v "sbin/mount_" \
+ 	 | grep -v "sbin/launchd" \
+ 	 | grep -v "/usr/sbin/usernoted" \
+ 	 | grep -v "/usr/sbin/distnoted" \
+ 	 | grep -v "/usr/sbin/pboard" \
+ 	 | grep -v "System/Library/CoreServices/loginwindow.app" \
+ 	 | grep -v "System/Library/CoreServices/pbs" \
+ 	 | grep -v "System/Library/CoreServices/SecurityAgent.app" \
+ 	 | grep -v "System/Library/CoreServices/SystemUIServer.app" \
+ 	 | grep -v "System/Library/CoreServices/System Events.app" \
+ 	 | grep -v "/System/Library/CoreServices/AppleIDAuthAgent" \
+ 	 | grep -v "System/Library/CoreServices/UserNotificationCenter.app" \
+ 	 | grep -v "/System/Library/CoreServices/CoreServicesUIAgent.app/Contents/MacOS/CoreServicesUIAgent" \
+ 	 | grep -v "/System/Library/CoreServices/iconservicesagent" \
+ 	 | grep -v "/System/Library/CoreServices/Dock.app/Contents/XPCServices/com.apple.dock.extra.xpc" \
+ 	 | grep -v "/System/Library/CoreServices/diagnostics_agent" \
+ 	 | grep -v "/System/Library/Frameworks/ApplicationServices.framework/Frameworks/ATS.framework/Support/fontd" \
+ 	 | grep -v "System/Library/Frameworks" \
+ 	 | grep -v "Library/Services" \
+ 	 | grep -v "PowerMateDriver" \
+ 	 | grep -v "System/Library/PrivateFrameworks/Installation.framework/Resources/runner" \
+ 	 | grep -v "System/Library/Services/AppleSpell.service" \
+ 	 | grep -v "\-tcsh" \
+ 	 | grep -v "update" \
+ 	 | grep -v "\-zsh" \
+ 	 | grep -v "zsh \-f" \
+ 	 | grep -v "(xterm)" \
+ 	 | grep -v "Terminal" \
+ 	 | grep -v "iTerm.app" \
+ 	 | grep -v "sh -c (cd" \
+ 	 | grep -v "login")
+#----------------------------------------------------------------
+# Names of currently running applications are modified and stored
+# in $running_apps and $list.  The $list variable is used by the
+# quit program.
+#----------------------------------------------------------------
+running_apps=()
+list=()
+
+num_process=( $( print $process_list | command wc -l ) )
+echo $num_process
+
+
+
+for line in {2..$num_process}; do
+	process=${${(f)process_list}[$line]}
+	pid=${${(s: :)process}[1]}
+	tsess=${${(s: :)process}[2]}
+
+	if [[ -n ${(M)process:#*.app/Contents/MacOS/*} ]]; then
+
+		app_result=${${${(s:.app/Contents/MacOS/:)process}[1]}[@]:t}
+		#echo $app_result
+	else
+		app_result=${$( /bin/ps "$pid" -c -o command )[2,-1]}
+		#echo $app_result
+	fi
+	running_apps+=( $app_result )
+	list+=( $pid $tsess $app_result )
+done
+
+echo $running_apps
+foreach kui in $running_apps; do
+	killall $kui 2>/dev/null
+done
+}
+
+
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+function loggit() {
+	local nls
+	local string
+	if [ "$1" = "-n" ];then
+		nls="$1"
+		string="$2"
+		# echo "--1--"
+		# echo "$nls"
+		# echo "+++"
+		# echo "$string"
+	else
+		# echo "--2--"
+		# echo "$nls"
+		# echo "$string"
+		nls="$(date +%Y%m%d_%H:%M:%S)"
+		string="$1"
+	fi
+	#echo $nls -e "$string"
+
+	echo $nls "$string"
+	if [[ $WRITEABLEROOT -eq 1 ]];then
+		if  [ -z "$TEMPLOG" ];then
+			#	file system is writable and there is nothing in the templog to write to the log
+			#	filter out any formatting codes when you put the string into the log.
+			#echo $nls "$string" | $SED -e 's/\\033\[[0-9]*m//g' | tee -a "$LOGFILE" >/dev/null
+			echo $nls "$string" | sed -e 's/\\\[[0-9]*m//g' | sed 's/.*32m*//' | sed s'/\.\...*//' | tee -a "$LOGFILE" >/dev/null
+		else
+			#	file system has become writable and we must dump the templog to the log file
+			string=`echo "$string" | sed -e 's/\\\033\[[0-9]*m//g'` #	strip color codes for log
+			TEMPLOG="$TEMPLOG:n:$string" #	Wish wish wish I could find a way to create a newline here
+			#	If OSXDOCTOR log does not exist, or is greater than 500k, start new log
+		 	if [ ! -e "$LOGFILE" ] || [ `/usr/bin/du -k "$LOGFILE" | $AWK '{ print $1 }'` -gt 500 ];then
+				echo "Resetting $LOGFILE"
+				echo "****************** ${D}:  NEW LOG STARTED ******************" > "$LOGFILE"
+				echo "" >> "$LOGFILE"
+			fi
+			#	keep this on two separate lines so we ca&n capture the line break
+			echo "$TEMPLOG" | sed -e 's/:n:/ /g' >> "$LOGFILE"
+			#	disable temp logging for future iterations
+			unset TEMPLOG
+		fi
+	else
+		#	file system is not write able, doing temp logging
+		string=`echo "$string" | sed -e 's/\\\033\[[0-9]*m//g'` #	strip color codes for log
+		TEMPLOG="$TEMPLOG $string"
+	fi
+}
+
+
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+ main () {
+    if [[ $IS_SU ]] || [[ $IS_ROOT ]] || [[ $IS_ADMIN ]]; then 
+	##
+	if [ -d "/tmp" ];then
+		SANDBOX="/tmp"
+	elif [ -d "/private/var/tmp" ]; then
+		SANDBOX="/private/var/tmp"
+	else	#	In a pinch, we use this
+		SANDBOX="/Library/Caches"
+	fi
+	echo "SANDBOX= $SANDBOX"
+    cd "$SANDBOX"
+	#	Okay, first let's prepare for logging...
+	#	touching the log file helps us see if file system is writable and 
+	#	therefore what mode of logging to start with.
+	if touch "$LOGFILE" &>/dev/null; then 
+		#	on success [exit status 0]
+		WRITEABLEROOT=1
+	else
+		WRITEABLEROOT=0
+		TEMPLOG=
+	fi
+
+    sudo sed -i -e 's/timestamp_timeout=0/timestamp_timeout=5/' /etc/sudoers
+	clear
+	wait
+    # echo "" | tee -a "$LOGFILE"
+    #
+    loggit "________________________________________________________________________________________________________" | sudo tee -a $LOGFILE
+	echo "${GREEN}________________________________________________________________________________________________________${NC}" | sudo tee -a $LOGFILE
+    echo "-------Starting OSXDOCTOR--------" | sudo tee -a  "$LOGFILE" 
+	loggit "${GREEN}+++ Removing DS_Store and localized ...${NC}" | sudo tee -a "$LOGFILE" 
+	sudo find / -name \*.DS_Store  1>>$LOGFILE 2>>$LOGFILE -exec rm -Rf {} \;;
+	sudo find / -name \*.localized 1>>$LOGFILE 2>>$LOGFILE -exec rm -Rf {} \;;
+	echo ""
+    echo ""
+	wait
+	echo "${GREEN}________________________________________________________________________________________________________${NC}" | sudo tee -a $LOGFILE
+    echo ""
+    echo ""
+	echo ""
+    loggit "${GREEN}Clearing DNS cache ...${NC}" 
+	sudo discoveryutil dnsflushcaches | sudo tee -a "$LOGFILE"
+	wait
+	echo ""	
+	echo ""
+    loggit "${GREEN}________________________________________________________________________________________________________${NC}" | sudo tee -a $LOGFILE
+    loggit "${GREEN}+++ Clearing font cache ...${NC}" | sudo tee -a  "$LOGFILE" 
+	sudo atsutil databases -remove 1>>$LOGFILE 2>>$LOGFILE && sudo atsutil server -shutdown 1>>$LOGFILE 2>>$LOGFILE 
+    echo ""
+    echo ""
+    wait
+ #    loggit "${GREEN}________________________________________________________________________________________________________${NC}" | sudo tee -a $LOGFILE
+ #    loggit "${GREEN}+++ Erasing cache folder on mac ...${NC}" | sudo tee -a  "$LOGFILE"
+ # 	  sudo find / -type f -name Caches -exec rm -Rfv 1>>$LOGFILE 2>>$LOGFILE {} \;;
+ #    echo ""
+ #    echo ""
+ #    wait
+    loggit "${GREEN}________________________________________________________________________________________________________${NC}" | sudo tee -a $LOGFILE
+	loggit "${GREEN}+++ Rebuilding system preferences Preferences are cached ...${NC}" | sudo tee -a "$LOGFILE"
+    sudo /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -kill -r -domain local -domain -user 1>>$LOGFILE 2>>$LOGFILE
+	wait
+	echo ""
+    echo ""
+    wait
+    loggit "${GREEN}________________________________________________________________________________________________________${NC}" | sudo tee -a $LOGFILE
+	loggit "${GREEN}+++ Rebuilding kernel Extensions Caches ...${NC}" | sudo tee -a  "$LOGFILE"
+	sudo chown root:admin /
+	sudo kextcache -system-prelinked-kernel 1>>$LOGFILE 2>>$LOGFILE
+	wait
+	sudo kextcache -system-caches 1>>$LOGFILE 2>>$LOGFILE
+	echo ""
+    echo ""
+    wait
+    loggit "${GREEN}________________________________________________________________________________________________________${NC}" | sudo tee -a $LOGFILE
+	loggit "${GREEN}+++ Rebuilding dyld cache ...${NC}" | sudo tee -a  "$LOGFILE" 
+	sudo update_dyld_shared_cache -root / -force 1>>$LOGFILE 2>>$LOGFILE
+	echo ""
+    echo ""
+    wait
+    loggit "${GREEN}________________________________________________________________________________________________________${NC}" | sudo tee -a $LOGFILE
+	loggit "${GREEN}+++ Rebuilding directory Service cache. ...${NC}" | sudo tee -a  "$LOGFILE"
+	sudo dscacheutil  -flushcache 1>>$LOGFILE 2>>$LOGFILE
+	echo ""
+    echo ""
+    wait
+    loggit "${GREEN}________________________________________________________________________________________________________${NC}" | sudo tee -a $LOGFILE
+	loggit "${GREEN}+++ Rebuilding XPC cache ...${NC}" | sudo tee -a  "$LOGFILE"
+	sudo /usr/libexec/xpchelper --rebuild cache 1>>$LOGFILE 2>>$LOGFILE
+	echo ""
+	echo ""
+    wait
+    loggit "${GREEN}________________________________________________________________________________________________________${NC}" | sudo tee -a $LOGFILE
+	loggit "${GREEN}+++ Running periodic scripts ...${NC}" 1>/dev/null | sudo tee -a  "$LOGFILE"
+	sudo periodic all 1>>$LOGFILE 2>>$LOGFILE 
+	echo ""
+	echo ""
+    wait
+    loggit "________________________________________________________________________________________________________" | sudo tee -a $LOGFILE
+	loggit "${GREEN}Done. OSXDOCTOR have finished it's job, we reboot now ...${NC}" | sudo tee -a $LOGFILE
+	loggit "-------Stopping OSXDOCTOR--------" | sudo tee -a "$LOGFILE"
+	loggit " " | sudo tee -a "$LOGFILE"
+	loggit " " | sudo tee -a "$LOGFILE"
+	loggit " " | sudo tee -a "$LOGFILE"
+	loggit " " | sudo tee -a "$LOGFILE"
+	sleep 2
+    sudo rm -Rf $HOME/vim_runtime/temp_dirs/undodir/* $HOME/.zsh_history
+    sudo sed -i -e 's/timestamp_timeout=5/timestamp_timeout=0/' /etc/sudoers
+    sync ; sync ; sudo shutdown -r now
+else
+		clear
+		echo "${RED}You have to be root or have admin right to run this script.${NC}"
+		echo "${RED}The function need to be run like that:${NC}"
+		echo ""
+		# echo "${GREEN}sudo_fct${NC} [${GREEN}functionthatneedsudoersright${NC}]${NC}"
+		echo ""
+		return "$EX_USAGE" 	
+fi
+}
+
+#-----------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-----------------------------------------------------------------------------------------#
+echo "Quitting all applications"
+quit Finder
+echo "" 
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# scptnam="$0"
+# fppath=$(find $ZDOT -type f -name  $scptnam)
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+banner
+killrunning_apps
+
+if [[ ! -f $LOGFILE  ]]; then
+    sudo touch /private/var/log/OSXDOCTOR.log
+    sudo chown ${USER}:admin /private/var/log/OSXDOCTOR.log
+    wait
+    sleep 2
+    wait
+    #timestamp
+    wait
+    main
+else
+    sudo -l
+    wait
+    sleep 2
+    wait
+    #timestamp
+    wait
+    main
+fi
+#sleep 2
+#wait
+#main

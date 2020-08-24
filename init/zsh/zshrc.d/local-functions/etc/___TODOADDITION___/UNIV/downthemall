@@ -1,0 +1,11 @@
+#! /usr/bin/env bash
+mkdir /data/OSXREVERSEPAPERS
+cd /data/OSXREVERSEPAPERS
+### Filter extensions
+for file in $(curl -s http://reverse.put.as/papers/ | grep href | sed 's/.*href="//' | sed 's/".*//' | grep '^[a-zA-Z].*'); do
+    #curl -s -O "${file}"
+    curl  -O "${file}"
+done
+
+#lynx --dump http://www.appassure.com/resources/technical-documentation/ | awk '/http/{print $2}' | grep pdf > /tmp/file.txt
+#for i in $( cat /tmp/file.txt ); do wget $i; done 

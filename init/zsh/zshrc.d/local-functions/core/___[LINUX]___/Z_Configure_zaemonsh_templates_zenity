@@ -1,0 +1,484 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_Configure_zaemonsh_templates_zenity :
+# Small panel zeamonsh linux installation script.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 07/10/2017 : 
+# ⋅ Create this one     
+# 20/01/2020 : 
+# ⋅ Debug and correct Linux part.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 2020-02-22 : 
+#  • Add cd $HOME at end of file to avoid /Users/bz/Library/init/zsh/zshenv.d
+#    path after install.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#    
+ if [[ "$OSTYPE" =~ ^(linux)+ ]]; then
+    # Define local
+    local dialogue_text answer1 answer3 answer4 answer5 answer6 answer7 answer8 answer8
+
+    ##  emacs or vi keybindings?
+    function zenity_whichkeybindings {
+        local dialogue_text=" 
+        By default, emacs rather than vi keybindings are used. \
+        Do you want to use vi or emacs keybindings\?"
+
+        answer1=$(zenity --title=ZAEMONSH --text=ZAEMONSH --question --text=$dialogue_text  --extra-button="vi" --extra-button="emacs" --extra-button="Change Nothing" --switch 2>/dev/null)
+        if [[ "$answer1" == "vi"  ]]; then
+            print "Changing to \e[1mvi keybindings\e[0m."
+            print "Delete the file ~/.zsh/zshvi or run this again to undo this setting."
+            touch ~/.zsh/zshvi
+        elif [[ "$answer1" == "emacs"  ]]; then
+            print "Changing to \e[1memacs keybindings\e[0m."
+            /bin/rm -f ~/.zsh/zshvi
+        else
+            print "Leaving this setting unchanged."
+        fi
+    }
+
+    ##############################################################################
+#####
+#/!\#  GRML SUPPORT ADDITION
+#####
+    # function zenity_grml {
+
+    #     dialogue_text=" Do you want add grml support to your ZAEMONSH config\? "
+
+    #     answer2=$(zenity "No" "Yes")
+
+    #     if [[ "$answer2" == "No"  ]]; then
+    #         print "Creating the file \e[1m~/.zsh/finknowarn \e[0mto suppress shell warning dialogue."
+    #         touch ~/.zsh/finknowarn
+    #     else
+    #         print "Leaving this setting unchanged."
+    #     fi
+
+    # }
+#####
+#/!\#
+#####
+    ##############################################################################
+
+    function zenity_uselocalfxn {
+       local dialogue_text=" Do you want to use somewhat idiosyncratic functions from \$ZDOT/zshrc.d/functions.local\? "
+
+        answer3=$(zenity --title=ZAEMONSH --text=ZAEMONSH --question --text=$dialogue_text  --extra-button="Yes" --extra-button="No" --extra-button="Change Nothing" --switch 2>/dev/null)
+        #answer3=$(zenity_uselocalfxn | tail -n1)
+
+        if [[ "$answer3" == "Yes"  ]]; then
+            print "Creating the file \e[1m~/.zsh/zlocalfxn\e[0m to activate these functions."
+            touch ~/.zsh/zlocalfxn
+        elif [[ "$answer3" == "No"  ]]; then
+            print "Deleting the file \e[1m~/.zsh/zlocalfxn\e[0m to deactivate these functions."
+            /bin/rm -f ~/.zsh/zlocalfxn
+        
+        else
+            print "Leaving this setting unchanged."
+        fi
+        
+    }
+
+    ##############################################################################
+
+    function zenity_usextalfxn {
+        local dialogue_text=" Do you want to use crystallography functions from \$ZDOT/zshrc.d/local-functions/xtal section\? "
+
+        answer4=$(zenity --title=ZAEMONSH --text=ZAEMONSH --question --text=$dialogue_text  --extra-button="Yes" --extra-button="No" --extra-button="Change Nothing" --switch 2>/dev/null)
+        #answer4=$(zenity_usextalfxn | tail -n1)
+
+        if [[ "$answer4" == "Yes"  ]]; then
+            print "Creating the files \e[1m~/.zsh/zxtalfxn\e[0m and \e[1m~/.zsh/use_xtal_env\e[0m to activate these functions."
+            touch ~/.zsh/zxtalfxn
+            touch ~/.zsh/use_xtal_env
+        elif [[ "$answer4" == "No"  ]]; then
+            print "Deleting the file \e[1m~/.zsh/zxtalfxn\e[0m to deactivate these functions."
+            /bin/rm -f ~/.zsh/zxtalfxn  ~/.zsh/use_xtal_env
+        
+        else
+            print "Leaving this setting unchanged."
+        fi
+        
+    }
+
+    ##############################################################################
+
+    function zenity_user_host_setup {
+        dialogue_text="Do you want to set up USER and HOST completion \(a good idea\)\? "
+
+        answer5=$(zenity --title=ZAEMONSH --text=ZAEMONSH --question --text=$dialogue_text  --extra-button="Yes" --extra-button="No" --switch 2>/dev/null)
+        #answer5=$(zenity_user_host_setup | tail -n1)
+
+        if [[ "$answer5" == "Yes"  ]]; then
+            Z_Zenity_user_setup
+            Z_Zenity_host_setup     
+        elif [[ "$answer5" == "No"  ]]; then
+            print "When you are ready, issue the commands \e[1mZ_Zenity_user_setup\e[0m and \e[1mZ_Zenity_host_setup\e[0m "
+        else
+            print "Leaving this setting unchanged."
+        fi
+        
+    }
+
+    ##############################################################################
+
+    function zenity_x11_setup {
+        dialogue_text=" Do you want to customize the behavior of X11\? "
+
+        answer6=$(zenity --title=ZAEMONSH --text=ZAEMONSH --question --text=$dialogue_text  --extra-button="Yes" --extra-button="No" --switch 2>/dev/null)
+        #answer6=$(zenity_x11_setup | tail -n1)
+
+        if [[ "$answer6" == "Yes"  ]]; then
+            Z_Customize_x11_gui   
+        elif [[ "$answer6" == "No"  ]]; then
+            print "When you are ready, issue the commands \e[1mZ_Customize_x11_gui\e[0m "
+        else
+            print "Leaving these settings unchanged."
+        fi
+        
+    }
+
+   ##############################################################################
+
+#####
+#/!\#   
+#####
+function grmladd {
+    dialogue_text=" Do you want to add GRML support to your configuration \? "
+
+    answer7=$(zenity --title=ZAEMONSH --text=ZAEMONSH --question --text=$dialogue_text  --extra-button="Yes" --extra-button="No" --switch 2>/dev/null)
+
+    if [[ "$answer7" == "Yes"  ]]; then
+        print "Creating the file \e[1m~/.zsh/grmladdi\e[0m to activate these functions."
+        touch ~/.zsh/grmladdi
+        print "Issue the commands \e[1mZ_GRMLDis\e[0m to desactivate. "
+
+    else
+        print "Deleting the file \e[1m~/.zsh/grmladdi\e[0m to deactivate these functions."
+        /bin/rm -f ~/.zsh/
+        print "Issue the commands \e[1mZ_GRMLEna\e[0m to activate. "
+    fi  
+}   
+# ##############################################################################
+
+# ### SYNTAX HIGHTLIGHT ADDITIONS
+function syntaxhighlight {
+        dialogue_text=" Do you want to add syntax highlighting\? "
+
+        answer8=$(zenity --title=ZAEMONSH --text=ZAEMONSH --question --text=$dialogue_text  --extra-button="Yes" --extra-button="No" --switch 2>/dev/null)
+        if [[ "$answer8" == "Yes"  ]]; then
+            print "Creating the file \e[1m~/.zsh/zshhightligth\e[0m to activate these functions."
+            touch ~/.zsh/zshhightligth
+            print "Issue the commands \e[1mZ_syntaxLightDis\e[0m to desactivate. "
+        else
+            print "Deleting the file \e[1m~/.zsh/zshhightligth\e[0m to deactivate these functions."
+            /bin/rm -f ~/.zsh/zshhightligth
+            print "Issue the commands \e[1mZ_syntaxLightDis\e[0m to activate. "
+        fi
+}
+#####
+#/!\#
+#####
+
+    ##############################################################################
+
+    function zenity_readmore {
+        dialogue_text=" Do you want to read more about zsh-templates for linux\? "
+
+        answer9=$(zenity --title=ZAEMONSH --text=ZAEMONSH --question --text=$dialogue_text  --extra-button="Yes" --extra-button="No" --switch 2>/dev/null)
+        #answer8=$(zenity_readmore | tail -n1)
+
+        if [[ "$answer9" == "Yes"  ]]; then
+            xdg-open http://xanana.ucsc.edu/xtal/wiki/index.php/ZSH_on_OS_X
+        else
+            print "Issue the command \e[1m help_zsh_templates \e[0m for further information."
+        fi
+    }
+
+    #############################################################################
+
+#####
+#/!\#   CORE PLUGINS ADDITIONS
+##### 
+    # function zboob {
+
+    #     dialogue_text=( Do you have a zboob installed\? )
+
+    #     answer8=$(zenity "No" "Yes")
+
+    #     if [[ "$answer8" == "Yes"  ]]; then
+    #         print "You have a zboob."
+    #     else
+    #         print "You don't have a zboob."
+    #     fi
+    # }
+#####
+#/!\#
+#####
+
+#####
+#/!\#   EXTR PLUGINS ADDITIONS
+##### 
+    # function zboob {
+
+    #     dialogue_text=( Do you have a zboob installed\? )
+
+    #     answer9=$(zenity "No" "Yes")
+
+    #     if [[ "$answer8" == "Yes"  ]]; then
+    #         print "You have a zboob."
+    #     else
+    #         print "You don't have a zboob."
+    #     fi
+    # }
+#####
+#/!\#
+#####
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+    mkdir -p ~/.zsh
+
+    if [[ $? != 0 ]];then
+        print "\e[1m Cannot create directory ~/.zsh"
+        print "None of this will work!"
+        print "Try (re)moving the file ~/.zsh if present \e[0m "
+        return 1
+    fi
+
+    ##############################################################################
+    clear
+    print ""
+    print ""
+    # print "Keybindings setup"
+    zenity_whichkeybindings
+  #  answer1=$(zenity_whichkeybindings | tail -n1)
+    # echo "######################" 
+    #     echo $answer1
+    #     echo "######################" 
+
+    print "Answer specified: \e[1m $answer1 \e[0m "
+    print ""
+    print ""
+
+    ##############################################################################
+
+    sleep 2 ; #clear
+    print ""
+    print ""
+    print "User and Host Setup"
+    zenity_user_host_setup
+    print "Answer specified: \e[1m $answer5 \e[0m "
+    print ""
+    print ""
+
+    ##############################################################################
+
+    # sleep 2 ; #clear
+    # print ""
+    # print ""
+    # print "Ask user if fink is present"
+    # zenity_finknowarn
+    # print "Answer specified: \e[1m $answer2 \e[0m "
+    # print ""
+    # print ""
+
+    ##############################################################################
+
+    sleep 2 ; #clear
+    print ""
+    print ""
+    print "Ask user if idiosyncratic functions should be loaded"
+    zenity_uselocalfxn
+    print "Answer specified: \e[1m $answer3 \e[0m "
+    print ""
+    print ""
+
+    ##############################################################################
+
+    sleep 2 ; #clear
+    print ""
+    print ""
+    print "Ask user if crystallography functions should be loaded"
+    zenity_usextalfxn
+    print "Answer specified: \e[1m $answer4 \e[0m "
+    print ""
+    print ""
+
+    ##############################################################################
+
+    sleep 2 ; #clear
+    print ""
+    print ""
+    print "Running the function \e[1m zenity_x11_setup \e[0m"
+    zenity_x11_setup
+    print ""
+    print ""
+
+    ##############################################################################
+    
+    sleep 2 ; #clear
+    print ""
+    print ""
+    print "Ask user if grml support should be loaded"
+    grmladd
+    print "Answer specified: \e[1m $answer7 \e[0m "
+    print ""
+    print ""
+    
+    ##############################################################################
+
+    sleep 2 ; #clear
+    print ""
+    print ""
+    print "Ask user to use fish like syntax highlighting."
+    syntaxhighlight 
+    print "Answer specified: \e[1m $answer8 \e[0m "
+    print ""
+    print ""
+    
+    ##############################################################################
+    sleep 2 ; #clear
+    print ""
+    print ""
+    # This file keeps the dialogue prompting from happening again
+    touch ~/.zsh/configure_zaemonsh_templates
+    print "Issue the command \e[1m configure_zsh_linuxtemplates\e[0m if you need to do this again."
+    print ""
+    print ""
+     
+    ##############################################################################
+
+    sleep 2 ; #clear
+    print ""
+    print ""
+    # This opens the web browser to the zsh templates page
+    zenity_readmore
+    print ""
+    print ""
+     
+    #############################################################################
+
+    # sleep 2 ; #clear
+    # print ""
+    # print ""
+    # # This opens the web browser to the zsh templates page
+    # zboob
+    # print ""
+    # print ""
+     
+    ##############################################################################
+    sleep 2 ; #clear
+    print ""
+    print ""
+    Z_Switch_prompt_zenity
+    print ""
+    print "\e[1m +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m "
+    print ""
+    print "Issue the command \e[1m Z_Switch_prompt_zenity \e[0m if you want to change the prompt."
+    print ""
+    print "\e[1m +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m "
+    print ""
+    #############################################################################
+    sleep 3 
+    clear && cd $HOME &&  exec zsh
+    # exec zsh
+
+fi
+
+
+##
+##
+
+
+# zenity_test=$(which zenity | awk '{print $2" "$3}')
+
+# if [[ "${zenity_test}" == "not found" ]]; then echo "Zenity is not installed on your system.Please install zenity application."; else echo "Zenity is installed on your system."; fi
+
+#     function zenity_display_dialog {
+#     #  Display times out according to the variable $timeout in seconds (defaults to 15 sec).
+
+#         if [[ -z $timout ]];then
+#             timout='15'
+#         fi
+#     # # 
+#         if [[ -z $dialogue_text ]];then
+#             dialogue_text=( Choose a button: )
+#         fi
+        
+#         zenity --title=ZAEMONSH --text=ZAEMONSH --question --text=$dialogue_text  --extra-button="Never" --extra-button="Not now" --extra-button="Yes please" --switch 2>/dev/null
+
+#     }
+#     timeout='45'
+#     dialogue_text="Please take a moment to customize your ZSH environment on Linux ?"
+
+
+#     ButtonYes="Yes please"
+#     ButtonNever="Never"
+#     ButtonNotNow="Not now"
+
+#     #zenity --title=ZAEMONSH --text=ZAEMONSH --question --text=$dialogue_text --extra-button="Yes please" --extra-button="Never" --extra-button="Not now" --switch 2>/dev/null
+
+#     resu=$(zenity_display_dialog | tail -n1)
+#     if [[ "$resu" ==  "Never" ]]; then
+#         #echo "You choose Never"
+#         mkdir -p ~/.zsh
+#         touch ~/.zsh/configure_zsh_templates
+#         print "Issue the command"
+#         print "\e[1m configure_zsh_linuxtemplates \e[0m "
+#         print "if you decide to give this a try."
+#         autoload -U configure_zsh_linuxtemplates 
+#     fi
+
+#     if [[ "$resu" ==  "Not now" ]]; then
+#         #echo "Not now" 
+#         print "Leaving this setting unchanged."
+#     fi
+
+#     if [[ "$resu" ==  "Yes please" ]]; then
+#         #echo "You choose Yes please"
+#         autoload -U configure_zsh_linuxtemplates
+#         configure_zsh_linuxtemplates
+#     fi
+

@@ -1,0 +1,135 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_findman :
+# findman -- given a pattern and a man section, show all the matches
+#   for that pattern from within all relevant man pages.
+#####
+#/!\# TODO /
+#####
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • COMPLETION !!!!
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME match1 matches manpagelist
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+match1="/tmp/$0.1.$$"
+matches="/tmp/$0.$$"
+manpagelist=""
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+  clear
+  echo "${NC}"  
+  echo " ###################################################################################################"
+  echo " #                                                                                                 #"
+  echo " #     ${GREEN}This is ${RED}$FCT_NAME : ${YEL}$VERSION FOR $OSTYPE ${NC}                                                     #"
+  echo " #     CopyL®®v 2019, Zucchelli Bryan	 			                                   #"
+  echo " #                                                                                                 #"
+  echo " #     Unless required by applicable law or agreed to in writing, software                         #"
+  echo " #     distributed under the License is distributed on an "AS IS" BASIS,                             #"
+  echo " #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.                    #"
+  echo " #     See the License for the specific language governing permissions and                         #"
+  echo " #     limitations under the License.                                                              #"
+  echo " #                                                                                                 #"
+  echo " ###################################################################################################"
+  echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    Usage :
+            findman [section] cmdpattern manpagepattern      #  Given a pattern and a man section, 
+                                                                show all the matches for that pattern
+                                                                from within all relevant man pages .
+
+  ${NC}
+__EOF__
+}
+
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+trap "rm -f $match1 $matches" return 2>/dev/null
+
+case $# 
+in
+  3 ) section="$1"  cmdpat="$2"  manpagepat="$3"	    ;;
+  2 ) section=""    cmdpat="$1"  manpagepat="$2"	    ;;
+  * ) help 
+      return 1
+esac
+
+if ! man -k "$cmdpat" | grep "($section" > $match1 ; then
+  echo "No matches to pattern \"$cmdpat\". Try something broader?"; return 1
+fi
+
+cut -d\( -f1 < $match1 > $matches	# command names only
+cat /dev/null > $match1         	# clear the file...
+
+for manpage in $(cat $matches)
+do
+  manpagelist="$manpagelist $manpage"
+  man $manpage | col -b | grep -i $manpagepat | \
+    sed "s/^/${manpage}: /" | tee -a $match1
+done 
+
+if [ ! -s $match1 ] ; then
+cat << EOF
+Command pattern "$cmdpat" had matches, but within those there were no 
+matches to your man page pattern "$manpagepat" found in that set.
+Man pages checked:$manpagelist
+EOF
+fi
+
+return 0

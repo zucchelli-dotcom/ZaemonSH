@@ -1,0 +1,172 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                      DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_functionDel :
+# Unload, deactivate, erase function from ZaemonSH
+
+#----------------------------------------------------------------------------------------#
+#                                         TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                        CHANGES
+#----------------------------------------------------------------------------------------#
+# 25/01/2020 :
+#  • Create this one .
+
+#----------------------------------------------------------------------------------------#
+#                                         CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+
+#-----------------------------------------------------------------------------------------#
+#                                        FUNCTIONS
+#-----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  echo "${RED}"
+  cat<<__EOF__
+    usage: $0 [  ]
+
+    Examples:
+                                                 # .
+
+
+__EOF__
+echo ${NC}
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                          SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+
+ whereFunk () {
+
+ #######################################################################
+ # Choose your system, category, sub-category or create new one.
+ echo "${GREEN}Select for which system${NC}"
+ select system in ${(k)configfilebysystem}; do
+         local syste=$system
+         clear
+         if [[ $syste == "core" ]]; then
+             echo "${GREEN}Select a functions category in $syste${NC}"
+             select category in ${(k)corfctlistbycategory}; do
+                 local categ=$category
+             break
+             done
+         else
+             echo "${GREEN}Select a functions category in $syste${NC}"
+             select category in ${(k)sysfctlistbycategory}; do
+                 local categ=$category
+                 # clear
+                 echo "${GREEN}Select a functions sub-category.${NC}"
+                 select subcategory in $(ls $P_SYSFCTDIR/$syste/$categ); do
+                    echo $subcategory 
+                    break
+                  done
+                  echo "${GREEN}Select a $syste functions in $subcategory of $categ${NC}"
+                  select fctw in $(ls $P_SYSFCTDIR/$syste/$categ/$subcategory); do
+                      local fonction=$fctw
+                      # clear
+                  break
+                  done
+              # break  
+              # done
+             break
+             done
+
+         fi
+     local papath="$P_SYSFCTDIR/$syste/$categ/$subcategory/$fonction"
+     echo ""
+     echo ""
+     break
+ done
+
+
+
+                     #################################################################################
+                     # # ## FUNCTIONS UNLOADING
+                     #################################################################################
+                             if [ $(echo -e $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs' $configfilebysystem[$syste] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$fctw" | sed 's/(.*//') ]; then
+                                     echo "${NC}"
+                                     echo "${LINEE}"
+                                     echo "  • Function ${MAGENTA} $fctw ${RED}exist, it's declared on list: ${MAGENTA}$(echo $(perl -0777 -ne 'print "$1\n" while /#______##______#(.*?)#______###______#/gs'         $configfilebysystem[$syste] | sed 's/\\/ /' | awk 'BEGIN{FS="="} {print $1  $2 }') | tr ")" '\n' | grep -w "$fctw" | sed 's/(.*//') ${RED}and loaded${NC}."                        
+                                                     echo "+++ We unloaded ${MAGENTA}$fctw${NC}..."
+                                                     rm /tmp/ $(basename $configfilebysystem[$syste]) 2>/dev/null
+                                                     sed "s/$fctw //g" $configfilebysystem[$syste] 1> /tmp/$(basename $configfilebysystem[$syste])
+                                                     rm $configfilebysystem[$syste] && mv /tmp/$(basename $configfilebysystem[$syste]) $configfilebysystem[$syste]
+                                                     sleep 2
+                                                     echo "  • Function ${MAGENTA}$fctw${NC} is ${GREEN}undeclared and unloaded now${NC}."
+                                     
+                                else
+                                     echo "${NC}"
+                                     echo "${LINEE}"
+                                     echo "  • Function ${MAGENTA} $fctw ${GREEN}exist, it's already undeclared and unloaded${NC}."                       # for zob in $(echo -e $(cat $P_CORFCTFIL | grep "=(" |    sed 's/=.*//')); do
+                                     echo "  • ${RED}Nothing to do !${NC}"
+                                     echo "${LINEE}"
+                                     echo "${NC}"
+                             fi
+                ##  Step 2 Erasing.
+                echo "  • Function ${MAGENTA}$fctw${NC} is ${GREEN}erased now${NC}."
+                rm -Rf $papath
+                echo "  • Finally we remake function symlinks${NC}."
+                echo "  • And Realoading zaemonsh${NC}."
+                echo "${LINEE}"
+                echo "${NC}"
+                sleep 2
+#echo $papath
+}
+whereFunk
+Z_CorrectSymlinksFunction  2>/dev/null

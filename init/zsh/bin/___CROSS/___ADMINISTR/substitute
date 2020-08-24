@@ -1,0 +1,37 @@
+#!/usr/bin/perl -w
+use strict;
+
+if($#ARGV < 2) {
+	printf("Usage: replacement regexp replacement files...\n");
+	printf("Example: replacement '#000000' '#AAAAAA' *.html\n");
+	exit 0;
+}
+
+my $regexp = $ARGV[0];
+my $replacement = $ARGV[1];
+
+shift @ARGV;
+shift @ARGV;
+
+for(my $i = 0; $i <= $#ARGV; ++$i) {
+	my $file = $ARGV[$i];
+	my $tmpfile = $file.".substitute.tmp";
+	my $changed = 0;
+	open(IN, $file) or die "$file: cannot open";
+	open(OUT, "> $tmpfile") or die "$tmpfile: cannot open";
+	while(<IN>) {
+		my $prev = $_;
+		if(s/$regexp/$replacement/g) {
+			$changed = 1;
+		}
+		print OUT;
+	}
+	close(OUT) or die "$tmpfile: cannot close";
+	close(IN) or die "$file: cannot close";
+	if($changed) {
+		printf("%s\n", $file);
+		rename($tmpfile, $file) or die "$tmpfile: cannot rename";
+	} else {
+		unlink($tmpfile) or die "$tmpfile: cannot unlink";
+	}
+}

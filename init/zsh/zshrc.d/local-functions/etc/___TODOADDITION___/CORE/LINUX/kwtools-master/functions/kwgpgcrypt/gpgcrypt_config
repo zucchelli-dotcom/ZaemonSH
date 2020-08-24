@@ -1,0 +1,33 @@
+# Funktion gpgcrypt_config, Einstellungen speichern{{{
+#
+# usage: gpgcrypt_config
+gpgcrypt_config() {
+	# Konfiguration aendern
+	if [ ${(M)${(f)"$(< $PGP_OPTIONS)"}##(s#)keyserver[[:space:]]*} ] ; then
+		sed -e "s#^keyserver[[:space:]].*#keyserver ${KEY_SERV_ALL:-hkp://subkeys.pgp.net}#g" $PGP_OPTIONS >$PGP_OPTIONS$$
+		mv $PGP_OPTIONS$$ $PGP_OPTIONS
+	else
+		>> $PGP_OPTIONS <<< "keyserver ${KEY_SERV_ALL:-hkp://subkeys.pgp.net}" 
+	fi
+	#
+	if [ ${(M)${(f)"$(< $PGP_OPTIONS)"}##(s#)default-key[[:space:]]*} ] ; then
+		sed -e "s#^default-key[[:space:]].*#default-key $DEFAULT_KEY#g" $PGP_OPTIONS >$PGP_OPTIONS$$
+		mv $PGP_OPTIONS$$ $PGP_OPTIONS
+	else
+		>> $PGP_OPTIONS <<< "default-key $DEFAULT_KEY" 
+	fi
+	#
+	if [ ${(M)${(f)"$(< $PGP_OPTIONS)"}##(s#)trusted-key[[:space:]]*} ] ; then
+		sed -e "s#^trusted-key[[:space:]].*#trusted-key $TRUSTED_KEY#g" $PGP_OPTIONS >$PGP_OPTIONS$$
+		mv $PGP_OPTIONS$$ $PGP_OPTIONS
+	else
+		>> $PGP_OPTIONS <<< "trusted-key $TRUSTED_KEY" 
+	fi
+	# Konfiguration einlesen
+	parse_opt
+}
+#}}}
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:                                                                               
+### }}}

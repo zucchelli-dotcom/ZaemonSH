@@ -1,0 +1,157 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# gatekeeper :
+# Wrapper script to control gatekeeper on darwin.
+# history : The system policy facility and spctl command first appeared in Mac OS X Lion 10.7.3 as a 
+# limited developer preview.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 17/10/2017 :
+#  • Script need admin write, in function enable disable.
+#  • Add more functionalities.
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 17/10/2017 :
+#  • Modify script presentation.
+#  • Define some command variables.
+#  • Add banner.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local CLEAR ECHO CAT SPCTL VERSION FCT_NAME banner help gk_list enable disable
+
+# Define some local command
+CLEAR="$(whereis clear)"
+ECHO="$(whereis echo)"
+CAT="$(whgereis cat)"
+SPCTL="$(whereis spctl)"
+
+VERSION="0.0.2"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+    $CAT<<__EOF__
+    ${RED}
+    usage: gatekeeper [ status | list | ls | enable | disable | create | help ]
+
+    Examples:
+        gatekeeper status                               # gatekeeper status
+        gatekeeper list                                 # list rules
+
+        gatekeeper enable                               # enable gatekeeper
+        gatekeeper disable                              # disable gatekeeper
+
+        gatekeeper enable MYRULE                        # enable rule
+        gatekeeper disable MYRULE                       # disable rule
+
+        gatekeeper create  RULENAME /path/to/program    # Create a rule for the application
+    ${NC}
+__EOF__
+}
+
+
+gk_list(){
+   if [ -z "$1" ]; then
+       $SPCTL --list
+   else
+       $SPCTL --list --label "$1"
+   fi
+}
+
+enable(){
+    if [ -z "$1" ]; then
+        $SPCTL --master-enable
+    else
+        $SPCTL --enable --label "$1"
+    fi
+}
+
+disable(){
+    if [ -z "$1" ]; then
+        $SPCTL --master-disable
+    else
+        $SPCTL --disable --label "$1"
+    fi
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+case $1 in
+    help)
+        help
+        ;;
+    status)
+        $SPCTL --status
+        ;;
+    list|ls)
+        shift
+        gk_list "$*"
+        ;;
+    enable)
+        shift
+        enable "$*"
+        ;;
+    disable)
+        shift
+        disable "$*"
+        ;;
+    *)
+        help
+        ;;
+esac
+

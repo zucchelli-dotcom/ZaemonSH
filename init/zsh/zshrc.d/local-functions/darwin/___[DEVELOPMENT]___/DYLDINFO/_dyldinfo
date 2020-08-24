@@ -1,0 +1,122 @@
+#compdef dyldinfo
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _dyldinfo  :
+# Completion for developper dyldinfo command; displays information used by dyld in 
+# an executable
+# -----------------------------------------------------------------------------
+# The BSD-3-Clause License
+#
+# Copyright (c) 2016, Koichi Shiraishi
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+#
+# * Neither the name of que nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+# -----------------------------------------------------------------------------
+#
+# NAME
+#      dyldinfo -- D
+#
+# SYNOPSIS
+#      dyldinfo [-arch arch-name] [-dylibs] [-rebase] [-bind] [-weak_bind] [-lazy_bind] [-export] [-opcodes] [-function_starts] file(s)
+#
+# DESCRIPTION
+#      Executables built for Mac OS X 10.6 and later have a new format for the information in the __LINKEDIT segment.  The dyldinfo tool will display that information.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 01/08/2020 :
+#  • Create this one.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+function _dyldinfo() {
+  local context curcontext=$curcontext state line ret=1
+  declare -A opt_args
+
+  _arguments -C \
+    '-arch[arch Only display the specified architecture]:arch:(x86_64 i386)' \
+    '-dylibs[Display the table of dylibs on which this image depends]' \
+    '-rebase[Display the table of rebasing information. Rebasing is what dyld does when an image is not loaded at its preferred address. Typically, this involves updating pointers in the __DATA segment which point within the image]' \
+    '-bind[Display the table of binding information.  These are the symbolic fix ups that dyld must do when an image is loaded]' \
+    '-weak_bind[Display the table of weak binding information.  Typically, only C++ progams will have any weak binding.  These are symbols which dyld must unique accross all images]' \
+    '-lazy_bind[Display the table of lazy binding information. These are symbols which dyld delays binding until they are first used.  Lazy binding is automatically used for all function calls to functions in some external dylib]' \
+    '-export[Display the table symbols which this image exports]' \
+    '-opcodes[Display the low level opcodes used to encode all rebase and binding information]' \
+    '-function_starts[Decodes the list of function start addresses]' \
+    '*:file:_files' \
+    && ret=0
+
+  return ret
+}
+
+#----------------------------------------------------------------------------------------#
+#                                     COMPLETION
+#----------------------------------------------------------------------------------------#
+
+_dyldinfo "$@"
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:
+### }}}

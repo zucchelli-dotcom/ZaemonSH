@@ -1,0 +1,175 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# findus :
+# A multi options augmented search command.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 2020-08-05 :
+# • Make findus options.
+# • Make a completion.
+# • Remove ff fstr
+# • To finish
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/01/2018 :
+#  • Modify function presentation.
+# 13/01/2018 :
+#  • Merge all find related command. (plap, fstr, find_dups, ff, fdsa, fds, fastf)
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME osize osum ofile
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+osize=0 
+osum=0 
+ofile=""
+
+osize=0 
+osum=0 
+ofile=""
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+  clear
+  echo "${NC}"    
+  echo " ###################################################################################################"
+  echo " #                                                                                                 #"
+  echo " #     ${GREEN}This is ${RED}$FCT_NAME : ${YEL}$VERSION FOR $OSTYPE ${NC}                                                      #"
+  echo " #     CopyL®®v 2019, Zucchelli Bryan	 			                                   #"
+  echo " #                                                                                                 #"
+  echo " #     Unless required by applicable law or agreed to in writing, software                         #"
+  echo " #     distributed under the License is distributed on an "AS IS" BASIS,                             #"
+  echo " #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.                    #"
+  echo " #     See the License for the specific language governing permissions and                         #"
+  echo " #     limitations under the License.                                                              #"
+  echo " #                                                                                                 #"
+  echo " ###################################################################################################"
+  echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+find_fe(){
+  # Find a file with pattern $1 in name and Execute $2 on it:
+}
+
+find_fds(){
+  # Find file or folder with a single pattern.
+  command find / -name "${1}" -print 2>/dev/null
+}
+
+find_str(){
+  while getopts :it opt
+  do
+      case "$opt" in
+      i) case="-i " ;;
+      *) echo "$usage"; return;;
+      esac
+  done
+  shift $(( $OPTIND - 1 ))
+  if [ "$#" -lt 1 ]; then
+      echo "$usage"
+      return;
+  fi
+  find . -type f -name "${2:-*}" -print0 | \
+  xargs -0 egrep --color=always -sn ${case} "$1" 2>&- | more 
+}
+
+find_fdsa(){
+  # Find file or folder with a single pattern.
+  command  find / -name "*${1}*" -print 2>/dev/null
+}
+
+find_fastf(){
+  #  fast find, using globstar
+  ls -ltr **/$@
+}
+
+find_ff(){
+  # Find a file with a pattern in name:
+  find . -type f -iname '*'$*'*' -ls 
+}
+
+newFile () { 
+    osum="${1}" 
+    osize="${2}" 
+    ofile="${3}" 
+} 
+
+find_dups(){
+  find "${1}" -type f -exec sum {} \; 2>/dev/null | sort | while read sum size file; do 
+    [ ${osize} != ${size} ] && newFile ${sum} ${size} "${file}" && continue 
+    [ ${osum} != ${sum} ] && newFile ${sum} ${size} "${file}" && continue 
+    echo "${ofile} == ${file}" 
+  done
+}
+
+find_plap(){
+  emulate -L zsh
+  if [[ $# = 0 ]] ; then
+     echo "Usage:    $0 program"
+     echo "Example:  $0 zsh"
+     echo "Lists all occurrences of program in the current PATH."
+  else
+     ls -l ${^path}/*$1*(*N)
+  fi
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+
+

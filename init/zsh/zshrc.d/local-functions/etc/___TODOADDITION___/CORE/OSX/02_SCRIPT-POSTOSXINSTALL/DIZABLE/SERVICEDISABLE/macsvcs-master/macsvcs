@@ -1,0 +1,338 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly IFS=$'\n\t'
+readonly SELF=$(basename "${BASH_SOURCE[0]}")
+
+readonly VERSION=0.0.1
+readonly MINVER=10.12.5
+readonly GETOPT=/usr/local/opt/gnu-getopt/bin/getopt
+readonly BASE_DIR=/System/Library
+readonly AGENTS=('com.apple.security.keychainsyncingoveridsproxy' 'com.apple.personad' 'com.apple.passd' 'com.apple.screensharing.MessagesAgent' 'com.apple.CommCenter-osx'
+                 'com.apple.Maps.mapspushd' 'com.apple.Maps.pushdaemon' 'com.apple.photoanalysisd' 'com.apple.telephonyutilities.callservicesd' 'com.apple.AirPlayUIAgent'
+                 'com.apple.AirPortBaseStationAgent' 'com.apple.CalendarAgent' 'com.apple.DictationIM' 'com.apple.iCloudUserNotifications' 'com.apple.familycircled' 
+                 'com.apple.familycontrols.useragent' 'com.apple.familynotificationd' 'com.apple.gamed' 'com.apple.icloud.findmydeviced.findmydevice-user-agent' 
+                 'com.apple.icloud.fmfd' 'com.apple.imagent' 'com.apple.cloudfamilyrestrictionsd-mac' 'com.apple.cloudpaird' 'com.apple.cloudphotosd' 'com.apple.DictationIM' 
+                 'com.apple.assistant_service' 'com.apple.CallHistorySyncHelper' 'com.apple.CallHistoryPluginHelper' 'com.apple.AOSPushRelay' 'com.apple.IMLoggingAgent' 
+                 'com.apple.geodMachServiceBridge' 'com.apple.syncdefaultsd' 'com.apple.security.cloudkeychainproxy3' 'com.apple.security.idskeychainsyncingproxy' 
+                 'com.apple.security.keychain-circle-notification' 'com.apple.sharingd' 'com.apple.appleseed.seedusaged' 'com.apple.cloudd' 'com.apple.assistantd' 
+                 'com.apple.parentalcontrols.check' 'com.apple.parsecd' 'com.apple.identityservicesd')
+readonly DAEMONS=('com.apple.netbiosd' 'com.apple.preferences.timezone.admintool' 'com.apple.preferences.timezone.auto' 'com.apple.remotepairtool' 'com.apple.rpmuxd' 
+                  'com.apple.security.FDERecoveryAgent' 'com.apple.icloud.findmydeviced' 'com.apple.findmymacmessenger' 'com.apple.familycontrols' 'com.apple.findmymac' 
+                  'com.apple.SubmitDiagInfo' 'com.apple.screensharing' 'com.apple.appleseed.fbahelperd' 'com.apple.apsd' 'com.apple.AOSNotificationOSX' 'com.apple.FileSyncAgent.sshd' 
+                  'com.apple.ManagedClient.cloudconfigurationd' 'com.apple.ManagedClient.enroll' 'com.apple.ManagedClient' 'com.apple.ManagedClient.startup' 'com.apple.iCloudStats' 
+                  'com.apple.locationd' 'com.apple.mbicloudsetupd' 'com.apple.laterscheduler' 'com.apple.awacsd' 'com.apple.eapolcfg_auth' 'com.apple.familycontrols')
+
+OPT_HELP=
+OPT_DEBUG=
+OPT_VERBOSE=
+OPT_WARN=
+
+debug () {
+  if [[ -n "$OPT_DEBUG" ]]; then
+      echo '**'
+      echo \$@: $@
+      echo \$OPT_HELP: "$OPT_HELP"
+      echo \$OPT_DEBUG: "$OPT_DEBUG"
+      echo \$OPT_VERBOSE: "$OPT_VERBOSE"
+      echo \$OPT_WARN: "$OPT_WARN"
+  fi
+}
+
+error () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  echo -e "[\033[1;31mERROR\033[0m] $@"
+  exit 1
+}
+
+ok () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  echo -e "[\033[1;32mOK\033[0m] $@"
+  return 0
+}
+
+warning () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  echo -e "[\033[1;33mWARNING\033[0m] $@"
+  return 0
+}
+
+mute () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  $@ > /dev/null 2>&1
+}
+
+parse_arguments_getoptr () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  local opts=$(getopt -n "$SELF" --options hdved --longoptions help,debug,verbose,enable,disable -- "$@")
+
+  [[ $? != 0 ]] && error "failed to parse arguments."
+
+  eval set -- "$opts"
+
+  while true; do
+    case "$1" in
+      -h|--help) OPT_HELP=true; shift ;;
+      -D|--debug) OPT_DEBUG=true; shift ;;
+      -v|--verbose) OPT_VERBOSE=true; shift ;;
+      -l|--list) OPT_LIST=true; shift ;;
+      -d|--disable) OPT_DISABLE=true; shift ;;
+      -e|--enable) OPT_ENABLE=true; shift ;;
+      --) shift; break ;;
+      *) break ;;
+    esac
+  done
+
+  OPT_ID=${@:-1}
+}
+
+list_agents () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  for i in ${AGENTS[@]}; do echo $i; done
+}
+
+list_daemons () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  for i in ${DAEMONS[@]}; do echo $i; done
+}
+
+list_components () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  list_agents
+  list_daemons
+}
+
+process_arguments () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  if [[ "$#" -gt 1 ]]; then
+      if [[ "$1" == "list-components" ]]; then
+          list_components
+          exit 0
+      fi
+
+      if [[ "$1" == "list-agents" ]]; then
+          list_agents
+          exit 0
+      fi
+
+      if [[ "$1" == "list-daemons" ]]; then
+          list_daemons
+          exit 0
+      fi
+  fi
+
+  if [[ -n "$OPT_HELP" || "$#" -lt 1 ]]; then
+      display_usage
+  else
+    return 0
+  fi
+}
+
+display_usage () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  cat <<EOF
+$SELF $VERSION
+
+USAGE: $SELF [OPTIONS]
+
+OPTIONS:
+
+-h Display this help
+-D Display debugging messages
+-v Enable verbose output
+-w Display warnings
+
+
+COMMANDS:
+
+unload          Disable services
+load            Enable services
+list-agents     List agents
+list-daemons    List daemons
+list-components List all components
+
+See https://github.com/ebzzry/macsvcs for more information
+EOF
+  exit 0
+}
+
+check_getopt () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  if [[ ! -f "$GETOPT_PATH" ]]; then
+      error "GNU getopt is missing. Please install it with:\n\nbrew install gnu-getopt"
+  fi
+}
+
+check_sip () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  if csrutil status | grep -q enabled; then
+      error "Please disable System Integrity Protection (SIP), then re-run this script."
+  else
+    return 0
+  fi
+}
+
+ensure_macos () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  if mute which sw_vers; then
+      return 0
+  else
+    error "This script runs only on macOS systems"
+  fi
+}
+
+ensure_min_version () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  if [[ "$(sw_vers -productVersion)" < "$MINVER" ]]; then
+      error "The required minimum macOS version $MINVER is not met. Please upgrade."
+  fi
+}
+
+rename_plist () {
+  local src=$1
+  local dest=$2
+
+  if [[ -f "${src}" ]]; then
+      sudo mv "${src}" "${dest}"
+      ok "${dest}"
+  else
+    if [[ -n "$OPT_WARN" ]]; then
+        warning "The plist file ${src} does not exist."
+    fi
+  fi
+}
+
+run_launchctl () {
+  local command=$1
+  local plist_path=$2
+
+  if [[ -f "$plist_path" ]]; then
+      sudo launchctl $command -w $plist_path
+      launchctl $command -w $plist_path
+      ok "${plist_path}"
+  else
+    if [[ -n "$OPT_WARN" ]]; then
+        warning "The plist file ${plist_path} does not exist."
+    fi
+  fi
+}
+
+process_components () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  local op=$1
+  local name=$(tr '[:lower:]' '[:upper:]' <<< ${2:0:1})${2:1}
+  local launch_name=Launch${name}
+  local plist_name=$3
+  local plist_path=${BASE_DIR}/${launch_name}s/${plist_name}.plist
+  local comment=
+
+  case $op in
+    load)
+      comment=enabled
+      rename_plist "${plist_path}.bak" "${plist_path}"
+      run_launchctl load "${plist_path}"
+      ;;
+    unload)
+      comment=disabled
+      rename_plist "${plist_path}" "${plist_path}.bak"
+      run_launchctl unload "${plist_path}"
+      ;;
+    *)
+      error Invalid operation $op
+      ;;
+  esac
+}
+
+process_common () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  if [[ -n "$OPT_ENABLE" ]]; then
+      for agent in "${AGENTS[@]}"; do
+        process_components load agent $agent
+      done
+  elif [[ -n "$OPT_DISABLE" ]]; then
+      for agent in "${AGENTS[@]}"; do
+        process_components unload agent $agent
+      done
+  else
+    display_usage
+  fi
+}
+
+process_agents () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  for agent in "${AGENTS[@]}"; do
+    process_components $1 agent $agent
+  done
+}
+
+process_daemons () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  for daemon in "${DAEMONS[@]}"; do
+    process_components $1 daemon $daemon
+  done
+}
+
+parse_arguments_getopts () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  while getopts ":hDvw" opt; do
+    case $opt in
+      h) OPT_HELP=true ;;
+      D) OPT_DEBUG=true ;;
+      v) OPT_VERBOSE=true ;;
+      w) OPT_WARN=true ;;
+      *) return 1 ;;
+    esac
+  done
+
+  shift $((OPTIND-1))
+}
+
+main () {
+  debug "${FUNCNAME[0]}" "$@"
+
+  while getopts ":hDvw" opt; do
+    case $opt in
+      h) OPT_HELP=true ;;
+      D) OPT_DEBUG=true ;;
+      v) OPT_VERBOSE=true ;;
+      w) OPT_WARN=true ;;
+      *) return 1 ;;
+    esac
+  done
+
+  shift $((OPTIND-1))
+
+  # check_getopt
+  # parse_arguments_getopt "$@"
+  # parse_arguments_getopts $@
+
+  ensure_macos
+  ensure_min_version
+  check_sip
+
+  process_arguments "$@"
+
+  process_agents $1
+  process_daemons $1
+}
+
+main $@

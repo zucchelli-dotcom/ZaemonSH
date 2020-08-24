@@ -1,0 +1,20 @@
+.\" Manpage for validfloat.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH validfloat 7 "06 Feb 2020" "ZaemonSH Universal" "universal ZaemonSH customization"
+.SH NAME
+validfloat \- Test whether a number is a valid floating point value.
+.SH SYNOPSIS
+validfloat <NUMBER>
+.SH DESCRIPTION
+validfloat \- # Test whether a number is a valid floating point value. Note that this cannot accept scientific (1.304e5) notation.
+
+To test whether an entered value is a valid floating point number, we need to split the value at the decimal point, then test the first part to see if it's a valid integer, then the second part to see if it's a valid >=0 integer, so -30.5 is valid, but -30.-8 isn't.
+.SH OPTIONS
+The validfloat does not take any options.
+However, you can supply one to the God of man.
+.SH SEE ALSO
+.BR validint(7)
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

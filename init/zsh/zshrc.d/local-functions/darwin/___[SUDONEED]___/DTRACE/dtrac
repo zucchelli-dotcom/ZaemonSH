@@ -1,0 +1,472 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# dtrac :
+# Wrapper dtrace command.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 07/01/2018 :
+#  • Verify versions
+#  • Dtrace, need SIP disabled if it exist on system.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 05/01/2018 :
+#  • Modify function presentation.
+# 07/01/2018 :
+#  • Include all related dtrace alias command from 022_aliases.darwin-specific.additional.zsh configuration.
+
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+    cat<<__EOF__
+    ${RED}
+    usage:  [ ShowCPUProceesRunOn | ShowErrorInfo | ExecSnoop | ShowUseOfFileDescriptors | SnoopOpenFileByProcess |
+              FindDiskHotspot | IOSnoop | IOTop | IOBytes | IOWFileWaits | SnoopProcessRT | Load | SnoopNewProcess |
+              OpenSnoop | PathOpens | PIDs | ProcessPriority | ProcessPriorityByTrace | RWByPid | DispatcherOccupancy |
+              SeekSize | SetUIDCall | SignalDistriByProcess | SysCallsByPID | SyscallsByProcess | SyscallsBySyscall | 
+              WebLatency | help ]
+
+    Examples:
+        dtrac ShowCPUProceesRunOn         # Show which CPUs processes run on (five second walk used as example).
+        dtrac ShowErrorInfo               # Show syscall failures and error messages.
+        dtrac ExecSnoop                   # Snoop on new processes.
+        dtrac ShowUseOfFileDescriptors    # Show use of file descriptors.
+        dtrac SnoopOpenFileByProcess      # Snoop file opens by process name (needs Terminal).
+        dtrac FindDiskHotspot             # Find disk hotspots.        
+        dtrac IOSnoop                     # Show I/O events in realtime.
+        dtrac IOTop                       # Show top I/O events (needs Terminal).
+        dtrac IOBytes                     # Show I/O bytes (needs Terminal).
+        dtrac IOWFileWaits                # Show I/O wait times (needs Terminal). 
+        dtrac SnoopProcessRT              # Snoop process signals in realtime (needs Terminal).
+        dtrac Load                        # Show load averages.
+        dtrac SnoopNewProcess             # Snoop new processes.
+        dtrac OpenSnoop                   # Snoop file opens in realtime.
+        dtrac PathOpens                   # Show count of full path opens.
+        dtrac PIDs                        # Show new PIDs per second.
+        dtrac ProcessPriority             # Show process priority distribution (needs Terminal).
+        dtrac ProcessPriorityByTrace      # Show priority distribution by scheduling class (needs Terminal).
+        dtrac RWByPid                     # Show read/write calls by PID (needs Terminal).
+        dtrac DispatcherOccupancy         # Show dispatcher run queue occupancy.
+        dtrac SeekSize                    # Show disk event seek report (needs Terminal).
+        dtrac SetUIDCall                  # Snoop set UID calls in realtime.
+        dtrac SignalDistriByProcess       # Show signal distribution by process (needs Terminal).
+        dtrac SysCallsByPID               # Show syscalls by PID (needs Terminal).
+        dtrac SyscallsByProcess           # Show syscalls by process (name) (needs Terminal).
+        dtrac SyscallsBySyscall           # Show syscalls by syscall (needs Terminal).
+        dtrac WebLatency                  # Show website latency stats (needs Terminal).
+    ${NC}
+__EOF__
+}
+
+DtraceShowCPUProceesRunOn (){
+  echo "${YEL}"
+  echo "Show which CPUs processes run on (five second walk used as example) (needs Terminal)"
+  echo "${GREEN}"
+  command sudo -S cpuwalk.d 5
+  echo "${NC}"
+}
+
+DtraceShowErrorInfo() {
+  echo "${YEL}"
+  echo "Show syscall failures and error messages (needs Terminal) ('When system calls fail, an errno variable is set to convay')"
+  echo "${GREEN}"
+  command sudo -S errinfo
+  echo "${NC}"
+}
+
+DtraceExecSnoop(){
+  echo "${YEL}"
+  echo "Snoop on new processes :"
+  echo "${GREEN}"
+  command sudo -S execsnoop -a
+  echo "${NC}"
+}
+
+DtraceShowUseOfFileDescriptors(){
+  echo "${YEL}"
+  echo "Show use of file descriptors."
+  echo "${GREEN}"
+  command sudo -S fddist
+  echo "${NC}"
+}
+
+DtraceSnoopOpenFileByProcess(){
+  echo "${YEL}"
+  echo "Snoop file opens by process name (needs Terminal)"
+  echo "${GREEN}"    
+  command sudo -S filebyproc.d
+  echo "${NC}" 
+}
+
+DtraceFindDiskHotspot(){
+  echo "${YEL}"
+  echo "Find disk hotspots (needs Terminal)"
+  echo "${GREEN}" 
+  command sudo -S hotspot.d
+  echo "${NC}" 
+}
+
+DtraceIOSnoop(){
+  echo "${YEL}"
+  echo "Show I/O events in realtime."
+  echo "${GREEN}"   
+  command sudo -S iosnoop -a
+  echo "${NC}" 
+}
+
+DtraceIOTop(){
+  echo "${YEL}"
+  echo "Show top I/O events (needs Terminal)."
+  echo "${GREEN}"
+  command sudo -S iotop
+  echo "${NC}"  
+}
+
+DtraceIOBytes(){
+  echo "${YEL}"
+  echo "Show I/O bytes (needs Terminal)."
+  echo "${GREEN}"
+  command sudo -S iofileb.d
+  echo "${NC}"  
+}
+
+DtraceIOWFileWaits(){
+  echo "${YEL}"
+  echo "Show I/O wait times (needs Terminal)."
+  echo "${GREEN}"
+  command sudo -S iofile.d
+  echo "${NC}"
+}
+
+DtraceSnoopProcessRT() {
+  echo "${YEL}"
+  echo "Snoop process signals in realtime (needs Terminal)."
+  echo "${GREEN}"
+  command sudo -S kill.d 
+  echo "${NC}"
+}
+
+DtraceLoad(){
+  echo "${YEL}"
+  echo "Show load averages."
+  echo "${GREEN}"  
+  command sudo -S loads.d
+  echo "${NC}"  
+}
+
+DtraceSnoopNewProcess(){
+  echo "${YEL}"
+  echo "Snoop new processes." 
+  echo "${GREEN}" 
+  command sudo -S newproc.d  
+  echo "${NC}" 
+}
+
+DtraceOpenSnoop(){
+  echo "${YEL}"
+  echo "Snoop file opens in realtime."
+  echo "${GREEN}" 
+  command sudo -S opensnoop -a
+  echo "${NC}"   
+}
+
+DtracePathOpens(){
+  echo "${YEL}"
+  echo "Show count of full path opens (needs Terminal)."
+  echo "${GREEN}" 
+  command sudo -S pathopens.d
+  echo "${NC}" 
+}
+ 
+DtracePIDs(){
+  echo "${YEL}"
+  echo "Show new PIDs per second."
+  echo "${GREEN}"
+  command sudo -S pidpersec.d 
+  echo "${NC}"
+}
+
+DtraceProcessPriority(){
+  echo "${YEL}"
+  echo "Show process priority distribution (needs Terminal)."
+  echo "${GREEN}"
+  command sudo -S pridist.d
+  echo "${NC}" 
+}
+
+DtraceProcessPriorityByTrace(){
+  echo "${YEL}"
+  echo "Show priority distribution by scheduling class (needs Terminal)."
+  echo "${GREEN}"
+  command sudo -S priclass.d
+  echo "${NC}"  
+}
+
+DtraceRWByPid(){
+  echo "${YEL}"
+  echo "Show read/write calls by PID (needs Terminal)."
+  echo "${GREEN}"
+  command sudo -S rwbypid.d
+  echo "${NC}"
+}
+
+DTraceDispatcherOccupancy(){
+  echo "${YEL}"
+  echo "Show dispatcher run queue occupancy."
+  echo "${GREEN}"  
+  command sudo -S runocc.d
+  echo "${NC}" 
+}
+
+DtraceSeekSize(){
+  echo "${YEL}"
+  echo "Show disk event seek report (needs Terminal)."
+  echo "${GREEN}"
+  command sudo -S seeksize.d
+  echo "${NC}" 
+}
+
+DtraceSetUIDCall(){
+  echo "${YEL}"
+  echo "Snoop set UID calls in realtime."
+  echo "${GREEN}"
+  command sudo -S setuids.d
+  echo "${NC}"   
+}
+
+DtraceSignalDistriByProcess(){
+  echo "${YEL}"
+  echo "Show signal distribution by process (needs Terminal)."
+  echo "${GREEN}"
+  command sudo -S sigdist.d
+  echo "${NC}"  
+}
+
+DtraceSysCallsByPID(){
+  echo "${YEL}"
+  echo "Show syscalls by PID (needs Terminal)."
+  echo "${GREEN}"  
+  command sudo -S syscallbypid.d
+  echo "${NC}"   
+}
+
+DtraceSyscallsByProcess(){
+  echo "${YEL}"
+  echo "Show syscalls by process (name) (needs Terminal)."
+  echo "${GREEN}" 
+  command sudo -S syscallbyproc.d
+  echo "${NC}"    
+}
+
+DtraceSyscallsBySyscall(){
+  echo "${YEL}"
+  echo "Show syscalls by syscall (needs Terminal)."
+  echo "${GREEN}" 
+  command sudo -S syscallbysysc.d 
+  echo "${NC}" 
+}
+
+DtraceWebLatency(){
+  echo "${YEL}"
+  echo "Show website latency stats (needs Terminal)."
+  echo "${GREEN}" 
+  command sudo -S weblatency.d
+  echo "${NC}" 
+}  
+
+
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+case $1 in
+    help)
+        help
+        ;;
+    ShowCPUProceesRunOn)
+        DtraceShowCPUProceesRunOn
+        ;;
+    ShowErrorInfo)
+        shift
+        DtraceShowErrorInfo
+        ;;
+    ExecSnoop)
+        shift
+        DtraceExecSnoop
+        ;;
+    ShowUseOfFileDescriptors)
+        shift
+        DtraceShowUseOfFileDescriptors
+        ;;
+    SnoopOpenFileByProcess)
+        shift
+        DtraceSnoopOpenFileByProcess
+        ;;
+    FindDiskHotspot)
+        shift
+        DtraceFindDiskHotspot
+        ;;
+    IOSnoop)
+        shift
+        DtraceIOSnoop
+        ;;
+    IOTop)
+        shift
+        DtraceIOTop
+        ;;
+   
+    IOBytes)
+        shift
+        DtraceIOBytes
+        ;;    
+
+    SnoopProcessRT)
+        shift
+      DtraceSnoopProcessRT
+        ;;
+
+    Load)
+        shift
+      DtraceLoad
+        ;;
+
+    SnoopNewProcess)
+        shift
+      DtraceSnoopNewProcess
+        ;;
+
+    OpenSnoop)
+        shift
+      DtraceOpenSnoop
+        ;;
+
+    PathOpens)
+        shift
+      DtracePathOpens
+        ;;
+
+    PIDs)
+        shift
+      DtracePIDs
+        ;;
+
+    ProcessPriority)
+        shift
+      DtraceProcessPriority
+        ;;
+
+    ProcessPriorityByTrace)
+        shift
+        DtraceProcessPriorityByTrace
+        ;;
+
+    RWByPid)
+        shift
+        DtraceRWByPid
+        ;;
+
+    DispatcherOccupancy)
+        shift
+        DTraceDispatcherOccupancy
+        ;;
+
+    SeekSize)
+        shift
+        DtraceSeekSize
+        ;;
+
+    SetUIDCall)
+        shift
+        DtraceSetUIDCall
+        ;;   
+
+    SignalDistriByProcess)
+        shift
+        DtraceSignalDistriByProcess
+        ;;  
+
+    SysCallsByPID)
+        shift
+        DtraceSysCallsByPID
+        ;;   
+
+    SyscallsByProcess)
+        shift
+        DtraceSyscallsByProcess
+        ;;  
+    SyscallsBySyscall)
+        shift
+        DtraceSyscallsBySyscall
+        ;;  
+
+    WebLatency)
+        shift
+        DtraceWebLatency
+        ;;                              
+    *)
+        help
+        ;;
+esac

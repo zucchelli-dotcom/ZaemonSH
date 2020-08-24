@@ -1,0 +1,164 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# fink :
+#   Author:  W G Scott
+#   Nov 28, 2004  
+#   Last revised on October 13, 2006
+#   Wrapper function fink to accompany completion function _fink
+#   generates completion cache
+#   displays "fink [first argument]" in tab or title bar while running
+#   leaves functionality of the command fink otherwise unchanged
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 12/01/2018 :
+#  • Test if fink is present.
+#  • Integrated fink_web function and corresponding completion.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify function presentation.
+# 12/01/2018 :
+#  • Merge fink_web with this one. 
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NANME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+fink_web(){
+  # Fink_web opens up the fink package database website.  If $1 is provided,
+  # then the package database opens to the page for the named package.
+  if [[ -z $1 ]];then
+      open http://pdb.finkproject.org/pdb/
+  elif [[ $1 == (-s|--search|-search) ]];then
+      open http://pdb.finkproject.org/pdb/"search.php?summary=$2"
+  else
+      open http://pdb.finkproject.org/pdb/package.php/$1
+  fi
+
+  alias finkweb='fink_web'
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+# setopt sh_word_split
+# Capture the argument line:
+allargs=("$@")
+
+# This makes $1 the first non-flag command
+while getopts ":hqVvyb" opt; do
+        case $opt in                # currently not in use
+        h ) help=true ;;            # apart from preserving
+		    q ) quiet=true ;;           # options provided by user
+		    V ) Version=true ;;
+		    v ) verbose=true ;;
+		    y ) default=true ;;
+		    b ) binary=true ;;
+	esac
+done
+
+shift $(($OPTIND - 1))
+
+ # Define a function that caches the listings of fink programs that are either
+ # installed, not installed, or installed but need to be updated
+ # for use in _fink completion function
+
+ # This is now a separate function file called _FinkMakeListCache  (see below)
+if [[ $1 == (selfupdate|selfupdate-cvs|selfupdate-rsync|install|remove|purge|reinstall|index|update|update-all) ]]; then
+    echo -ne "\e]1; fink $1 \a"; command fink $allargs
+    # settab to show the named process running 
+
+    # The LaunchAgent watchpath approach seems buggy for some reason, so let's do this manually.
+
+    # (re)make the cache lists if this is not done by Launchd in 10.4
+    #if [[ -z $(/bin/launchctl list | grep zsh.fink.completion )  ]];then 
+      #  print ""
+      #  print "\e[1mCreating/updating cache of fink package listings for command completions\e[0m"
+      #  print "\e[1mOn 10.4 you should enable /Library/LaunchAgents/zsh.fink.completion.plist to do this automatically\e[0m"
+      #  print ""
+      #
+      autoload -U _FinkMakeListCache
+      # Run this silently in the background as a subshell to avoid the notification.
+      ( _FinkMakeListCache & )
+    # fi
+
+    # reset the iTerm tab or Terminal title bar 
+    settab
+else
+  echo -ne "\e]1; fink $1 \a";  command fink $allargs; settab
+  # settab to show the named process running and then reset with settab 
+fi
+   

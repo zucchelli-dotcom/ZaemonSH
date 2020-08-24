@@ -1,0 +1,54 @@
+#!/bin/sh
+
+if test $# -ne 2
+then
+	echo >&2 "Usage: $0 session-name path/to/safe/file"
+	exit 1
+fi
+
+poll_delay=10
+timeout_delay=50
+
+session="$1"
+safe_file="$2"
+
+tmux_list_clients(){
+	tmux list-clients -t "$session" -F "#S $@" \
+		| grep "^$session " \
+		| cut -d' ' -f2-
+}
+
+win_num_in(){
+	num="$1"
+	shift
+	for w in $@
+	do
+		if test "$num" = "$w"
+		then return 0
+		fi
+	done
+	return 1
+}
+
+while sleep $poll_delay
+do
+	# check activity - last is latest
+	last=$(tmux_list_clients '#{client_activity}' | sort -n | tail -1)
+	now=$(date +%s)
+	diff=$(expr $now - $last)
+
+	if test $diff -lt $timeout_delay
+	then continue
+	fi
+
+	# tmux list-windows
+	win_num=$(tmux_list_clients '#I')
+
+	okay="$(cat "$safe_file")"
+
+	if ! win_num_in "$win_num" "$okay"
+	then
+		choice=$(echo "$okay" | cut -d' ' -f1)
+		tmux select-window -t "$session:$choice"
+	fi
+done

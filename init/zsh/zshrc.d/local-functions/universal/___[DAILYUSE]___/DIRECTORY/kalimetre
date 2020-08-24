@@ -1,0 +1,429 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# kalimetre : CLi file browser.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# + Le dossier est vide 
+# - reconnaissance de FILEMINE pour les fichiers et lance le programme approprié
+# - Message en cas de permissions non accordées
+# + Revenir au répertoire précédent avec retour
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME UID_ROOT E_XCD E_NONROOT E_MAUVAISARGS LISTE_REP EVINCE 
+
+VERSION="0.0.3"
+FCT_NAME="kalimetre"
+
+
+###
+#
+UID_ROOT=0     # Seu$LS les utilisateurs avec un $UID valant 0 ont les droits de root.
+###
+# PROGRAM
+E_XCD=66       # On ne peut pas changer de répertoire ?
+E_NONROOT=67   # Code de sortie si non root.
+E_MAUVAISARGS=65  # Argument non numérique (mauvais fo$RMat de l'argument)
+###
+#
+###
+# Define some colors first:
+# GREY=$'\033[1;30m'
+# GREEN=$'\033[1;32m'
+# YEL=$'\033[1;33m'
+# red='\e[0;31m'
+# RED='\e[1;31m'
+# blue='\e[0;34m'
+# BLUE='\e[1;34m'  
+# cyan='\e[0;36m'
+# CYAN='\e[1;36m'
+# MAGENTA=$'\033[1;35m'S
+# NC='\e[0m'              # No Color
+# WHITE=$'\033[1'
+# --> Nice. Has the same effect as using "ansi.sys" in DOS.
+###
+#
+# ECHO="/bin/echo"
+LS="/bin/ls"
+CP="/bin/cp"
+MV="/bin/mv"
+RM="/bin/rm"
+VIM="/usr/local/bin/vim"
+NANO="/bin/nano"
+SLEEP="/bin/sleep"
+CLEAR="/usr/bin/clear"
+EVINCE="/usr/bin/evince"
+###
+# Looks best on a te$RMinal with black background.....
+# $CLEAR
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+###
+# À exécuter en tant que root, évidemment.
+root () {
+	if [[ "$UID" -ne "$UID_ROOT" ]]
+	then
+	  echo "Vous devez être root pour exécuter ce script."
+	  return $E_NONROOT
+	fi  
+}
+###
+# Teste le nb d'argument
+argu () {
+	if [[ $# -lt 1 ]]; then
+		echo ""
+		printf "%b" "Erreur nombre d'arguments incorrect.\n"
+		printf "%b" "usage : monScript [Folder]\n"
+		echo ""
+		return 0
+	elif [[ ! -d  $1 ]]; then
+		echo ""
+		printf "%b" "Erreur arguments incorrect.\n"
+		printf "%b" "Ce dossier n'éxiste pas.\n"
+		printf "%b" "usage : monScript [Folder]\n"
+		echo ""
+		return 0	
+	else
+		:
+	fi
+}
+###
+# Cette fonction reçoit en argument le nom d'un fichier, et
+# propose les différentes actions possibles.
+action_fichier () {
+	local reponse
+	local saisie
+	$CLEAR
+	banner
+	ACTUALPATH=$(pwd)/$1
+	OLDPATH=$(pwd)
+	echo "----------------------------------------------------"
+	ACTUALPATH=$(pwd)/$1
+	echo "${GREEN}Action de fichier${NC} sur :${RED}"$ACTUALPATH"${NC}"
+	echo "----------------------------------------------------"
+	select reponse in Infos Copier Déplacer Détruire Editer Renommer Compresser Revenir; do
+			case $reponse in
+			Infos)
+				echo
+				$LS -l $1
+				echo
+				;;
+			Copier)
+				echo -n "Copier $1 vers ? "
+				if ! read saisie ; then continue ; fi
+				$CP $1 $saisie
+				;;
+			Déplacer)
+				echo -n "Nouvel emplacement pour $1 ? "
+				if ! read saisie ; then continue ; fi
+				$MV $1 $saisie
+				break
+				;;
+			Détruire)
+				if $RM -i $1 ; then break; fi
+				;;
+			Editer)
+				echo $1
+				FILENAME=$1
+				FILEXT=${FILENAME#*.}
+				case $FILEXT in
+					# sh)
+					# 	if $EDITOR $1 ; then continue; fi
+					# ;;				
+					# # pdf)
+					# # 	if $EVINCE -w $1 ; then continue; fi
+					# # ;;
+					# log)
+					# 	if $EDITOR -w $1 ; then continue; fi
+					# ;;
+					*)
+						# if $EDITOR -w $1 ; then continue; fi
+                        $EDITOR $ACTUALPATH && continue 
+					;;
+				esac
+				;;
+			Renommer)
+				if echo "ZBOOB" ; then continue; fi
+				;;
+			Compresser)
+				if echo "ZBOOB" ; then continue; fi
+				;;
+			Revenir)
+				$CLEAR
+				cd $OLDPATH
+				while liste_fichiers ; do : ; break ; done
+				break
+				;;
+			*) 
+				if [ "$REPLY" = "0" ] ; then break ; fi	
+				echo "$REPLY n'est pas une réponse valide"
+				echo
+				;;
+			esac
+		done
+}
+###
+# Cette fonction reçoit en argument le nom d'un fichier, et
+# propose les différentes actions possibles.
+action_dossier () {
+	$CLEAR
+	banner
+	local reponse
+	local saisie
+	echo "---------------------------------------"
+	ACTUALPATH=$(pwd)/$1
+	OLDPATH=$(pwd)
+	echo "${GREEN}Action de dossier sur ${NC}${RED}"$ACTUALPATH"${NC}"
+	echo "---------------------------------------"
+	TEST_ACTDOS=$(ls -r $ACTUALPATH)
+	select reponse in Infos Copier Déplacer Détruire Renommer Avancer Revenir
+		do
+			case $reponse in
+			Infos)
+				echo
+				$LS -l $1
+				echo
+				;;
+			Copier)
+				echo -n "Copier $1 vers ? "
+				if ! read saisie ; then continue ; fi
+				$CP $1 $saisie
+				;;
+			Déplacer)
+				echo -n "Nouvel emplacement pour $1 ? "
+				if ! read saisie ; then continue ; fi
+				$MV $1 $saisie
+				break
+				;;
+			Détruire)
+				if $RM -i $1 ; then break; fi
+				;;
+			Renommer)
+				if echo "ZBOOB" ; then continue; fi
+				;;
+			Avancer)
+				###
+			 	# Teste de répertoire vide
+			 	if [[ "$TEST_ACTDOS" == "" ]]; then
+			    	echo "le repertoire" $ACTUALPATH "est vide."
+			    	$SLEEP 2
+					cd $OLDPATH
+					while liste_fichiers ; do : ; break ; done
+					break
+			    else
+			    	$CLEAR
+			    	cd $ACTUALPATH
+					while liste_fichiers ; do : ; break ; done
+			    	break
+			    fi
+			  	;;
+			Revenir)
+				$CLEAR
+				cd $OLDPATH
+				while liste_fichiers ; do : ; break ; done
+				break
+				;;
+			*) 
+				if [ "$REPLY" = "0" ] ; then break ; fi	
+				echo "$REPLY n'est pas une réponse valide"
+				echo
+				;;
+			esac
+		done
+}
+###
+# Cette routine affiche la liste des fichiers présents dans
+# le répertoire, et invoque la fonction action_fichier si la
+# saisie est correcte. Elle se te$RMine si on sélectionne "0"
+liste_fichiers () {
+	###
+	$CLEAR
+	banner
+	echo "---------------------------------------"
+	ROOTDIR="/"
+	ACTUALPATH=$(pwd)/$1
+	MYPWD=$(pwd)
+	echo "${GREEN}Répertoire actuel : ${NC}${RED}"$ACTUALPATH"${NC}"
+	echo "---------------------------------------"
+	echo ""
+	echo "${RED}Q${NC}) Revenir à la racine du système."
+	echo "${RED}R${NC}) Revenir au dossier précédent."	
+	PS3='Entrer votre choix?'
+	select fichier in *
+	do
+		echo "==> Entrez Q pour Revenir à la racine du système."
+		echo "==> Entrez R pour Revenir au dossier précédent."
+			if [ ! -z "$fichier" ]; then
+		    	if [ -d $fichier ]; then action_dossier $fichier && return 0 ;else action_fichier $fichier && return 0; fi
+			return 0
+			fi
+			if [ "$REPLY" = "Q" ] ; then
+				banner
+				return 1
+			fi
+			if [ "$REPLY" = "R" ] ; then
+				if [[ "$OLDPATH" == "" ]]; then
+					return 1
+				fi
+				if [[ "$ACTUALPATH" ==  "//" ]]; then
+					return 1
+				fi
+				if [[ "$OLDPATH" == "$ACTUALPATH" ]]; then
+					return 1
+				fi
+				while [[ "$MYPWD" == "$OLDPATH" ]]; do  
+					if [[ "$MYPWD" == "$ROOTDIR" ]]; then
+						LOG_TARGET=""
+						echo $LOG_TARGET
+						return 1
+					else
+						OLDPOT=$(basename ${ACTUALPATH})
+	                	RECTIPATH=${OLDPATH%%$OLDPOT}
+	                		if [[ "$RECTIPATH" ==  "/" ]]; then
+	                			return 1
+	                		fi
+						echo "++"$OLDPATH"++" && OLDPATH="$RECTIPATH"  
+						echo "+++++++++++++++++++++++++++++++++++++++"
+						echo "ROOTDIR : "$ROOTDIR
+						echo "pwd vaut : "$MYPWD 
+						echo "Ancien répertoire : "$OLDPATH
+						echo "Répertoire actuel : "$ACTUALPATH
+						echo "Path recifié : "$RECTIPATH
+						echo "OLDPOT : " $OLDPOT
+						echo "LOG_TARGET : "$LOG_TARGET
+						echo "LOT_TGT : "$LOT_TGT
+						echo "+++++++++++++++++++++++++++++++++++++++"
+					break 
+					fi
+				done
+				cd $OLDPATH
+				while liste_fichiers ;  do : ; break ; done
+				break
+				return 0
+			fi
+	done
+}
+# Exemple de bo+ucle tant qu'une fonction réussit.
+# Le deux-points dans la boucle signifie "ne rien faire"
+#while liste_fichiers ; do : ; done
+#----------------------------------------------------------------------------------------------------#
+#                                            SCRIPT
+#------------------------------------------------------------------------------------------------
+banner
+PS3='Entrer votre choix?' # Invite de sélection.
+until [[ "$REPERTOIRE" == "Quitter" ]]; do
+        local LISTE_REP=("Quitter"  $(ls -lA / | awk '{print $9}')) 
+        echo "${GREEN}Sélectionnez le répertoire à analyser : ${NC}" >&2
+        select REPERTOIRE in $LISTE_REP; do
+        LOG_TARGET="/"$REPERTOIRE
+        LOT_TGT="/"$REPERTOIRE"/"
+            if [[ "$REPERTOIRE" = "Quitter" ]]; then
+                echo "${RED}Analyse des répertoires terminée.${NC}"
+                $SLEEP 2
+                $CLEAR
+                break
+            elif [[ -n "$REPERTOIRE" ]]; then
+
+                echo "Vous avez choisi le numéro ${RED}$REPLY${NC},"\
+                        "analyse de ${RED}$REPERTOIRE${NC}..."
+                    if [[ -f "$LOG_TARGET" ]]; then
+                        # SAVEIFS=$IFS
+                        # IFS=$(echon "\n\b")
+                        action_fichier $LOG_TARGET
+                        wait
+                        $CLEAR
+                        # IFS=$SAVEIFS
+                        break
+                    else
+                        if [[ -d "$LOG_TARGET" ]]; then
+                            $CLEAR
+                            # SAVEIFS=$IFS
+                            # IFS=$(echon "\n\b")							
+                            cd $LOG_TARGET
+                            while liste_fichiers ; do : ; break ; done
+                            # $SLEEP 2 ##
+                            wait
+                            $CLEAR
+                            # IFS=$SAVEIFS
+                            break
+                        fi
+                    break
+                    fi
+            else
+                echo "${RED}Sélection invalide !${NC}"
+            fi # Fin du traitement du choix de l'utilisateur.
+        break
+        done # Fin de la sélection d'un répertoire
+done
+

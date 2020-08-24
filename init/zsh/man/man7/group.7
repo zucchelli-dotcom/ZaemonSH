@@ -1,0 +1,41 @@
+.\" Manpage for group.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH group 7 "06 Feb 2020" "1.0" "group man page"
+.SH NAME
+group \- Create/ delete group, add/ remove user from/to group, list group and get info for specific group know if one user is member of a group
+.SH SYNOPSIS
+group [ ls | info | addusertogroup | removeuserfromgroup | ismemberofgroup | help ]
+.SH DESCRIPTION
+group \- Handle group and user on Darwin.
+.SH OPTIONS
+
+.IP "group [ls]"
+.B Get list of groups.
+
+.IP "group [info] <GROUPNAME>"
+.B Display group information.
+
+.IP "group [deletegroup] <GROUPNAME>"
+.B Delete a group.
+
+.IP "group [addgroup]"
+.B Add a group.
+
+.IP "group [addusertogroup] <GROUPNAME> <USERNAME>"
+.B Add an user to a specific group.
+
+.IP "group [removeuserfromgroup] <GROUPNAME> <USERNAME>"
+.B Remove an user from a specific group.j
+
+.IP "group [ismember] <GROUPNAME> <USERNAME>
+.B Show if the user is a member of a specific group.
+
+.IP "group [help]"
+.B Obtain program help info.
+
+.SH SEE ALSO
+user(7)
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zuchhelli bryan (zucchelli.bryan@gmail.com.in)

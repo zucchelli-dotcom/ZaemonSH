@@ -1,0 +1,197 @@
+# Funktion (kwgrub2_install), installiert grub2# {{{
+#
+# usage: kwgrub2_install
+#
+kwgrub2_install() {
+	unset -- DEV_INSTALL GRUB_DISKS GRUB_PART
+	# Pruefen, ob die Konfigurationsdatei schon erstellt wurde.
+	if [ -f "$GRUB_CONFFILE" ] ; then
+		if [ -n "${DISK_DEV[1]}" ] ; then
+#			if [ -n "${PART[1]}" ] ; then
+				DEV_INSTALL=yes
+#			fi
+		fi
+		#
+		lv_Disk=$(gettext 'Festplatte')
+		lv_Part=$(gettext 'Partition')
+		lv_Install=$(gettext 'installieren')
+		#
+		if [ "$DEV_INSTALL" = yes ] ; then
+			# Funktion install_grub_menue{{{
+			#
+			INSTALL_TITLE=($lv_Installation)
+			INSTALL_MSG=$(gettext 'Waehlen Sie den Ort der Installation aus.')
+			#
+			install_grub_menue() {
+				INSTALL_MENU=($lv_Disk \"$GRUB_DISKS\" $lv_Part \"$GRUB_PART\"
+				$lv_Install \"\" $gv_Back \"\")
+				menubox "$1" "$INSTALL_TITLE" "$INSTALL_MSG" "$INSTALL_MENU"
+			}
+			#}}}
+			#
+			install_grub_menue
+			while [ "$gv_Auswahl" ] ; do
+				case "$gv_Auswahl" in
+					HELP*)	script_help install_conf_help
+						install_grub_menue "${gv_Auswahl#HELP }"
+						;;
+					$lv_Disk)
+						# In welche Festplatten{{{
+						# Festplatten mit msdos Partitionstyp herausfinden
+						for i in ${=DISK_DEV} ; {
+							Pttype=$(blkid -o value -s PTTYPE $i)
+							case $Pttype in
+								dos) # msdos Partitionstabellentyp
+									Grub_Disks_M+=($i \"\" off)
+									;;
+								gpt) # gpt Partitionstabellentyp
+									# Diese Festplatte nach einer Partition mit dem
+									# Flag bios_grub suchen.
+									partdb $i bios_grub
+									if [[ -n ${PART[1]} ]] ; then
+										Grub_Disks_M+=(${${PART[1]}%[0-9]*} \"\" off)
+									fi
+									;;
+								*)	# andere Typen werden nicht unterstuetzt.
+									;;
+							esac
+						}
+						#
+						if [[ -n ${Grub_Disks_M[1]} ]] ; then
+							GRUB_DISK_MSG=$(gettext 'Waehlen Sie eine oder mehrere Festplatten aus in deren MBR grub2 installiert werden soll.')
+							checklist "" "$INSTALL_TITLE" "$GRUB_DISK_MSG" "$Grub_Disks_M"
+							#
+							while [ "$gv_Auswahl" ] ; do
+								case "$gv_Auswahl" in
+									HELP*)
+										DEFAULT_VALUE=${gv_Auswahl#HELP }
+										script_help grub2_disk_help
+										checklist "$DEFAULT_VALUE" "$INSTALL_TITLE" "$GRUB_DISK_MSG" "$Grub_Disks_M"
+										;;
+									*)	# uebernehmen
+										GRUB_DISKS="$gv_Auswahl"
+										unset -- GRUB_PART
+										break
+										;;
+								esac
+							done
+						else
+							MSG=$(gettext 'Es sind keine Festplatten mit dem Partitionstabellentyp msdos oder gpt vorhanden. Bei Festplatten mit dem Partitionstabellentyp gpt muss eine bios_grub Partition vorhanden sein.')
+							msgbox "$gv_Info" "$MSG"
+						fi
+						#}}}
+						install_grub_menue $lv_Disk
+						;;
+					$lv_Part)
+						# In den Bootsector einer Partition installieren#{{{
+						#
+						# Bei Festplatten mit dem Partitionstabellentyp gpt ohne (U)EFI
+						# benoetigt man den Partitionstyp ef02 (bios_grub) und mit (U)EFI
+						# eine Partition mit dem Dateisystem fat32 (vfat).
+						for d in ${=DISK_DEV} ; {
+							Pttype=$(blkid -o value -s PTTYPE $d)
+							if [[ $Pttype == dos ]] ; then
+								local Part
+								for i in / /boot /boot/grub /boot/grub2 ; {
+									if mountpoint $i &>/dev/null ; then
+										Part=$(grub-probe -t device $i 2>/dev/null)
+										case "$Part" in
+											$d*)
+												GRUB_PART_M+=($Part $i off)
+												;;
+										esac
+									fi
+								}
+							elif [[ $Pttype == gpt ]] ; then
+								# hexdump benutzen?
+								partdb -i fat32
+							fi
+						}
+						#
+						if [ -n "$GRUB_PART_M" -o -n "$PART_M" ] ; then
+							part_choice -m "$GRUB_PART_M $PART_M"
+							if [[ -n $WERT ]] ; then
+								GRUB_PART="$WERT"
+								unset -- GRUB_DISKS
+							fi
+						else
+							MSG=$(gettext 'Es sind keine Partitionen fuer grub2 vorhanden in die er installiert werden koennte.')
+							msgbox "$gv_Info" "$MSG"
+						fi
+						#}}}
+						install_grub_menue $lv_Part
+						;;
+					$lv_Install)
+						# grub installieren{{{
+						# Pruefen ob das Laufwerk read-write gemountet ist,
+						# da grub-install auch die *.mod Dateien nach /boot/grub
+						# kopiert.
+						check_write_part
+						if [[ $READ_WRITE == yes ]] ; then
+							if [ -n "$GRUB_PART" ] ; then
+								for i in ${=GRUB_PART} ; {
+									# Ist das Dateisystem fat32 (vfat), wird
+									# angenommen das es eine EFI Partition ist.
+									# Ansonsten ist es wahrscheinlich eine Linux
+									# oder bios_grub Partition.
+									Fs=$(blkid -o value -s TYPE -o $i)
+									if [ "$Fs" -eq vfat ] ; then
+										if ! test -d /boot/efi ; then
+											mkdir /boot/efi
+										fi
+										# bisherige EFI Partition sichern
+										if [ -z "$Old_Part" ] ; then
+											Old_Part=$(grub-probe -t device /boot/efi 2>/dev/null)
+										fi
+										# jetzige EFI Partition ausbinden und
+										# eine zur Installation einbinden.
+										umount /boot/efi
+										mount -t fat32 $i /boot/efi
+										PROG_OPT="--force --no-floppy --bootloader-id="$OS" --efi-directory=/boot/efi --no-uefi-secure-boot"
+										grub-install "${=PROG_OPT}" 1>/dev/null || prog_failure
+									else
+										PROG_OPT="--force --no-floppy"
+										grub-install "${=PROG_OPT}" $i 1>/dev/null || prog_failure
+									fi
+								}
+								# alte EFI Partition wieder einbinden
+								if [ -n "$Old_Part" ] ; then
+									umount /boot/efi
+									mount -t fat32 $Old_Part /boot/efi
+								fi
+								# in den MBR von Festplatten installieren.
+							elif [ -n "${GRUB_DISKS[1]}" ] ; then
+								PROG_OPT="--force --no-floppy"
+								for i in ${=GRUB_DISKS} ; {
+									grub-install "${=PROG_OPT}" $i 1>/dev/null || prog_failure
+								}
+							else
+								MSG=$(gettext 'Einer der Menuepunkte $lv_Disk oder $lv_Part ist nicht belegt.')
+								msgbox "$gv_Attention" "$MSG"
+							fi
+						else
+							no_read_write_msg
+						fi
+						#}}}
+						break
+						;;
+					$gv_Back)	
+						unset -- GRUB_PART GRUB_DISKS
+						break
+						;;
+				esac
+			done
+		else
+			unset -- DEV_INSTALL
+			MSG=$(gettext 'Es sind keine Laufwerke vorhanden ($lv_Disk, $lv_Part), um grub2 zu installieren.')
+			msgbox "$gv_Attention" "$MSG"
+		fi
+	else
+		no_conf_msg
+	fi
+}
+## }}}
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:                                                                               
+### }}}

@@ -1,0 +1,8 @@
+#!/bin/zsh
+
+emulate -L zsh
+osascript -e 'tell app "Finder" to quit' 
+# wait
+# sleep 2
+# open -b com.googlecode.iterm2
+exit 0

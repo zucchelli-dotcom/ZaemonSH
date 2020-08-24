@@ -1,0 +1,245 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# archall :
+# Archive all files that one directory contains.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 13/01/2018 :
+#  • Create this one.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/01/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+####################### 
+local VERSION FCT_NAME LISTFILES EXCLFILES LOGFILE 
+
+LISTFILES=$(find -type f -print0 )
+# Liste fichiers compressés
+EXCLFILES=$(find -regextype posix-extended  -regex '.*\.(gz|zip)')
+
+LOGFILE=""
+
+VERSION="0.0.3"
+FCT_NAME="archall"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+# cd () {
+# 	if (( ${#argv} == 1 )) && [[ -f ${1} ]]
+# 	then
+# 		[[ ! -e ${1:h} ]] && return 1
+# 		print "Correcting ${1} to ${1:h}"
+# 		builtin cd ${1:h}
+# 	else
+# 		builtin cd "$@"
+# 	fi
+# }
+# function argu () {
+# 	# if [[ ! $1 ]]; then
+# 	# 	echo "No arguments"
+# 	# 	echo Usage
+# 	# 	return 0
+# 	# fi
+
+# 	# if [[ $# > "1" ]];then
+# 	# 	echo "Too much arguments"
+# 	# 	echo Usage
+# 	# 	return 0
+# 	# fi
+
+# 	# if [[ ! -e $1 ]]  && [[ ! -d $1 ]]; then
+# 	# 	echo "Directory Don't exist"
+# 	# 	echo Usage
+# 	# 	return 0
+# 	# fi
+# }
+
+function normfile () {
+		#echo "${@}"
+ 		#; ls 
+		# ### Remove  index.html?C= files
+	    cd "${@}"  
+	    rm *.html?{C,D,S,M,N}={A,D}.tar.gz
+ 		rm *.html?{C,D,S,M,N}={C,D,M,N,S}";O="{A,D}"?C="{D,M,N,S,}";O="{A,D}.tar.gz
+	    rm *.htm?{C,D,S,M,N}={A,D}.tar.gz
+	    rm *.htm?{C,D,S,M,N}={C,D,M,N,S}";O="{A,D}"?C="{D,M,N,S,}";O="{A,D}.tar.gz
+	    	    
+	    #  find . -depth -name 'index.html?C=M;O=A' -exec rm {} \; 
+	  	#  find . -depth -name 'index.html?C=M;O=D' -exec rm {} \;    
+	   	#  find . -depth -name 'index.html?C=N;O=A' -exec rm {} \;
+	   	#  find . -depth -name 'index.html?C=N;O=D' -exec rm {} \;
+	   	#  find . -depth -name 'index.html?C=S;O=A' -exec rm {} \;
+	   	#  find . -depth -name 'index.html?C=S;O=D' -exec rm {} \;
+	   	#  find . -depth -name 'index.html?C=D;O=A' -exec rm {} \;
+	   	#  find . -depth -name 'index.html?C=D;O=D' -exec rm {} \;
+
+		wait
+		# ### Replace problematic character in filename
+		find . -depth -name '*:*'  -execdir bash -c 'for f; do mv -i "$f" "${f//:/ }"; done' bash {} +
+		wait
+		find . -depth -name '*(*'  -execdir bash -c 'for f; do mv -i "$f" "${f//(/ }"; done' bash {} +
+		wait
+		find . -depth -name '*)*'  -execdir bash -c 'for f; do mv -i "$f" "${f//)/ }"; done' bash {} +
+		wait
+		find . -depth -name '*|*'  -execdir bash -c 'for f; do mv -i "$f" "${f//|/ }"; done' bash {} +
+		wait
+		# ###	
+		## TODO CHAR >>> [ ç é è â ä ü û ö ô ? % ° " ] 
+		
+		# ### Rename folder with space for last char
+		OLDIFS=$IFS
+		find . -type d -print0 | while read -d $'\0' file; do			
+			IFS='/b'
+			#if [[ "${file: -1}" == " " ]]; then
+			
+			if [[ "${file:~0}" == " " ]]; then
+				#echo $file'>>>there is space as last character'
+				#echo "We remane" $files "with no space"
+				#echo ${file%* }'>>>'
+				### !! TODO test if too files have same filename after remove space char 
+				mv -i "$file" "${file%* }" 
+			fi
+			wait
+		done
+		IFS=$OLDIFS
+		wait
+		# ### Rename file with dot or with [:space:]  for last char
+		find . -type f -print0 | while read -d $'\0' file; do
+			IFS='/b'
+			#if [[ "${file: -1}" == " " ]]; then
+			if [[ "${file:~0}" == "." ]]; then
+				#echo $file'>>>there is a dot for last character'
+				#echo "We remane" $files "with no space"
+				#echo ${file%* }'>>>'
+				mv -i "$file" "${file%*.}" 
+			fi
+
+			if [[ "${file:~0}" == " " ]]; then
+				#echo $file'>>>there is space as last character'
+				#echo "We remane" $files "with no space"
+				#ashecho ${file%* }'>>>'
+				### !! TODO test if too files have same filename after remove space char 
+				mv -i "$file" "${file%* }" 
+			fi
+			wait
+			## ### !! TODO test if too files have same filename after remove space and dot last char 
+		done
+		IFS=$OLDIFS
+		wait
+		find . -depth -name '*  *' -execdir bash -c 'for f; do mv -i "$f" "${f//  / }"; done' bash {} +
+		wait
+ 
+}
+
+function targz() {
+	find . -type f -print0 | while read -d $'\0' file; do
+		if [[ ${file##*.}  != *(iso|xz|gz|7z|bz2|zip|tar|tgz|rar)  ]]; then
+		 	tar -cvzf "${file}".tar.gz "${file}"
+		 	wait
+		 	rm "${file}"
+		fi
+	done
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+if [[ ! $1 ]]; then
+	echo "No arguments"
+	echo Usage
+	return 0
+fi
+
+if [[ $# > "1" ]];then
+	echo "Too much arguments"
+	echo Usage
+	return 0
+fi
+
+if [[ ! -e $1 ]]  && [[ ! -d $1 ]]; then
+	echo "Directory Don't exist"
+	echo Usage
+	return 0
+fi		
+wait
+if [[ $(ls "${@}") != "" ]]; then
+	cd "${@}"
+	# normfile
+	targz
+	return 0
+else
+	echo "Internal Error"
+	return 0
+fi
+
+return 0

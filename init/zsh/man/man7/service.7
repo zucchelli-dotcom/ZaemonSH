@@ -1,0 +1,39 @@
+.\" Manpage for service.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH man 7 "06 Feb 2020" "MacOS" "MacOS Darwin ZaemonSH customization"
+.SH NAME
+service \- Manipulate LaunchService on Darwin.
+.SH SYNOPSIS
+service [status-all | list | ls | start | stop | load | unload | help]
+.SH DESCRIPTION
+service \-  Wrapper script to control and set LaunchService on Darwin.
+.SH OPTIONS
+
+.IP "service [status-all | list | ls]"
+.B List all services.
+
+.IP "service [ls] com.apple.sessionlogoutd"
+.B Show information about a specific service.
+
+.IP "service [view] com.apple.sessionlogoutd"
+.B View service file content.
+
+.IP "service [stop] com.apple.sessionlogoutd"
+.B Stop a service.
+
+.IP "service [start] com.apple.sessionlogoutd"
+.B Start a service.
+
+.IP "service [load] com.apple.sessionlogoutd"
+.B Load a service.
+
+.IP "service [unload] com.apple.sessionlogoutd"
+.B Unload a service.
+
+.IP "service [help]"
+.B Obtain program help info. 
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli bryan (zucchelli.bryan@gmail.com)

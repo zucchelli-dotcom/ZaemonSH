@@ -1,0 +1,127 @@
+#compdef group
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+#  _group :
+#  Completion for group script. Create/ delete group, add/ remove user from/to group, list 
+#  group and get info for specific group know if one user is member of a group
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify completion presentation.
+# 30/07/2019 :
+#  • Add delete and add group function.
+#  • Correct completioon
+#
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+_group(){
+  local -a _1st_arguments
+  _1st_arguments=(
+    'help:Show usage.'
+    'ls:Get list of groups.'
+    'info:Display group information.'
+    'addgroup:Add new group'
+    'deletegroup:Delete existing group'
+    'addusertogroup:Add an user to a specific group.'
+    'removeusertogroupr:Remove an user from a specific group.'
+    'ismemberofgroup:Show if the user is a member of a specific group.'
+    )
+
+    local _gro(){compadd -X %B"--- Available group gid. --- "%b $(sudo dscl . -list /Groups gid | awk '{ print $1 }'| column)}
+    #local _gro(){compadd -X %B"--- Available group. --- "%b $(dscl . -list /Groups gid | awk '{ print $1 }'| grep -v '^_' | column)}
+
+    local _us(){compadd -X %B"--- Available user. --- "%b $(sudo dscl . -list /Users uid  | awk '{ print $1 }' | grep -v '^_' | column)}
+    local _tx(){compadd -X %B"--- Type a new user name. --- "%b} 
+    #local _us(){compadd -X %B"--- Available group. --- "%b $(dscl . -list /Users uid  | awk '{ print $1 }'| grep -v '^_' | column)}
+ 
+    local curcontext="$curcontext" state line expl
+    local -A opt_args
+
+    _arguments -C '*:: :->subcmds'
+
+    if (( CURRENT == 1 )); then
+      _describe -t commands "group subcommands" _1st_arguments
+      return
+    fi
+
+    case "$words[1]" in
+        ls)
+         _arguments && return 0
+         ;;
+        info)
+        _arguments \
+        "1: : _gro" && return 0
+         ;;
+        addgroup)
+         _arguments && return 0
+          ;;
+        deletegroup)
+        _arguments \
+        "1: : _gro" && return 0
+         ;;
+         addusertogroup)
+         _arguments \
+          "1: : _gro" \
+          "2: : _us" && return 0
+         ;;
+        removeusertogroup)
+         _arguments \
+          "1: : _us" \
+          "2: : _gro" && return 0
+         ;;
+        ismemberofgroup)
+         _arguments \
+          "1: : _gro" \
+          "2: : _us" && return 0
+         ;;              
+        *)
+        _message "unknown group command: $words[1]"
+        _default
+        ;;
+    esac
+    return 1
+}
+
+#----------------------------------------------------------------------------------------#
+#                                      COMPLETION
+#----------------------------------------------------------------------------------------#
+_group "$@"

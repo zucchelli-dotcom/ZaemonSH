@@ -1,0 +1,84 @@
+#compdef Z_Open
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _linuxguiapp  :
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 08/03/2020 :
+#  • .
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+# for app in $(find /usr/share/applications -type f -name "*.desktop"); do
+#      for cate in Utility Accessibility Office Graphics Network Development AudioVideo System; do
+#      # for cate in Settings; do
+#          while [[ $(grep "Categories\|${cate}" $app) ]]; do
+#              dada+=( "${$(grep "Name=" $app)##*=}" )
+#          break
+#          done
+#      done
+# done
+
+
+if [[ -f  $HOME/.zsh/cache/$HOST/Linux_applications ]]; then
+    # dada=( $(echo $(cat $HOME/.zsh/cache/$HOST/Linux_applications)) )      
+    dada=$(echo "$(cat $HOME/.zsh/cache/$HOST/Linux_applications)")     
+    # _listapp(){compadd -X %B"--- Opplications ---"%b  $=dada  && return 0 }
+    _listapp(){compadd -X %B"--- Complications ---"%b  ${(f)dada} && return 0 }
+else 
+    for app in $(find /usr/share/applications -type f -name "*.desktop"); do
+     for cate in Utility Accessibility Office Graphics Network Development AudioVideo System; do
+     # for cate in Settings; do
+         while [[ $(grep "Categories\|${cate}" $app) ]]; do
+             dada+=( "${$(grep "Name=" $app)##*=}" )
+         break
+         done
+     done
+   done
+   _listapp(){compadd -X %B"--- Applications ---"%b $dada && return 0 }
+fi
+#----------------------------------------------------------------------------------------------------#
+#                                             COMPLETION
+#----------------------------------------------------------------------------------------------------#
+_listapp 
+ 
+ 

@@ -1,0 +1,185 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Modified by Wataru Kagawa (06/02/05)
+# wkagawa@jota.gsc.riken.go.jp
+# with help from Bill Scott (wgscottATchemistryDOTucscDOTedu).
+#
+# The original bash script that executes Pashua was modified to a zsh function that can
+# be autoloaded.
+#
+# USAGE:
+# Z_Pashua_run "<configuration>"
+# For example,
+# Z_Pashua_run "*.title = Hello World! \ntx.type = text \ntx.text = This is a test."
+#
+# For details on the configuration syntax, see inside the Documentation folder that
+# comes with the Pashua program.  Pashua is available at, http://www.bluem.net/downloads/pashua_en/
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 10/10/2017 :
+#  • Add description.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 10/10/2017 :
+#  • Modifying Script presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+
+
+if [[ $1 == '-P' ]];then
+      WhichPashua='use_external'
+      print "   Using the user-installed Pashua.app"
+else
+     WhichPashua='use_internal'
+     # Dockless version
+     # print "   Using internal Pashua framework in $ZDOT/zshrc.d/local-functions/etc"
+fi
+
+
+#---------------------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------------------
+
+
+ 
+
+	local default_lang_env pashua_configfile absolutepath bundlepath mypath searchpath \
+	pashuapath result line key value varname varvalue
+
+	#---------------------------
+	# Set to English environment
+	#---------------------------
+
+	if [[ $__CF_USER_TEXT_ENCODING != ('0x1F5:0:0') ]]; then
+		default_lang_env=$__CF_USER_TEXT_ENCODING
+		__CF_USER_TEXT_ENCODING=0x1F5:0:0
+	fi
+
+
+	#--------------------
+	# Write a config file
+	#--------------------
+
+	pashua_configfile=$( command mktemp /tmp/pashua_XXXXXXXXX )
+	echo "$1" >> $pashua_configfile
+
+
+	#----------------------------------------
+	# Store Pashua binary path in $pashuapath
+	#----------------------------------------
+
+    if [[ -d "$ZDOT/zshrc.d/local-functions/etc/pashua/Pashua.app/Contents" && $WhichPashua == 'use_internal' ]];then
+        absolutepath="$ZDOT/zshrc.d/local-functions/etc/pashua/Pashua.app/Contents/MacOS/Pashua"
+    elif [[ -d "$SWPREFIX/share/zsh/templates/Library/init/zsh/zshrc.d/local-functions/etc/pashua/Pashua.app/Contents" && $WhichPashua == 'use_internal' ]];then
+        absolutepath="$SWPREFIX/share/zsh/templates/Library/init/zsh/zshrc.d/local-functions/etc/pashua/Pashua.app/Contents/MacOS/Pashua"
+	elif [[ -x /usr/bin/mdfind ]]; then
+		absolutepath=$( mdfind -onlyin /Applications Pashua.app | head -n 1 )/Contents/MacOS/Pashua
+		if [[ -z $absolutepath ]];then
+		      absolutepath=$( mdfind 'kMDItemContentType == "com.apple.application-bundle" && kMDItemDisplayName == "Pashua"' | head -n 1 )/Contents/MacOS/Pashua
+		fi
+		
+	else
+		absolutepath=$( locate Pashua.app/Contents/MacOS/Pashua | head -n 1 )
+	fi
+
+	bundlepath="Pashua.app/Contents/MacOS/Pashua"
+	mypath=$( dirname "$0" )
+
+	for searchpath in "$absolutepath" "$mypath/Pashua" "$mypath/$bundlepath" \
+	"./$bundlepath" "/Applications/$bundlepath" "$HOME/Applications/$bundlepath" \
+	"$2/$bundlepath"; do
+		if [[ -f "$searchpath" && -a "$searchpath" && -x "$searchpath" ]]; then
+			pashuapath=$searchpath
+			break
+		fi
+	done
+
+	if [[ ! -n $pashuapath ]]; then
+		print "Error: Pashua could not be found"
+		return 1
+	fi
+
+
+	#-----------
+	# Get result
+	#-----------
+#####
+#/!\# 
+##### 
+	 #result=( $("$pashuapath" $pashua_configfile | command perl -pi -e "s| |_SPACE_|g" | command perl -pi -e "s|\[return\]|_RETURN_|g") )
+	## Get rid of "-i used with no filenames on the command line, reading from STDIN." message.
+    result=( $("$pashuapath" $pashua_configfile | command perl -pi -e "s| |_SPACE_|g" 2>/dev/null | command perl -pi -e "s|\[return\]|_RETURN_|g" 2>/dev/null) )
+#####
+#/!\# 
+#####
+	#-------------------
+	# Remove config file
+	#-------------------
+
+	command rm $pashua_configfile
+
+
+	#-------------
+	# Parse result
+	#-------------
+
+	for line in $result; do
+		key=${${(s:=:)line}[1]}
+		value=${${${(s:=:)line}[2]}//_SPACE_/ }
+		varname=$key
+		varvalue="$value"
+		eval $varname='$varvalue'
+	done
+
+
+	#---------------------------------------------
+	# Revert back to original language environment
+	#---------------------------------------------
+
+	__CF_USER_TEXT_ENCODING=$default_lang_env
+
+ 
+ 

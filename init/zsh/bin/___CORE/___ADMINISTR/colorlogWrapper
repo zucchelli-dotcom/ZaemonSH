@@ -1,0 +1,66 @@
+#! /bin/zsh 
+
+
+	USAGE="${RED}Usage${NC}: colorlog [yourlog]"
+	COLO="$ZDOT/bin/colorlog"
+	LOGNAME=$1
+	LOGLIST=$(find / -name \*.log 2>|/dev/null)
+
+	#######################################################
+	## Users log
+	LOGUSERS=$(find /Library/Logs -name \*.log 2>|/dev/null)
+	## Macports log
+	PORTSLOG=$(find /opt/local/var -name \*.log 2>|/dev/null)
+	## System logs
+	SYSTEMLOG=$(find /private/var/log -name \*.log 2>|/dev/null)
+	## Ruby gems log
+	RUBYLOG=$(find /System/Library/Frameworks/Ruby.framework/Versions/2.0/usr/lib/ruby/gems/2.0.0/gems/libxml-ruby-2.6.0/ext -name \*.log 2>|/dev/null)
+	## Your log
+	HOMELOG=$(find $HOME -name \*.log 2>|/dev/null)
+	#######################################################
+
+	#echo ${RED}
+	#FRAMNAME=${1:?"Error.Framework name without extensions is needed."}
+	#echo ${NC}
+	# TYPCONV=${2:?"Error"}
+	 if [[ $# == "0" ]]; then
+	 		#echo $zob
+	 		echo $USAGE
+	 		return 1
+	 fi
+	 if [[ $# != "1" ]]; then
+	 		#echo $zob
+	 		echo $USAGE
+	 		return 1
+	 fi
+
+
+	if [ ! -e ${COLO} ]; then
+		echo "$(tput bold)Aborting!$(tput reset) $COLO is not found."
+		return 1
+	fi
+	
+
+
+echo "---${FRAMNAME}"
+
+	# Ensure framework you choose is available.
+	if [[ $LOGLIST == "" ]]; then
+		echo "$(tput bold)Aborting!$(tput reset) no log on your system "
+		return 1
+	fi	
+
+	if [ LOGNAME ]; then	
+		# Ensure $DESTFOLDER is available 
+	 	echo "${RED}${OUTPUTNAME} already exist.${NC}"
+	 	return 1
+	else
+
+	fi	
+
+
+
+
+	 
+	
+

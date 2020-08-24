@@ -1,0 +1,174 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# prompt_magicmace_setup  :
+#
+# magicmace theme
+# Ideas and code taken from:
+# xero's zsh prompt <http://code.xero.nu/dotfiles>
+# eriner's eriner prompt <https://github.com/zimfw/zimfw/blob/master/modules/prompt/themes/eriner.zsh-theme>
+#
+# Requires the `git-info` zmodule to be included in the .zimrc file.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 00/00/0000 :
+#  • Create this one .
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  echo "${RED}"
+  cat<<__EOF__
+    usage: $0 [  ]
+
+    Examples:
+                                                 # .
+
+
+__EOF__
+echo ${NC}
+}
+
+# Global variables
+function {
+  COLOR_ROOT="%F{red}"
+  COLOR_USER="%F{cyan}"
+  COLOR_NORMAL="%F{white}"
+  COLOR_ERROR="%F{red}"
+
+  if (( ${EUID} )); then
+    COLOR_USER_LEVEL=${COLOR_USER}
+  else
+    COLOR_USER_LEVEL=${COLOR_ROOT}
+  fi
+}
+
+# Status:
+# - was there an error?
+# - are there background jobs?
+# - are we in a ranger session?
+prompt_magicmace_status() {
+  local symbols=""
+
+  (( ${RETVAL} )) && symbols+="${COLOR_ERROR}${RETVAL}${COLOR_NORMAL}" # $? for error.
+  (( $(jobs -l | wc -l) > 0 )) && symbols+='b' # 'b' for background.
+  (( ${RANGER_LEVEL} )) && symbols+='r' # 'r' for... you guessed it!
+
+  [[ -n ${symbols} ]] && print -n "─${COLOR_NORMAL}${symbols}${COLOR_USER_LEVEL}─"
+}
+
+prompt_magicmace_git() {
+  [[ -n ${git_info} ]] && print -n "${(e)git_info[prompt]}"
+}
+
+prompt_magicmace_precmd() {
+  # While it would be apt to have this as a local variable in prompt_status(),
+  # $? (returned value) and ${(%):-%?} ("The return status of the last command
+  # executed just before the prompt") both change before executing the function.
+  # Is this perhaps because prompt_status _is_ here?
+  # We could also just set $? as an argument, and thus get our nifty local variable,
+  # but that's stretching it, and makes the code harder to read.
+  RETVAL=$?
+  (( ${+functions[git-info]} )) && git-info
+}
+
+prompt_magicmace_setup() {
+  autoload -Uz colors && colors
+  autoload -Uz add-zsh-hook
+
+  prompt_opts=(cr percent sp subst)
+
+  add-zsh-hook precmd prompt_magicmace_precmd
+
+  zstyle ':zim:git-info:branch' format '%b'
+  zstyle ':zim:git-info:commit' format '%c...'
+  zstyle ':zim:git-info:dirty' format '*'
+  zstyle ':zim:git-info:ahead' format '↑'
+  zstyle ':zim:git-info:behind' format '↓'
+  zstyle ':zim:git-info:keys' format \
+    'prompt' '─[${COLOR_NORMAL}%b%c%D%A%B${COLOR_USER_LEVEL}]'
+
+  # Call git directly, ignoring aliases under the same name.
+  PROMPT='${COLOR_USER_LEVEL}$(prompt_magicmace_status)[${COLOR_NORMAL}$(short_pwd)${COLOR_USER_LEVEL}]$(prompt_magicmace_git)── ─%f '
+  RPROMPT=''
+}
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+emulate -L zsh
+prompt_magicmace_setup "$@"
+
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:
+### }}}
+
+
+
+
+
+

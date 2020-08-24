@@ -1,0 +1,78 @@
+#!/usr/bin/perl -w
+#
+# $Id: random-signature.pl,v 1.1 2003/12/26 19:10:12 dope Exp dope $
+#
+# Copyright by Christian Schneider <strcat@gmx.net>
+# 
+# Filename       : ~/bin/random-signature.pl
+# Purpose        : Create a random signature.
+# Author         : Christian Schneider <strcat@gmx.net>
+# Latest release : <http://strcat.neessen.net/>
+#
+# Last modified: [ 2003-12-26 20:18:41 ]
+#
+# For slrn (<http://slrn.sourceforge.net/>) add
+#  | set editor_command "random-signature.pl; your_editor"
+#  | set signature "/home/username/.signature"
+#
+# For Mutt (<http://www.mutt.org/>) add
+#  | set signature="random-signature.pl|"
+#
+# You can use a mapping into Vim (<http://www.vim.org/>)
+#  | nmap z   :r!random-signature.pl; cat ~/.signature<CR>
+
+use strict;
+
+# The file with the sig-collection
+my $Siglist="$ENV{HOME}/.sigquotes"; 
+
+# A permanent bit at begin/end of sig
+# my $Sigperm='Christian 'strcat' Schneider <http://strcat.neessen.net/>'; 
+
+# The outputfile for the complete signature
+my $Sigfile="$ENV{HOME}/.signature"; 
+
+
+my $Nquotes=0;
+my $quote;
+my $quotetxt="";
+
+# Find a number of quotes 
+# The delimiter at several sigs must be a `%´ 
+open SIGLIST, "<$Siglist" || die "can't open $Siglist for read: $!\n";
+while (<SIGLIST>){
+  if (/^%\s*$/) {
+    $Nquotes++;
+  }
+}
+close SIGLIST;
+
+# Pick random number
+$quote=int(rand($Nquotes));
+
+# Extract random quote thing
+$Nquotes=0;
+
+open SIGLIST, "<$Siglist" || die "can't open $Siglist for read: $!\n";
+open SIGOUT, ">$Sigfile" || die "can't open $Sigfile for write: $!\n";
+
+# Skip first bit
+while (<SIGLIST>) {
+  if ($Nquotes==$quote) {
+    last if /^%\s*$/;
+    $quotetxt .= $_;
+  }
+  $Nquotes++ if /^%\s*$/;
+}
+
+# Put sig to file
+select(SIGOUT);
+print "-- \n";
+
+# See "my $Sigperm".
+# Add this line before or after "$quotetxt".
+# print "$Sigperm\n";
+
+print "$quotetxt";
+close SIGOUT;
+close SIGLIST;

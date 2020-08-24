@@ -1,0 +1,38 @@
+.\" Manpage for mustacheme.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH mustacheme 7 "06 Feb 2020" "ZaemonSH MacOS" "MacOS ZaemonSH customization"
+.SH NAME
+mustacheme \- Takes a .gif, splits it into constituent frames, mustaches each, restitches the gif, and uploads to cloudapp.
+.SH SYNOPSIS
+mustacheme
+.SH DESCRIPTION
+mustacheme \- Expanded from an idea from Rick Olson (@technoweenie)
+
+Takes a .gif, splits it into constituent frames, mustaches each, restitches
+the gif, and uploads to cloudapp.
+
+This leverages the nifty service mustachify.me, which will analyze your photo,
+identify faces, and add a mustache to your image.
+
+If the .gif is a remote file, we'll download it and blow it up locally.
+
+  $1 - the path of the gif
+
+Examples:
+  mustacheme holman-jumping-off-cliff-into-butter.gif
+  mustacheme http://github.com/holman/butter/blob/master/holman-butter.gif
+
+Dependencies:
+  - ImageMagick. If you're on a Mac, run:
+      brew install imagemagick
+  - wget
+  - cloudapp: https://github.com/holman/dotfiles/blob/master/bin/cloudapp
+  - gifme:    https://github.com/holman/gifme
+
+.SH OPTIONS
+The mustacheme does not take any options.
+However, you can supply one to the God of man.
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

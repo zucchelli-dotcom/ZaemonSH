@@ -1,0 +1,234 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# run-help :
+# Figure out where to get the best help, and get it.
+# Install this function by placing it in your FPATH and then
+# adding to your .zshrc the lines:
+#   unalias run-help
+#   autoload run-help
+#
+
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="run-help"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+
+# set -x
+emulate -R zsh
+setopt localoptions
+
+[[ $1 == "." ]] && 1="dot"
+[[ $1 == ":" ]] && 1="colon"
+
+
+helppath=$HELPDIR:
+dir=${helppath%%:*}
+
+while [[ -n $helppath ]]; do
+
+    if [[ -d "$dir" ]];then
+        NEWHELPDIR="$dir"
+    
+        # Check whether Util/helpfiles has been used to generate zsh help
+        if [[ $# == 0 || $1 == "-l" ]]
+        then
+            if [[ -n "${NEWHELPDIR:-}" && -d $NEWHELPDIR ]]
+            then
+            echo "Here is a list of topics for which special help is available:"
+            echo ""
+            print -rc $NEWHELPDIR/*(:t)
+            else
+            echo "There is no list of special help topics available at this time."
+            fi
+            return 0
+        elif [[ -n "${NEWHELPDIR:-}" && -r $NEWHELPDIR/$1 && $1 != compctl ]]
+        then
+            ${=PAGER:-more} $NEWHELPDIR/$1
+            pagerstatus=$?
+             
+            command man -P "less -eis"  "$@"  2>/dev/null
+             
+            info_paths=$INFOPATH:
+             
+            info_dir=${info_paths%%:*}
+    
+            while [[ -n $info_paths ]]; do
+                if [[ -d "$info_dir" ]];then
+                    NEWINFODIR="$info_dir"
+                    
+                    testit=$(basename $( command ls $NEWINFODIR/$1.info )) 2>|/dev/null
+                    if [[ -f $( command info -w coreutils ) ]];then
+                        testit2=$( head -n 100 $( command info -w coreutils )  | awk '{print $2}' | grep $1:)
+                    else
+                        testit2=""
+                    fi
+
+                    if [[ $testit:r == $1 || $testit2 == $1: ]];then
+                        command info $1 2>/dev/null
+                        testit="" ; testit2=""
+                        return 0
+                    fi
+                fi   
+                                   
+                info_paths=${info_paths#*:}
+                info_dir=${info_paths%%:*}         
+            done
+            return $pagerstatus
+        fi
+    fi
+   
+    helppath=${helppath#*:}
+    dir=${helppath%%:*}
+done    
+
+
+
+
+# No zsh help; use "whence" to figure out where else we might look
+local what places newline='
+'
+integer i=0 didman=0
+
+places=( "${(@f)$(builtin whence -va $1)}" )
+
+while ((i++ < $#places))
+do
+    what=$places[$i]
+    builtin print -r $what
+    case $what in
+    (*( is an alias)*)
+    command man -P "less -eis"  7 $1
+    if [[ $? == 1 ]];then
+	  [[ ${what[(w)6]:t} != ${what[(w)1]} ]] && run-help ${what[(w)6]:t}
+    fi
+	;;
+	(*( is a shell function))
+	command man -P "less -eis"  7 $1 ;;
+    (*( is a * function))
+	case ${what[(w)1]} in
+	(comp*) command man -P "less -eis"  zshcompsys;;
+	(zf*) command man -P "less -eis"  zshftpsys;;
+	(*) builtin functions ${what[(w)1]} | ${=PAGER:-more};;
+	esac;;
+    (*( is a * builtin))
+	case ${what[(w)1]} in
+	(compctl) command man -P "less -eis"  zshcompctl;;
+	(comp*) command man -P "less -eis"  zshcompwid;;
+	(bindkey|vared|zle) command man -P "less -eis"  zshzle;;
+	(*setopt) command man -P "less -eis"  zshoptions;;
+	(cap|getcap|setcap) ;&
+	(clone) ;&
+	(ln|mkdir|mv|rm|rmdir|sync) ;&
+	(sched) ;&
+	(stat) command man -P "less -eis"  zshmodules;;
+	(zftp) command man -P "less -eis"  zshftpsys;;
+	(*) command man -P "less -eis"  zshbuiltins;;
+	esac
+	;;
+    (*( is hashed to *))
+	command man -P "less -eis"  ${what[(w)-1]:t}
+	return $?
+	;;
+    (*( is a reserved word))
+	command man -P "less -eis"  zshmisc
+	;;
+    (*)
+	((! didman++)) && command man -P "less -eis"  $@
+	return $?
+	;;
+    esac
+    if ((i < $#places && ! didman))
+    then
+	builtin print -nP "%SPress any key for more help or q to quit%s"
+	builtin read -k what
+	[[ $what != $newline ]] && echo
+	[[ $what == [qQ] ]] && break
+    fi
+    
+done
+
+
+

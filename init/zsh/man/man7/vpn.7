@@ -1,0 +1,39 @@
+.\" Manpage for vpn.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH vpn 7 "06 Feb 2020" "ZaemonSH MacOS" "MacOS ZaemonSH customization"
+.SH NAME
+vpn \- Play VPN on CLI.
+.SH SYNOPSIS
+vpn [ ls | list | start | stop | status | help ]
+.SH DESCRIPTION
+vpn \- Play VPN on CLI.
+.SH OPTIONS
+
+.IP "vpn [ls]"
+.B List VPN connections
+
+.IP "vpn [start] <VPN>"
+.B Start vpn connection named VPN
+
+.IP "vpn [start] <USER>"
+.B Start a vpn connection with a given user
+
+.IP "vpn [start] <VPN> <USER> <PASS>"
+.B Start a vpn connection with a given user and password
+
+.IP "vpn [start] <VPN> <USER> <PASS> <SECRET>"
+.B start a vpn connection with a given user,password, and secret
+
+.IP "vpn [stop] <VPN>"
+.B stop vpn connection named VPN
+
+.IP "vpn [status] <VPN>"
+.B status vpn connection named VPN
+
+.IP vpn [help]
+.B Obtain script help.
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

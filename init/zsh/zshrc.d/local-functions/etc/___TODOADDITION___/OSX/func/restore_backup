@@ -1,0 +1,30 @@
+#! /usr/bin/env bash
+
+# DESCRIPTION
+# Performs restoration of backup data.
+
+read -p "What is the backup volume root path (Example: \"/Volumes/alchemist\")? " mac_os_backup_root
+
+if [[ ! -e "$mac_os_backup_root" ]]; then
+  printf "ERROR: Backup volume cannot be found: $mac_os_backup_root\n"
+  exit 1
+fi
+
+mkdir -p log
+
+rsync \
+  --rsync-path="sudo rsync" \
+  --perms \
+  --recursive \
+  --compress \
+  --numeric-ids \
+  --links \
+  --hard-links \
+  --files-from="$MAC_OS_CONFIG_PATH/lib/restore.bom" \
+  --log-file="log/restore.log" \
+  --human-readable \
+  --verbose \
+  "$mac_os_backup_root/" /
+
+sudo cp -p "$mac_os_backup_root/etc/newsyslog.d/alchemists.conf" "/etc/newsyslog.d"
+sudo cp -p "$mac_os_backup_root/etc/newsyslog.d/homebrew.conf" "/etc/newsyslog.d"

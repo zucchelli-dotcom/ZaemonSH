@@ -1,0 +1,165 @@
+#compdef disk
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _disk :
+# Completion for disk wrapper diskutil script to do essantial disk task on darwin.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 16/10/2017 :
+# • Finish format disk and volume.
+# 
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 15/10/2017 :
+#  • Modify script presentation.
+#  • Clean completion.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local _disk
+
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+
+_disk(){
+  local -a _1st_arguments
+  _1st_arguments=(
+    'ls:list disks, or a specific disk' 
+    'list:list disks, or a specific disk'
+    'core:Sist all CoreStorage partitions and disks.'
+    'fs:list available filesystems for formatting'
+    'filesystems:list available filesystems for formatting'
+    'info:display information'
+    'verifyvolume:verify volume or disk'
+    'verifydisk:verify volume or disk'
+    'repairvolume:repair volume or disk'
+    'repairdisk:repair disk or disk'
+    'formatdisk:format disk'
+    'formatvolume:format volume'
+    'reformat:reformat a volume'
+    'rename:rename a volume'
+    'help:view this help'
+  )
+
+local _diskutil_rdisk(){compadd -X %B"--- Available mounted volumes --- "%b /  /dev/rdisk* }
+
+local _diskutil_disk(){compadd -X %B"--- Available mounted volumes --- "%b /  /dev/disk* }
+
+local _diskutil_volume(){compadd -X %B"--- Available mounted volumes --- "%b /  /Volumes/* }
+
+local _diskutil_name(){ compadd -X %B"--- Available volumes name --- "%b "$(/bin/ls /Volumes)" }
+
+local _diskutil_format(){ APFS free ExFAT MS-DOS fat32 HFS+ hfsx jhfsx jhfs+ }
+
+
+  #
+  local curcontext="$curcontext" state line expl
+  local -A opt_args
+
+  _arguments -C '*:: :->subcmds'
+
+  if (( CURRENT == 1 )); then
+    _describe -t commands "disk subcommands" _1st_arguments
+    return
+  fi
+
+  case "$words[1]" in
+      ls|list)
+       _arguments \
+       "1: : _diskutil_disk" && return 0
+       ;;
+      core)
+       _arguments && return 0
+       ;;
+      fs|filesystems)
+       _arguments && return 0
+       ;;
+      info)
+       _arguments \
+       "1: : _diskutil_disk" && return 0
+       ;;           
+      ejectall)
+       _arguments && return 0
+       ;;           
+      verifyvolume)       
+       _arguments \
+      "1: : _diskutil_volume" && return 0
+       ;;
+      verifydisk)
+       _arguments \
+       "1: : _diskutil_disk" && return 0
+       ;;       
+      repairvolume)
+       _arguments \
+       "1: : _diskutil_volume" && return 0
+       ;;
+      repairdisk)
+       _arguments \
+       "1: : _diskutil_disk" && return 0
+       ;;
+      formatdisk)
+       _arguments \
+       "1: : _diskutil_format" \
+       "2:Type new name for your disk" \
+       "3: : _diskutil_rdisk" && return 0
+       ;;
+      formatvolume)
+       _arguments && return 0
+       ;;
+      reformat)
+        _arguments && return 0
+       ;;
+      rename)
+       _arguments \
+        "1: : _diskutil_name" \
+        "2:Type new name for your disk" && return 0
+       ;;
+      createram)
+       _arguments && return 0
+       ;;
+       *)
+       _message "unknown disk command: $words[1]"
+         _default
+       ;;
+  esac
+  return 1
+}
+#----------------------------------------------------------------------------------------#
+#                                      COMPLETION
+#----------------------------------------------------------------------------------------#
+_disk "$@"
+

@@ -1,0 +1,1 @@
+Supervisor is a client/server system that allows its users to control a numbers of processes on Unix-)like operating systems.

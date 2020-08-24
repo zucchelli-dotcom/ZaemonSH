@@ -1,0 +1,309 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_Open :
+# Modification of original apple open command.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Add others functionalities like those :
+#  
+##  
+##  TODO = - test + addd new option  
+##         - $home folder and so also $ZDOT folder on exotic location 
+#            (eg. an another partition)
+##         - $Application folder and so also $ZDOT folder on $HOME folder 
+#            ($HOME/Applications/)
+##
+
+
+
+
+    # open2 - a smart wrapper for the cool Mac OS X 'open' command
+    #   to make it even more useful. By default, open launches the
+    #   appropriate application for a specified file or directory
+    #   based on the Aqua bindings, and has a limited ability to 
+    #   launch applications if they're in the /Applications dir.
+
+    # first off, whatever argument we're given, try it directly:
+
+    # open=/usr/bin/open
+
+    # if ! $open "$@" >/dev/null 2>&1 ; then
+    #   if ! $open -a "$@" >/dev/null 2>&1 ; then
+
+    #     # More than one arg?  Don't know how to deal with it: quit
+    #     if [ $# -gt 1 ] ; then
+    #       echo "open: Can't figure out how to open or launch $@" >&2
+    #       exit 1
+    #     else
+    #       case $(echo $1 | tr '[:upper:]' '[:lower:]') in
+    #     acrobat      ) app="Acrobat Reader"     ;;
+    #     adress*      ) app="Address Book"       ;;
+    #     chat         ) app="iChat"          ;;
+    #     cpu          ) app="CPU Monitor"        ;;
+    #     dvd          ) app="DVD Player"         ;;
+    #     excel        ) app="Microsoft Excel"        ;;
+    #     netinfo      ) app="NetInfo Manager"        ;;
+    #     prefs        ) app="System Preferences"     ;;
+    #     print        ) app="Print Center"       ;;
+    #     profil*      ) app="Apple System Profiler"  ;;
+    #     qt|quicktime ) app="QuickTime Player"       ;;
+    #     sync         ) app="iSync"          ;;
+    #     word         ) app="Microsoft Word"     ;;
+    #         * ) echo "open: Don't know what to do with $1" >&2
+    #         exit 1
+    #       esac
+    #       echo "You asked for $1 but I think you mean $app." >&2
+    #       $open -a "$app"
+    #     fi
+    #   fi
+    # fi
+
+    # exit 0
+# Function open to augment the Apple command open
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+  clear
+  echo "${NC}"  
+  echo " ###################################################################################################"
+  echo " #                                                                                                 #"
+  echo " #     ${GREEN}This is ${RED}$FCT_NAME : ${YEL}$VERSION FOR $OSTYPE ${NC}                                             #"
+  echo " #     CopyL®®v 2020, Zucchelli Bryan                                                  #"
+  echo " #                                                                                                 #"
+  echo " #     Unless required by applicable law or agreed to in writing, software                         #"
+  echo " #     distributed under the License is distributed on an "AS IS" BASIS,                             #"
+  echo " #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.                    #"
+  echo " #     See the License for the specific language governing permissions and                         #"
+  echo " #     limitations under the License.                                                              #"
+  echo " #                                                                                                 #"
+  echo " ###################################################################################################"
+  echo ""
+}
+
+function UsageBlab {
+    FxnName='Z_Open'
+    print ""
+    print "\tusage: $FxnName [-abeFfpstxh] [<application\ name>] [<file\ name>]"
+    print ""
+    print "\t$FxnName -a foo [bar] \t Opens application foo [and file bar]"
+    print "\t$FxnName -b <bundle identifier> \t Opens with the specified application bundle identifier."
+    print "\t$FxnName -d bar \t\t Opens file with default application"
+    print "\t$FxnName -e bar \t\t Force the file bar to open with TextEdit"
+    print "\t$FxnName -f \t\t Reads piped input and opens with TextEdit."
+    print "\t$FxnName -F bar \t\t Force the file bar to open with edit function"
+    print "\t$FxnName -p bar.prefPane \t Open named System Preferences preference pane"
+    print "\t$FxnName -s bar \t\t Force the file bar to open with sudo open"
+    print "\t$FxnName -t foo \t\t Opens file foo with default text editor"
+    print "\t$FxnName -w foo Opens named Widget (10.4+)"
+    print "\t$FxnName -x foo [bar] \t Force the program foo to open [file bar] with open-X11"
+    print "\t$FxnName -h \t\t Obtain this help info"
+    print""
+    helpme=""
+    return 0
+}
+
+
+function Initialize {
+    launch_app=false
+    defaultapp=false
+    launch_textedit=false
+    use_edit_fx=false
+    use_stdin=false
+    launch_pane=false
+    launch_default=false
+    launch_bund=false
+    launch_widget=false
+    use_sudo_open=false
+    use_openx11=false
+    helpme=false
+}
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+#autoload -U edit Z_Sudo_open  
+# for debugging comment out above and uncomment the line below
+#function edit { print "edit function call" }
+
+
+# Initialize variables:
+Initialize
+# Get options and separate these from genuine file names
+
+while getopts ":abdeFfpstwxh" opt; do
+	case $opt in
+		a ) launch_app=true ;;
+		b ) launch_bund=true ;;
+		d ) defaultapp=true ;;
+		e ) launch_textedit=true ;;
+        F ) use_edit_fx=true ;;
+        f ) use_stdin=true ;;
+        p ) launch_pane=true ;;
+		s ) use_sudo_open=true ;;
+		t ) launch_default=true ;;
+		w ) launch_widget=true ;;
+		x ) use_openx11=true ;;
+		h ) helpme=true ;;
+       \? ) UsageBlab ; return 1 ;;
+	esac
+done
+
+# This makes $1 the file to be edited.
+shift $(($OPTIND - 1))
+#################################################
+
+
+if [[ $launch_app == true ]];then
+    command open -a "$@" 2>/dev/null
+     Z_Restart
+        if [[ $? != 0 ]];then
+        command open -a "$1".app "$2" 2>/dev/null
+        if [[ $? != 0 ]];then
+            command open -a "$1":r "$2"  2>/dev/null
+            if [[ $? != 0 ]];then
+                command open -a "$1":r:r "$2"  2>/dev/null
+                if [[ $? != 0 ]];then
+                    #command open $(mdfind -onlyin /Applications -onlyin /Developer "$1" | head -n 1 ) "$2" 
+                    command open $(mdfind -onlyin /Users/Applications -onlyin /Applications -onlyin /Developer "$1" | head -n 1 ) "$2" 
+                    if [[ ! -d $(mdfind -onlyin /Applications -onlyin /Developer "$1" | head -n 1 ) ]];then
+                        print "Unable to locate and open the application $1 "
+                        Initialize; return 1
+                    fi
+                fi
+            fi
+        fi
+toedit=''
+fi
+    Initialize; return 0
+elif [[ $defaultapp == true ]];then
+    command open "$@"
+    Initialize; return 0
+elif [[ $launch_textedit == true ]];then
+    command open -e "$@"
+    Initialize; return 0
+elif [[ $launch_bund == true ]];then
+    command open -b "$@"
+    Initialize; return 0
+elif [[ $launch_default == true ]];then
+    command open -t "$@"
+    Initialize; return 0
+elif [[ $use_edit_fx == true ]];then
+    edit "$@"
+    Initialize; return 0
+elif [[ $use_stdin == true ]];then
+    command open -f  
+    Initialize; return 0
+elif [[ $launch_widget == true ]];then
+    # Test to see if Dashboard is activated:
+    DashDisabled=$(command defaults read com.apple.dashboard mcx-disabled)
+    if [[ $DashDisabled == 1 ]];then
+        print "Dashboard is disabled.  Issue \e[1menable_Dashboard\e[0m to re-enable it."
+        return 442
+    else
+        if [[ -d /Library/Widgets/"$@" ]];then
+            open /Library/Widgets/"$@"
+        elif [[ -d ~/Library/Widgets/"$@" ]];then
+            open ~/Library/Widgets/"$@"
+        fi
+    fi
+    Initialize; return 0
+elif [[ $launch_pane == true ]];then
+    if [[ -e /System/Library/PreferencePanes/"$@" ]];then
+        open /System/Library/PreferencePanes/"$@"
+    #####
+    #/!\# 26112019_0840 
+    #####
+            Z_Restart
+    #####
+    #/!\#
+    #####
+    elif [[ -e /Library/PreferencePanes/"$@" ]];then
+        open /Library/PreferencePanes/"$@"
+    #####
+    #/!\# 26112019_0840
+    #####
+            Z_Restart
+    #####
+    #/!\#
+    #####
+    elif [[ -e ~/Library/PreferencePanes/"$@" ]];then
+        open ~/Library/PreferencePanes/"$@"
+    #####
+    #/!\# 26112019_0840
+    #####
+            Z_Restart
+    #####
+    #/!\#
+    #####
+    else
+        print "Completion failed."
+        return 1
+    fi
+    Initialize; return 0
+elif [[ $use_sudo_open == true ]];then
+    Z_Sudo_open "$@"
+    Initialize; return 0
+elif [[ $use_openx11 == true ]];then
+    command open-x11 "$@"
+    Initialize; return 0
+elif [[ $helpme == true ]];then
+    UsageBlab
+    Initialize; return 0
+else	
+    command open "$@"
+    Initialize; return 0
+fi
+
+Initialize
+

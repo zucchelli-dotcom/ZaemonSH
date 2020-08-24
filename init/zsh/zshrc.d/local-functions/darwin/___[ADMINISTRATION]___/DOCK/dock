@@ -1,0 +1,264 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# dock :
+# Control Dock parameters with ZeamonSH
+
+#-------------------------------------------------------------------------------------------#
+#                                               NOTES
+#-------------------------------------------------------------------------------------------#
+hide-in-dock() {
+    if [ $1 ]; then
+        if [[ -d "$1/Contents" ]]; then
+            if [[ $(defaults read "$1/Contents/Info" LSUIElement) -eq '0' ]]; then
+                defaults write "$1/Contents/Info" LSUIElement 1
+                echo "Hiding $1"
+            else
+                defaults write "$1/Contents/Info" LSUIElement 0
+                echo "Showing $1"
+            fi
+        else
+            echo "Please specify a valid application"
+        fi
+    else
+        echo "Please specify a valid application"
+    fi
+}
+
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 16/10/2017 :
+# • showdelay variable not available on sierra.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 16/10/2017 :
+#  • Modify script presentation.
+#  • Define some command variables.
+#  • Add banner.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+# Define some local command
+local help showdelay auto_hide magnify dock_position add_blank_space add_recent_items prune banner VERSION FCT_NAME
+
+CLEAR="$(whereis clear)"
+ECHO="$(whereis echo)"
+DEFAULTS="$(whereis defaults)"
+KILLALL="$(whereis killall)"
+CAT="$(whgereis cat)"
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+    $CAT<<__EOF__
+    ${RED}
+    usage: dock [ showdelay | autohide | magnification | position | addblankspace | addrecentitems | prune | help ]
+
+    Examples:
+        dock showdelay x.x          # Changes how long the Dock takes to show up when auto-hide is enabled
+        dock autohide YES           # Enable Dock's auto hide feature
+        dock autohide NO            # Disable Dock's auto hide feature
+        dock magnification YES      # Turn magnification on
+        dock magnification NO       # Turn magnification off
+        dock position BOTTOM        # Change Dock's position to the bottom of the screen
+        dock position LEFT          # Change Dock's position to the left of the screen
+        dock position RIGHT         # Change Dock's position to the right of the screen
+        dock addblankspace          # Add a blank space (separator) to the Dock
+        dock addrecentitems         # Add a stack containg your recent items to the Dock
+                                    #  (You can change the stack's type by right clicking on it)
+       dock prune                   # remove all items from dock
+    ${NC}
+__EOF__
+}
+
+show_delay(){
+    case $1 in
+        [0-9][.][0-9])
+            $ECHO "New Auto-Hide time: "$1
+            $DEFAULTS write com.apple.dock autohide-time-modifier -float $1
+            ;;
+        [0-9])
+            $ECHO "New Auto-Hide time: "$1
+            $DEFAULTS write com.apple.dock autohide-time-modifier -int $1
+            ;;
+        *)
+            $ECHO "Current Auto-Hide time: $($DEFAULTS read com.apple.dock autohide-time-modifier 2>/dev/null)"
+            return 0
+            ;;
+    esac
+    $KILLALL Dock
+}
+
+auto_hide(){
+    case $1 in
+        [yY][eE][sS])
+            $ECHO "${GREEN}Auto Hide: YES${NC}" 
+            $DEFAULTS write com.apple.dock autohide -boolean YES
+            ;;
+        [nN][oO])
+            $ECHO "${GRREN}Auto Hide: No${NC}"
+            $DEFAULTS write com.apple.dock autohide -boolean NO
+            ;;
+        *)
+            $ECHO "Auto Hide: $($DEFAULTS read com.apple.dock autohide)"
+            return 0
+            ;;
+    esac
+    $KILLALL Dock
+}
+
+magnify(){
+    case $1 in
+        [yY][eE][sS])
+            $ECHO "${GREEN}Magnification: YES${NC}"
+            $DEFAULTS write com.apple.dock magnification -boolean YES
+            ;;
+        [nN][oO])
+            $ECHO "${GREEN}Magnification: NO${NC}"
+            $DEFAULTS write com.apple.dock magnification -boolean NO
+            ;;
+        *)
+            $ECHO "Magnification: $($DEFAULTS read com.apple.dock magnification)"
+            return 0
+            ;;
+    esac
+    $KILLALL Dock
+}
+
+dock_position(){
+    case $1 in
+        [bB][oO][tT][tT][oO][mM])
+            $ECHO "${GREEN}Dock Position: BOTTOM${NC}"
+            $DEFAULTS write com.apple.dock orientation bottom
+            ;;
+        [lL][eE][fF][tT])
+            $ECHO "${GREEN}Dock Position: LEFT${NC}"
+            $DEFAULTS write com.apple.dock orientation left
+            ;;
+        [rR][iI][gG][hH][tT])
+            $ECHO "${GREEN}Dock Position: RIGHT${NC}"
+            $DEFAULTS write com.apple.dock orientation right
+            ;;
+        *)
+            $ECHO "Position: $($DEFAULTS read com.apple.dock orientation)"
+            return 0
+            ;;
+    esac
+    $KILLALL Dock
+}
+
+add_blank_space(){
+    $ECHO "${GREEN}New blank space added to the Dock${NC}"
+    $DEFAULTS write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}'
+    $KILLALL Dock
+}
+
+add_recent_items(){
+    $ECHO "${GREEN}Add recent items stack${NC}"
+    $DEFAULTS write com.apple.dock persistent-others -array-add '{"tile-data" = {"list-type" = 1;}; "tile-type" = "recents-tile";}';
+    $KILLALL Dock
+}
+
+prune(){
+    $ECHO "${GREEN}remove all items from stack${NC}"
+    $DEFAULTS write com.apple.dock persistent-apps '()'
+    $KILLALL Dock
+}
+
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+case $1 in
+    help)
+        help
+        ;;
+    showdelay)
+        shift
+        show_delay $@
+        ;;
+    autohide)
+        shift
+        auto_hide $@
+        ;;
+    magnification)
+        shift
+        magnify $@
+        ;;
+    position)
+        shift
+        dock_position $@
+        ;;
+    addblankspace)
+        shift
+        add_blank_space
+        ;;
+    addrecentitems)
+        shift
+        add_recent_items
+        ;;
+    prune)
+        shift
+        prune
+        ;;
+    *)
+        help
+        ;;
+esac
+
+# vim: ts=4 sw=4 softtabstop=4 expandtab

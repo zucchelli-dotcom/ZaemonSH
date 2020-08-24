@@ -1,0 +1,16 @@
+zeesh-plugin-enable() {
+    if [ $1 ]; then
+        plugin=$1
+        plugin_dir="$HOME/.zsh/plugins/$plugin"
+        source "$plugin_dir/plugin"
+    else
+        # Source each plugin in zeesh_plugins
+        for plugin in $zeesh_plugins; do
+            plugin_dir=$HOME/.zsh/plugins/$plugin
+            source $plugin_dir/plugin
+        done
+    fi
+    unset plugin plugin_dir
+}
+
+# vim: ft=zsh

@@ -1,0 +1,15 @@
+theme() {
+    if [ $1 ]; then
+        if [ -f ~/.zsh/plugins/theme/themes/$1.zsh ]; then
+            echo "Switching to $1"
+            source ~/.zsh/plugins/theme/themes/$1.zsh
+            echo $1 > ~/.zsh/local/theme.last
+        else
+            echo "Can't find that theme"
+        fi
+    else
+        echo $(cat ~/.zsh/local/theme.last)
+    fi
+}
+
+# vim: ft=zsh

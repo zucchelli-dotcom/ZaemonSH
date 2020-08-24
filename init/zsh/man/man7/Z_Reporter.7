@@ -1,0 +1,47 @@
+.\" Manpage for Z_Reporter.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH Z_Reporter 7 "06 Feb 2020" "ZaemonSH" "ZaemonSH customization"
+.SH NAME
+Z_Reporter \- "Z_Reporter" prints your current environment variables.
+.SH SYNOPSIS
+Z_Reporter [all | aliases | bindings | completion | functions | limits | options | variables | zstyles]
+.SH DESCRIPTION
+ Z_Reporter \- "Z_Reporter" prints your current environment variables, shell variables, limits, completion settings, and option settings to stdout in the form of a script.
+
+.IP "Z_Reporter [all]"
+.B Tries to find every useful setting under your shell.
+
+.IP "Z_Reporter [aliases]"
+.B Prints only aliases.
+
+.IP "Z_Reporter [bindings]"
+.B Prints only "bindkey" commands.
+
+.IP "Z_Reporter [completion]"
+.B Prints only "compctl" commands.
+
+.IP "Z_Reporter [functions]"
+.B Prints "autoload" commands or actual functions.
+
+.IP "Z_Reporter [limits]"
+.B Prints "limit" commands for things like cputime, etc.
+
+.IP "Z_Reporter [modules]"
+.B Prints "zmodload" commands.
+
+.IP "Z_Reporter [options]"
+.B Prints "setopt" commands
+
+.IP "Z_Reporter [variables]"
+.B Prints both shell and environment variables.
+
+.IP "Z_Reporter [zstyles]"
+.B Prints "zstyle" commands
+
+.IP "Z_Reporter [help]"
+.B Obtain program help info.
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

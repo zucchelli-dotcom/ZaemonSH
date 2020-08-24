@@ -1,0 +1,477 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_Configure_zaemonsh_templates_pashua :
+# Large panel zeamonsh installation script for Darwin.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+#  02/10/2017 :      
+ # • Unify X11 or Xquartz_setup depend of osx version
+ # • Problem with prompt_setup.
+ # • Possibility of scrolling with pashua
+#  07/10/2017 :
+ # • Directly integrated syntax highlighting.
+ # • remove fink ?
+ # • remove idiosyncratic and crystallography of installation process and past to a dedicated function.
+ # • remove GRML and extra plug-ins from installation.   
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+#  02/10/2017
+# • Homebrew add.
+# • macports add.   
+# 2020-02-22 :
+#  • Add cd $HOME at end of file to avoid /Users/bz/Library/init/zsh/zshenv.d
+#    path after install.
+# 2020-08-09 :
+# • Merge fink, Macport and Homebrew options
+# • Merge X11 and Xquartz options
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#
+VERSION='0.0.2'
+# May 11, 2007
+# Z_Configure_zaemonsh_templates_gui
+# shell script name shell script function
+
+# Figure out where we are running this from:
+WeAreHere=$(dirname $0)
+
+# Define what the dialog should be like
+# Take a look at Pashua's Readme file for more info on the syntax
+#
+#-------------------------------------------------------------------------------------------#
+########################################       Interface      ########################################
+#-------------------------------------------------------------------------------------------#
+
+# All of this gets put into a single variable called conf:
+conf="
+        # Set transparency: 0 is transparent, 1 is opaque
+        tx1.transparency=0.95
+        
+        # Heavy metal overdose:
+        *.appearance=metal
+        
+        # Set window title
+        # tx1.windowtitle = ZSH Customizations
+        *.title = ZSH Templates Customization Assistant
+        
+        #img.type = image
+        #img.path = "$(dirname $WeAreHere)"/Resources/zsh_on_osx.png
+        #img.maxheight = 100
+        
+        ####################
+        # Introductory text:
+        ####################
+        tx1.type=text
+        tx1.width = 750
+        # tx1.text = ZSH Templates Customization Assistant.[return]
+        tx1.text = ZSH Templates Customization Assistant.[return]
+        
+        
+        ###############################################################
+        # Ask if vi or emacs keybindings should be used:
+        ###############################################################
+        # Define radiobuttons
+        rb1.type = popup
+        rb1.width = 300
+        rb1.label = Do you want to use vi or emacs keybindings?
+        rb1.option = emacs key bindings - the default
+        rb1.option = vi key bindings
+        rb1.option = Leave everything the way it is now.
+        rb1.default = Leave everything the way it is now.
+        
+        ###############################################################
+        # Ask if User and Host completions should be set up:
+        ###############################################################
+        #tx2.type=text
+        #tx2.width = 1050
+        #tx2.text = Completions for commands that use usernames and hostnames can draw from customized lists. A GUI can be used to make this easy.
+        
+        # Define radiobuttons
+        rb2.type = popup
+        rb2.width = 300
+        rb2.label = Do you want to set up USER and HOST customized completions (for commands that use usernames and hostnames)?
+        rb2.option = Yes, customize it.
+        rb2.option = No, use the default settings.
+        rb2.option = Leave everything the way it is now.
+        rb2.default = Leave everything the way it is now.
+           
+
+
+        ###############################################################
+        # Ask if Fink, Macport or Homebrew is present:
+        ###############################################################
+        # tx3.type=text
+        # tx3.width = 1050
+        # tx3.text = The scripts check for a Fink, Macport or Homebrew installation on startup, but this is only useful to users of Fink.[return](It also checks silently for MacPorts and Homebrew.)        
+        
+        
+        # Define radiobuttons
+        rb3.type = popup
+        rb3.width = 300
+        rb3.label = Do you have Fink, Macport or Homebrew installed?
+        rb3.option = Fink packages manager
+        rb3.option = Macport packages manager
+        rb3.option = Homebrew packages manager
+        rb3.option = Leave everything the way it is now.
+        rb3.default = Leave everything the way it is now.   
+        
+
+        ###############################################################
+        # Ask user if idiosyncratic functions should be loaded:
+        ###############################################################
+        # tx4.type=text
+        # tx4.width = 1050
+        # tx4.text = There are some functions in these scripts that I like but may annoy you because they alter (improve) the default behavior of commands.
+        
+        
+        # Define radiobuttons
+        rb4.type = popup
+        rb4.width = 300
+        rb4.label = Load optional functions (these alter some properties of existing unix commands)?
+        rb4.option = No - the default 
+        rb4.option = Yes - see functions.local file for details 
+        rb4.option = Leave everything the way it is now.
+        rb4.default = Leave everything the way it is now.   
+         
+        ###############################################################
+        # Ask user if crystallography functions should be loaded:
+        ###############################################################
+        # tx5.type=text
+        # tx5.width = 1050
+        # tx5.text = There are some functions that you would only use for crystallography programs.  
+ 
+        # Define radiobuttons
+        rb5.type = popup
+        rb5.width = 300
+        rb5.label = Load the crystallography functions? - useless unless you use crystallography software
+        rb5.option = No - default
+        rb5.option = Yes
+        rb5.option = Leave everything the way it is now.
+        rb5.default = Leave everything the way it is now.
+        
+
+        ###############################################################
+        # Ask if user wants to run the X11 or XQuartz customization GUI:
+        ###############################################################
+        # tx6.type=text
+        # tx6.width = 1050
+        # tx6.text = Use this to access some \"hidden\" customization options in X11 or XQuartz. 
+
+ 
+        # Define radiobuttons
+        rb6.type = popup
+        rb6.width = 300
+        rb6.label = Do you want to customize the behavior of Apple's X11 or XQuartz?
+        rb6.option = X11 
+        rb6.option = XQuartz
+		rb6.option = Leave everything the way it is now.
+        rb6.default = Leave everything the way it is now.
+
+
+        ###############################################################
+        # Ask if user wants to run the Z_My_prefs_edit GUI:
+        ###############################################################
+        # tx7.type=text
+        # tx7.width = 1050
+        # tx7.text = You can set up defaults graphical pdf html text and image editor. 
+
+ 
+        # Define radiobuttons
+        rb7.type = popup
+        rb7.width = 300
+        rb7.label = Do you want to set up defaults graphical editor?
+        rb7.option = No, I like what I have now.
+        rb7.option = Yes, please activate the Z_My_prefs_edit GUI.
+        rb7.default = No, I like what I have now.
+
+        ###############################################################
+        # Ask user if extra plugins addition should be loaded:
+        ###############################################################
+        # # tx8.type=text
+        # # tx8.width = 1050
+        # # tx8.text = Use this to add extra plugins addition support to your configuration. 
+
+ 
+        # Define radiobuttons
+        rb8.type = popup
+        rb8.width = 300
+        rb8.label = Do you want to add extra plugins addition ?
+        rb8.option = No
+        rb8.option = Yes
+        rb8.option = Leave everything the way it is now.
+        rb8.default = Leave everything the way it is now.
+
+        ###############################################################
+        # Ask if user wants to run the Z_Switch_prompt GUI:
+        ###############################################################
+        # tx9.type=text
+        # tx9.width = 1050
+        # tx9.text = You can change the zsh prompt to any of several supppled prompt themes. 
+
+ 
+        # Define radiobuttons
+        rb9.type = popup
+        rb9.width = 300
+        rb9.label = Do you want to see a menu of different prompt themes?
+        rb9.option = No, I like what I have now.
+        rb9.option = Yes, please activate the Z_Switch_prompt GUI.
+        rb9.default = No, I like what I have now.
+ 
+
+        ###############################################################
+        # Ask if user wants to read more:
+        ###############################################################
+        # tx1O.type=text
+        # tx10.width = 1050
+        # tx10.text = You can change the zsh prompt to any of several supppled prompt themes. 
+
+ 
+        # Define radiobuttons
+        rb10.type = popup
+        rb10.width = 300
+        rb10.label = Do you want to see more details about these and other options?
+        rb10.option = No, I prefer to suffer in silence.
+        rb10.option = Yes, please take me to the website.
+		rb10.default = No, I prefer to suffer in silence.
+
+
+    cn.type=cancelbutton
+    cn.label=Cancel
+"; # end of conf
+
+Z_Pashua_run "$conf"        
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+
+#-------------------------------------------------------------------------------------------#
+#                                                SCRIPT
+#-------------------------------------------------------------------------------------------#
+print ""
+
+##  emacs or vi keybindings?
+print "ZSH \e[1m Keybindings\e[0m: "
+
+if [[ "$rb1" == *vi*  ]]; then
+	print "Changing to \e[1mvi keybindings\e[0m."
+	print "Delete the file ~/.zsh/zshvi or run this again to undo this setting."
+	touch $HOME/.zsh/zshvi
+elif [[ "$rb1" == *emacs* ]]; then
+	print "Changing to \e[1memacs keybindings\e[0m."
+	/bin/rm -f $HOME/.zsh/zshvi
+else
+	print "Leaving this setting unchanged."
+fi
+
+print "\e[1m +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m "
+print ""
+
+## User and Host completion setup
+print "ZSH \e[1m User and Host completions \e[0m customization: "
+
+if [[ "$rb2" == *Yes*  ]]; then
+	autoload -U Z_user_setup Z_Host_setup
+	Z_user_setup
+	Z_Host_setup	
+	print "Customized user and host completions will work in the next shell session"	
+elif [[ "$rb2" == *No*  ]]; then
+	print "When you are ready, issue the commands \e[1mZ_user_setup\e[0m and \e[1mZ_Host_setup\e[0m "
+else
+	print "Leaving this setting unchanged."
+fi
+
+print "\e[1m +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m "
+print ""
+
+## Ask extra package manager
+print "\e[1m Package manager \e[0m setup: "
+
+cd $ZDOT/zshenv.d
+for f in $(/bin/ls -A $ZDOT/zshenv.d | grep -v ".txt"); do mv $f $(basename $f .disabled) 2>/dev/null; done
+for f in $(/bin/ls -A $ZDOT/zshenv.d | grep -v ".txt"); do mv $f{,.disabled}; done
+cd
+ 
+if [[ "$rb3" == *Fink*  ]]; then
+	print "Creating the file \e[1m~/.zsh/finknowarn \e[0mto suppress shell warning dialogue.";
+	touch $HOME/.zsh/macportnowarn; 
+    touch $HOME/.zsh/brewnowarm;
+    mv $ZDOT/zshenv.d/fink_first.disabled $ZDOT/zshenv.d/fink_first 2>/dev/null
+elif [[ "$rb3" == *Macport*  ]]; then
+    print "Creating the file \e[1m~/.zsh/macportnowarn \e[0mto suppress shell warning dialogue.";
+    touch $HOME/.zsh/finknowarm;
+    touch $HOME/.zsh/brewnowarm;
+    mv $ZDOT/zshenv.d/macports_first.disabled $ZDOT/zshenv.d/macports_first 2>/dev/null
+elif [[ "$rb3" == *Homebrew*  ]]; then
+    print "Creating the file \e[1m~/.zsh/brewnowarn \e[0mto suppress shell warning dialogue.";
+    touch $HOME/.zsh/finknowarn;
+    touch $HOME/.zsh/macportnowarn;
+    mv $ZDOT/zshenv.d/brew_first.disabled $ZDOT/zshenv.d/brew_first 2>/dev/null
+else
+	print "Leaving this setting unchanged."
+    touch $HOME/.zsh/finknowarn
+    touch $HOME/.zsh/macportnowarn
+    touch $HOME/.zsh/brewnowarm
+fi
+
+print "\e[1m +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m "
+print ""
+
+
+## Optional functions
+print "\e[1m Possibly annoying Functions: \e[0m"
+
+if [[ "$rb4" == *Yes*  ]]; then
+	print "Creating the file \e[1m~/.zsh/zlocalfxn\e[0m to activate these functions."
+	touch $HOME/.zsh/zlocalfxn
+elif [[ "$rb4" == *No*  ]]; then
+	print "Deleting the file \e[1m~/.zsh/zlocalfxn\e[0m to deactivate these functions."
+	/bin/rm -f $HOME/.zsh/zlocalfxn
+
+else
+	print "Leaving this setting unchanged."
+fi
+
+print "\e[1m +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m "
+print ""
+
+## Crystallography functions
+print "\e[1m Crystallography Functions: \e[0m"
+
+if [[ "$rb5" == *Yes* ]]; then
+	print "Creating the files \e[1m~/.zsh/zxtalfxn\e[0m and \e[1m~/.zsh/use_xtal_env\e[0m to activate these functions."
+	touch $HOME/.zsh/zxtalfxn
+	touch $HOME/.zsh/use_xtal_env
+elif [[ "$rb5" == *No*  ]]; then
+	print "Deleting the file \e[1m~/.zsh/zxtalfxn\e[0m to deactivate these functions."
+	/bin/rm -f $HOME/.zsh/zxtalfxn  $HOME/.zsh/use_xtal_env
+
+else
+	print "Leaving this setting unchanged."
+fi
+
+
+print "\e[1m +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m "
+print ""
+
+## X11 Customizations
+print "\e[1m X11 customization: \e[0m"
+
+if [[ "$rb6" == *X11*  ]]; then
+	autoload -U Z_Customize_x11_gui
+	Z_Customize_x11_gui	
+elif [[ "$rb6" == *XQuartz*  ]]; then
+    autoload -U Z_Customize_xquartz_gui
+    Z_Customize_xquartz_gui
+else
+	print "Leaving these settings unchanged."
+fi
+print ""
+print "\e[1m +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m "
+print ""
+
+
+# Visual editor
+print "\e[1m Visual Editor: \e[0m"
+
+if [[ "$rb7" == *Yes*  ]]; then
+	autoload -U Z_My_prefs_edit
+	Z_My_prefs_edit
+else
+	print "Issue the command \e[1m Z_My_prefs_edit \e[0m if you decide you want to do this."
+fi
+print ""
+print "\e[1m +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m "
+print ""
+
+# Extras plug-ins
+print "\e[Do you want to add extra plugins addition \? \e[0m"
+
+if [[ "$rb9" == *Yes*  ]]; then
+    print "Creating the file \e[1m~/.zsh/plugextraaddi\e[0m to activate these functions."
+    touch $HOME/.zsh/plugextraaddi
+else
+    print "Deleting the file \e[1m~/.zsh/plugextraaddi\e[0m to deactivate these functions."
+    /bin/rm -f $HOME/.zsh/plugextraaddi
+
+fi
+print ""
+print "\e[1m +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m "
+print ""
+
+
+# Prompt menu
+print "\e[1m Prompt menu: \e[0m"
+
+if [[ "$rb9" == *Yes*  ]]; then
+	print "Opening prompt menu"
+	autoload -U Z_Switch_prompt
+	Z_Switch_prompt
+else
+	print "Issue the command \e[1m Z_Switch_prompt \e[0m if you decide you want to do this."
+fi
+print ""
+print "\e[1m +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m "
+print ""
+
+
+## Read more?
+if [[ "$rb10" == *Yes*  ]]; then
+	print "Opening web page..."
+	open http://xanana.ucsc.edu/xtal/wiki/index.php/ZSH_on_OS_X
+else
+	print "Issue the command \e[1m help_zsh_templates \e[0m for further information."
+fi
+print ""
+print "\e[1m +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m "
+print ""
+
+# This file keeps the dialogue prompting from happening again
+touch ~/.zsh/configure_zsh_templates
+print "Issue the command \e[1m Z_Configure_zaemonsh_templates\e[0m if you need to do this again."
+print ""
+print "\e[1m +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m "
+print ""
+print "Issue the command \e[1m Z_Switch_prompt \e[0m if you want to change the prompt."
+print ""
+print "\e[1m +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m "
+print ""
+##  END  #######
+
+
+clear && cd $HOME && exec zsh

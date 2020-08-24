@@ -1,0 +1,1 @@
+frame buffer terminal emulator : standalone replacement of linux kernel terminal that can functions outside Xorg

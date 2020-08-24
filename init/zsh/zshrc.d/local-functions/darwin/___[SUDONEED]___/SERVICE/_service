@@ -1,0 +1,150 @@
+#compdef service
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+#  _service :
+#  Set and control service completion.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 2020-02-23 :
+#  • Make 3 different categories of LAUNCHCTLPATHS ( user admin system )
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 09/02/2020 :
+#  • Creat e this one
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local service
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+_service(){
+local -a _1st_arguments
+_1st_arguments=(
+      'status-all: list all services'
+      'list:list all services'
+      'ls:list all service or show information about a specific service'
+      'view:View service file contents'
+      'start:start a service'
+      'stop: stop a service'
+      'load: load a service'
+      'unload: unload a service'
+      'help:view this help'
+ )
+ 
+# ~/Library/LaunchAgents         Per-user agents provided by the user.
+# /Library/LaunchAgents          Per-user agents provided by the administrator.
+# /Library/LaunchDaemons         System wide daemons provided by the administrator.
+# /System/Library/LaunchAgents   OS X Per-user agents.
+# /System/Library/LaunchDaemons  OS X System wide daemons.
+
+
+LAUNCHCTLPATHS=( \
+$HOME/Library/LaunchAgents \
+/Library/LaunchAgents \
+/Library/LaunchDaemons \
+/System/Library/LaunchAgents \
+/System/Library/LaunchDaemons \
+)
+
+
+
+# _plilist(){compadd -X %B"--- available plist service configuration ---"%b $(find $HOME/Library/LaunchAgents -type f -name "*.plist")$(find /Library/LaunchAgents -type f -name "*.plist") && return 0 } 
+
+_plilist(){compadd -X %B"--- available plist service configuration ---"%b $(find $LAUNCHCTLPATHS[@] -type f -name "*.plist") && return 0 } 
+
+local curcontext="$curcontext" state line expl
+local -A opt_args
+
+_arguments -C '*:: :->subcmds'
+
+if (( CURRENT == 1 )); then
+  _describe -t commands "service subcommands" _1st_arguments
+  return
+fi
+
+case "$words[1]" in
+    status-all)
+     _arguments \
+     && return 0
+     ;;
+    list)
+     _arguments \
+     && return 0
+     ;;
+    ls)
+     _arguments \
+     "1: : _plilist" && return 0
+     ;;
+    view)
+     _arguments \
+     "1: : _plilist" && return 0
+     ;;
+    start)
+     _arguments \
+     "1: : _plilist" && return 0
+     ;;
+    stop )
+     _arguments \
+     "1: : _plilist" && return 0
+     ;;
+    load)
+     _arguments \
+    "1: : _plilist" && return 0
+     ;;
+    unload)
+     _arguments \
+    "1: : _plilist" && return 0
+     ;;            
+    help)
+     _arguments && return 0
+     ;;          
+     *)
+     _message "unknown service command: $words[1]"
+       _default
+      ;;
+esac
+return 1
+}
+
+#----------------------------------------------------------------------------------------#
+#                                      COMPLETION
+#----------------------------------------------------------------------------------------#
+_service "$@"
+
+
+
+

@@ -1,0 +1,133 @@
+#compdef getbid
+#autoload
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _retrieve_mac_apps :
+# Author: Motoi Washida
+# November 12 2004 CVS version
+# Find paths of applications and preserve them into _mac_apps.
+# Used by _mac_applications and _mac_files_for_application.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 30/02/2018 :
+# • Add some stop patterns filter.
+# 31/12/2018 :
+# • Add some Adobe cc stop patterns filter.
+# • Add some conditionnal patterns filter to single file applications.
+# 24/01/2020 :
+# • Add Hidden /System/Library/CoreServices App. 
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+_mac_apps_caching_policy () {
+   # Rebuild if cache is more than a day old
+   oldp=( "$1"(Nmw+1) )
+   (( $#oldp ))
+}
+
+_retrieve_mac_apps() {
+  local cache_policy
+  zstyle -s ":completion:*:*:$service:*" cache-policy cache_policy
+  if [[ -z "$cache_policy" ]]; then
+    zstyle ":completion:*:*:$service:*" cache-policy _mac_apps_caching_policy
+  fi
+
+  if ( [[ ${+_mac_apps} -eq 0 ]] || _cache_invalid Mac_applications ) && ! _retrieve_cache Mac_applications; then
+    # Get directories which may contain applications
+    typeset -aU app_dir 
+    if [[ -z "$app_dir" ]] && \
+      ! zstyle -s ":completion:${curcontext}:commands" application-dir app_dir
+    then
+      typeset -a app_dir_stop_pattern app_dir_root
+#####
+#/!\#
+#####
+      # "*Plug-ins.localized#" for Illustrtor Plug-ins
+      app_dir_stop_pattern=( "Adobe Creative Cloud" "Adobe Application Manager" \
+                             "Adobe Creative Cloud Experience" "Adobe Sync"  \
+                             "*.app" "contents#" "*data" "*plugins#" "*Plug-ins#" "*plug?ins#"  \
+                             "*Plug-ins.localized#" "fonts#" "document[[:alpha:]]#" "*help"      \
+                             "resources#" "images#" "*configurations#" )
+      #app_dir_stop_pattern=( "*.app" "contents#" "*data" "*plugins#" "*plug?ins#" "fonts#" "document[[:alpha:]]#" "*help" "resources#" "images#" "*configurations#" )
+#####
+#/!\#
+#####
+      
+        ################
+        app_dir_root=( {,/System/Library/CoreServices,/Developer,/Network,"$HOME"}/{Applications*(N),Desktop} )
+        # app_dir_root=( {,/Developer,/Network,"$HOME"}/{Applications*(N),Desktop} )
+        #app_dir_root=( {,/Developer,/Network,"$HOME/Applications*(N)"}/{Applications*(N),Desktop} )
+        ################
+      
+      typeset app_dir_pattern
+      app_dir_pattern="(^(#i)(${(j/|/)app_dir_stop_pattern}))"
+      app_dir=( ${^app_dir_root}/(${~app_dir_pattern}/)#(N) )
+    
+  fi
+
+    typeset -g -Ua _mac_apps
+    local -a app_result
+
+    # Get application bundles
+    if ! zstyle -t ":completion:${curcontext}:commands" ignore-bundle; then
+      app_result=( ${^app_dir}*/Contents/(MacOS|MacOSClassic)(N) )
+      _mac_apps+=( ${app_result[@]%/Contents/MacOS*} )
+    fi
+
+    # Get single file applications
+    if ! zstyle -t ":completion:${curcontext}:commands" ignore-single; then
+      autoload -U zargs
+      local app_cand nargs envvars
+      app_cand=( ${^app_dir}^*.[a-z]#/..namedfork/rsrc(.UrN,.RN^U) )
+         echo $app_cand
+         echo "-------"
+         if [[ $app_cand  ]]; then
+          envvars="$(builtin typeset -x)"
+          nargs=$(( $(command sysctl -n kern.argmax) - $#envvars - 2048 ))
+          app_result="$(zargs --max-chars $nargs ${app_cand[@]} -- grep -l APPL)"
+          _mac_apps+=( ${${(f)app_result}%/..namedfork/rsrc} )
+        fi
+    fi
+
+    _store_cache Mac_applications _mac_apps
+  fi
+}
+#-------------------------------------------------------------------------------------------#
+#                                               COMPLETION
+#-------------------------------------------------------------------------------------------#
+_retrieve_mac_apps "$@"

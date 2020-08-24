@@ -1,0 +1,12 @@
+lsg() {
+    if [ $1 ]; then
+        args=($@)
+        search=$args[-1]
+        args[-1]=()
+        [ $args ] || args="-la"
+        ls $args | grep -i --color=auto $search
+        unset args search
+    fi
+}
+
+# vim: ft=zsh

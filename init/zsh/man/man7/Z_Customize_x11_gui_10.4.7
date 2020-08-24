@@ -1,0 +1,41 @@
+.\"
+.TH "Z_Customize_x11_gui_10.4" 7 "August 10, 2005" "Mac OS X" "Mac OS X Darwin ZSH customization"
+.SH NAME
+.B Z_Customize_x11_gui_10.4
+\- Apple's X11 underwent a major change between OS X v. 10.4 and v. 10.5 This is the X11_GUI customization function on OS X v. 10.4.
+
+.SH SYNOPSIS
+
+Z_Customize_x11_gui_10.4
+
+.SH DESCRIPTION
+
+.B Z_Customize_x11_gui_10.4
+is GUI-wrapped shell script that assists the user in changing settings that
+govern the behavior of X11.  It prompts the user before making any change, and
+explains the options carefully.
+
+.B Z_Customize_x11_gui_10.4
+will ask the user if X11 should be added to the user's startup items, whether focus follows
+mouse behavior (emulating canonical X11 unix systems) should be set, whether the user should
+be warned on logout if X11 is running, whether X11 should be run as a dockless and menuless
+application in the background, as so forth.  Re-running the function will permit the user to
+restore default behaviors.
+
+The gui version will create entries in .cshrc, .bashrc, .bash_profile, and .zshrc to set
+the
+.B DISPLAY
+variable correctly for multiple users when simultanously logged in using Fast User Switching
+and X11.app.
+
+.SH URL
+There is a web page that explains this in more detail and provides a screen shot of the gui.
+
+http://www.chemistry.ucsc.edu/~wgscott/xtal/Xterminator/
+
+
+.SH AUTHOR
+William Scott
+
+.SH MAINTAINER
+W. G. Scott <wgscott@users.sourceforge.net>

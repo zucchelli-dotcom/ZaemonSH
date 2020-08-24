@@ -1,0 +1,36 @@
+.\" Manpage for gatekeeper.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH gatekeeper 7 "06 Feb 2020" "ZaemonSH MacOS" "MacOS ZaemonSH customization"
+.SH NAME
+gatekeeper \- Wrapper script to control gatekeeper on darwin.
+.SH SYNOPSIS
+gatekeeper [ status | list | ls | enable | disable | create | help ]
+.SH DESCRIPTION
+gatekeeper \- Wrapper script to control gatekeeper on darwin. History : The system policy facility and spctl command first appeared in Mac OS X Lion 10.7.3 as a limited developer preview.
+.SH OPTIONS
+
+.IP "gatekeeper [ status ]"
+.B Gatekeeper status
+
+.IP "gatekeeper [ list ]"
+.B List gatekeeper rules.
+
+.IP "gatekeeper [ enable | disable ]"
+.B Enable/Disable gatekeeper
+
+.IP "gatekeeper [ enable | disable ] <YOURRULES>"
+.B Enable/Disable your gatekeeper rules.
+
+.IP "gatekeeper [ disable ] <YOURRULES>"
+.B Disable your gatekeeper rules.
+
+.IP "gatekeeper [ create ] <RULENAME> <PATHTOPROGRAM>"
+.B Create a rule for the application.
+
+.IP "gatekeeper [ help ]"
+.B Obtain script information.
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

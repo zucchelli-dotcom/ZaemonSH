@@ -1,0 +1,688 @@
+>>>>> Last Changes : 26/01/2020.
+
+-------------------------------------------------------------------------------------
+#####################################################################################
+-------------------------------------------------------------------------------------
+##### TOODER GEN
+------------------------------------------------------------------------------------
+#### ZEAMONSH
+- $HOME folder with exotic configuration (another volume)
+- Application folder in $HOME (/User/[your user]/Applications)
+- Add launch files in install
+- Add tmux.conf .curlrc .gdbinit .gitconfig .gitignore .config/ranger/* .tmux.conf .wgetrc
+  files and iterm pref to install
+- Download commandlinefu per1line sed1line zsh-lovers grmlrc
+- Add Z-FunctionAdd, Z_FunctionRemove , Z_functionLoad, Z_FunctionUnload
+
++ Z_functionUtils, find another techniques that anchor to list functions.
+- Other "Z_" to finish
+- Notes scripts with tags + order.
+- Transalation
+- man pages for functions
+- Adapt clean original script of ZEAM
+- Versions variants command 0SX
+...
+
+-------------------------------------------------------------------------------------
+#####################################################################################
+-------------------------------------------------------------------------------------
+##### TOODER LINUX
+------------------------------------------------------------------------------------
+# • Harmonize linux and darwin install
+# • Make equivalent darwin functions in linux.
+
+
+-------------------------------------------------------------------------------------
+#####################################################################################
+-------------------------------------------------------------------------------------
+##### TOODER OSX
+------------------------------------------------------------------------------------
+# • Continue renaming functions with D_[blahblah].
+# • Clean categories, sub-categories and darwin related functions.
+
+
+-------------------------------------------------------------------------------------
+#####################################################################################
+-------------------------------------------------------------------------------------
+##### TOODER UNIV
+------------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------------
+#####################################################################################
+-------------------------------------------------------------------------------------
+##### TOODER PERS_FCT
+------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------
+#####################################################################################
+-------------------------------------------------------------------------------------
+##### TMPMEMO
+-------------------------------------------------------------------------------------
+#####################################################################################
+
+------------------------------------------------------------------------------------
+### ZSH ###
+------------------------------------------------------------------------------------
+###################################
+# What are commands to find shell keywords, built in functions and user defined functions
+PATH= type -m '*'
+
+#Active alias and functions
+print -l ${(ko)aliases}
+print -l ${(ko)functions}
+}
+
+###################################
+# Active Zaemon PATH
+echo $FPATH | tr ':' '\n'
+
+## to have list of darwin ADMINISTRATION function.
+echo $(find $ZDOT/zshrc.d/local-functions/darwin -type f | grep "ADMINISTRATION" | sed 's/.*\///' | grep -v '^_' | grep -v .DS_Store | grep -v '.zip')
+
+###################################
+# Search for running processes
+any() {
+emulate -L zsh
+unsetopt KSH_ARRAYS
+if [[ -z "$1" ]] ; then
+    echo "any - grep for process(es) by keyword" >&2
+    echo "Usage: any " >&2 ; return 1
+else
+    ps xauwww | grep -i --color=auto "[${1[1]}]${1[2,-1]}"
+fi
+}
+
+###################################
+# display a neatly formatted path
+path () {
+echo $PATH | tr ":" "\n" | \
+awk "{ sub(\"/usr\",  \"$fg_no_bold[green]/usr$reset_color\"); \
+       sub(\"/bin\",  \"$fg_no_bold[blue]/bin$reset_color\"); \
+       sub(\"/opt\",  \"$fg_no_bold[cyan]/opt$reset_color\"); \
+       sub(\"/sbin\", \"$fg_no_bold[magenta]/sbin$reset_color\"); \
+       sub(\"/local\", \"$fg_no_bold[yellow]/local$reset_color\"); \
+       print }"
+}
+
+
+------------------------------------------------------------------------------------
+### LINUX ###
+------------------------------------------------------------------------------------
+# OSX LIKE COMMAND ON LINUX  ####
+------LOGOUT------
+#### CINNAMON
+cinnamon-session-quit
+#### GNOME
+## 11.10 and above
+gnome-session-quit
+gnome-session-save --force-logout #  -force-logout in contrast to just --logout will not ask the user to deal with unsaved documents and so on.
+## 11.04 and previous versions
+dbus-send --session --type=method_call --print-reply --dest=org.gnome.SessionManager /org/gnome/SessionManager org.gnome.SessionManager.Logout uint32:1
+#### LXDE
+lxde-logout
+#### XFCE
+xfce4-session-logout --fast
+xfce4-session-logout --logout
+#### KDE
+qdbus org.kde.ksmserver /KSMServer org.kde.KSMServerInterface.logout 0 0 0
+#### MATE
+mate-session-save --force-logout
+------SWITCHUSER------
+dm-tool switch-to-greeter
+dm-tool switch-to-user *username*
+
+
+------------------------------------------------------------------------------------
+### OSX ###
+------------------------------------------------------------------------------------
+if [[ $IS_MAC -eq 1  ]]; then
+# view man pages in Preview
+pman() { ps=`mktemp -t manpageXXXX`.ps ; man -t $@ > "$ps" ; open "$ps" ;  }
+# function to show interface IP assignments
+ips() { foo=`/Users/mark/bin/getip.py; /Users/mark/bin/getip.py en0; /Users/mark/bin/getip.py en1`; echo $foo;  }
+# notify function - http://hints.macworld.com /article.php?story=20120831112030251
+notify() { automator -D title=$1 -D subtitle=$2 -D message=$3 ~/Library /Workflows/DisplayNotification.wflow  }
+fi
+# -------------------------------------------------------------------
+# nice mount (http://catonmat.net/blog/another-ten-one-liners- from-commandlingfu-explained)
+# displays mounted drive information in a nicely formatted manner
+# -------------------------------------------------------------------
+function nicemount() { (echo "DEVICE PATH TYPE FLAGS" && mount | awk '$2="";1') | column -t ; }
+# -------------------------------------------------------------------
+# myIP address
+# -------------------------------------------------------------------
+function myip() {
+ifconfig lo0 | grep 'inet ' | sed -e 's/:/ /' | awk '{print "lo0      : " $2}'
+ifconfig en0 | grep 'inet ' | sed -e 's/:/ /' | awk '{print "en0 (IPv4) : " $2 " " $3 " " $4 " " $5 " " $6}'
+ifconfig en0 | grep 'inet6 ' | sed -e 's/:/ /' | awk '{print "en0 (IPv6) : " $2 " " $3 " " $4 " " $5 " " $6}'
+ifconfig en0 | grep 'inet ' | sed -e 's/:/ /' | awk '{print "en1 (IPv4) : " $2 " " $3 " " $4 " " $5 " " $6}'
+ifconfig en0 | grep 'inet6 ' | sed -e 's/:/ /' | awk '{print "en1 (IPv6) : " $2 " " $3 " " $4 " " $5 " " $6}'
+}
+
+# -------------------------------------------------------------------
+# (s)ave or (i)nsert a directory.
+# -------------------------------------------------------------------
+s() { pwd > ~/.save_dir ;  }
+i() { cd "$(cat ~/.save_dir)" ;  }
+# -------------------------------------------------------------------
+# console function
+# -------------------------------------------------------------------
+function console () {
+    if [[ $# > 0  ]]; then
+        query=$(echo "$*"|tr -s ' ' '|')
+        tail -f /var/log/system.log|grep -i --color=auto -E "$query"
+    else
+        tail -f /var/log/system.log
+    fi
+}
+# -------------------------------------------------------------------
+# shell function to define words
+# http://vikros.tumblr.com/post/23750050330/cute-little-function-time
+# -------------------------------------------------------------------
+givedef() {
+if [[ $# -ge 2  ]] then
+echo "givedef: too many arguments" >&2
+    return 1
+else
+    curl "dict://dict.org/d:$1"
+fi
+}
+-------------------------------------------------------------------------------------
+#####################################################################################
+
+
+#####################################################################################
+# VIM
+#####################################################################################
+# open two files on top of each other in vim (one window, two panes)
+vim -o file1 file2
+
+ # open two files side by side in vim (one window, two panes)
+ vim -O file1 file2
+
+# Add Password Protection to a file your editing in vim.
+vim -x <FILENAME>
+
+# Edit a file on a remote host using vim
+ vim scp://username@host//path/to/somefile
+
+# Create colorized html file from Vim or Vimdiff
+:TOhtml
+
+# Save your sessions in vim to resume later
+:mksession! <filename>
+
+# Opens vi/vim at pattern in file
+vi +/pattern [file]
+
+# Pipe STDOUT to vim                                                                                            tail -1000 /some/file | vim -k
+
+# Colored diff ( via vim ) on 2 remotes files on your local computer.
+vimdiff scp://root@server-foo.com//etc/snmp/snmpd.conf scp://root@server-bar.com//etc/snmp/snmpd.conf
+
+ # view hex mode in vim
+ :%!xxd
+
+  # VIM: Replace a string with an incrementing number between marks 'a and 'b (eg, convert string ZZZZ to 1, 2,   3, ...)
+ :let i=0 | 'a,'bg/ZZZZ/s/ZZZZ/\=i/ | let i=i+1
+
+  # Open the last file you edited in Vim.
+ alias lvim="vim -c \"normal '0\""
+
+  # vim as a pager - similar to less command but with color
+ alias vless='/usr/share/vim/vimcurrent/macros/less.sh
+
+ # create a new script, automatically populating the shebang line, editing the script, and making it executable.
+ shebang() { if i=$(which $1); then printf '#!%s\n\n' $i >  $2 && vim + $2 && chmod 755 $2; else echo "'which'   could not find $1, is it in your \$PATH?"; fi; }
+
+  # Edit the Last Changed File
+ vim $( ls -t | head -n1 )
+
+  # vimdiff local and remote files via ssh
+ vimdiff /path/to/file scp://remotehost//path/to/file
+
+  # Search commandlinefu and view syntax-highlighted results in vim
+ cmdfu(){ local t=~/cmdfu;echo -e "\n# $1 {{{1">>$t;curl -s "commandlinefu.com/commands/matching/$1/`echo -n     $1|base64`/plaintext"|sed '1,2d;s/^#.*/& {{{2/g'>$t;vim -u /dev/null -c "set ft=sh fdm=marker fdl=1 noswf" -M   $t;rm $t; }
+
+ # insert ip range using vim
+ :for i in range(1,255) | .put='192.168.0.'.i | endfor
+
+  # Delete all empty lines from a file with vim
+ :v/./d
+
+  # Open (in vim) all modified files in a git repository
+ vim `git status --porcelain | sed -ne 's/^ M //p'
+
+  # Use vim automation to create a colorized html file
+ file=<filename>;vim ${file} -e -s -c 'runtime! syntax/syntax.vim' -c 'runtime! syntax/2html.vim' -c "w ${file}. html" -c 'q!' -c 'q!' > /dev/null
+
+  # Edit a file inside a compressed archive without extracting it
+ vim some-archive.tar.gz
+
+  # vim read stdin
+ ls | vim +'set bt=nowrite' -
+
+ # Open a file explorer on a split screen inside your vim session
+ :Sex
+
+ # Use vim automation to create a colorized html file
+ file=<filename>;vim ${file} -e -s -c 'runtime! syntax/syntax.vim' -c 'runtime! syntax/2html.vim' -c "w ${file}. html" -c 'q!' -c 'q!' > /dev/null
+
+  # Edit a file inside a compressed archive without extracting it
+ vim some-archive.tar.gz
+
+ # Sort the current buffer in vi or vim.
+ :%sort
+
+  # Delete all empty lines from a file with vim
+ :v/./d
+
+  # Change the case of a single word in vim
+ g~w
+
+  # vim read stdin
+ ls | vim +'set bt=nowrite' -
+
+  # Use Vim to convert text to HTML.
+ vimhtml() { [[ -f "$1" ]] || return 1; vim +'syn on | run! syntax/2html.vim | wq | q' "$1";}
+
+  # Find files containing string and open in vim
+ vim $(grep test *)
+
+  # vimdiff to remotehost
+ vimdiff tera.py <(ssh -A testserver "cat tera.py")
+
+  # Create and replay macros in vim
+ <esc> q a ...vim commands... <esc> q (to record macro) @a (plays macro 'a').
+
+  # Move all comments the top of the file in vim
+ :g:^\s*#.*:m0
+
+  # vim's pastetoggle: when you press f9 'paste' is on , press f9 again and 'paste' is off, and so forth (works   in insert-mode and command-mode)
+ :set pt=<f9>
+
+  # Search commandlinefu.com from the command line using the API
+ cmdfu(){ curl "http://www.commandlinefu.com/commands/matching/$(echo "$@" | sed 's/ /-/g')/$(echo -n $@ |       base64)/plaintext" --silent | vim -R - }
+
+  # Check apache config syntax and restart or edit the file
+ ( apache2ctl -t && service apache2 restart || (l=$(apache2ctl -t 2>&1|head -n1|sed 's/.*line\s\([0-9]*\).*/\1/  '); vim +$l $(locate apache2.conf | head -n1)))
+
+  # create a new script, automatically populating the shebang line, editing the script, and making it executable.
+ shebang() { if i=$(which $1); then printf '#!%s\n\n' $i >  $2 && vim + $2 && chmod 755 $2; else echo "'which'   could not find $1, is it in your \$PATH?"; fi; }
+
+  # check python syntax in vim
+ :!pylint -e %
+
+  # load changes without logging in and out vim
+ :source ~/.vimrc
+
+  # Edit all files found having a specific string found by grep
+ grep -Hrli 'foo' * | xargs vim
+
+  # Rename files with vim.
+ qmv -fdo
+
+  # [vim] Clear a file in three characters (plus enter)
+ :%d
+
+  # [vim] Clear trailing whitespace in file
+ :%s/\s\+$//
+
+  # replace a character/word/string in a file using vim
+ :%s/old/new/g
+
+  # start vim in diff mode
+ vimdiff file{1,2}
+
+  # List of all vim features
+ vim --version :w
+
+  # Search commandlinefu.com and display with VIMs syntax highlighting!
+ cmdfu(){ local TCF="/var/tmp/cmdfu"; echo "  Searching..."; curl "http://www.commandlinefu.com/commands/        matching/$(echo "$@" | sed 's/ /-/g')/$(echo -n $@ | base64)/plaintext" --silent > "$TCF"; vim -c "set          filetype=sh" -RM "$TCF"; rm "$TCF"; }
+
+  # How to search for files and open all of them in tabbed vim editor.
+ sudo find / -type f -name config.inc.php -exec vim -p {} +
+
+  # From Vim, run current buffer in python
+ ! python %
+
+  # %s across multiple files with Vim
+ :set nomore   :argdo %s/foo/bar/g | update
+
+
+  # Edit 2 or more files in vim using vim -d
+ vim -d '+diffoff!' file1 file2
+
+  # Load all files (including in subdirs), whose name matches a substring, into Vim
+ vim $(find . ! -path \*.svn\* -type f -iname \*foo\*)
+
+  # Shrink more than one blank lines to one in VIM.
+ :%v/./,/./-j
+
+  # Compress blank lines in VIM
+ :g/^\s*$/,/\S/-j|s/.*//
+
+  # Start vim without initialization
+ vim -u NONE yourfile
+
+  # Edit a file in vim (at the first error) if it is not well formed xml.
+ vimlint(){ eval $(xmllint --noout "$1" 2>&1 | awk -F: '/parser error/{print "vim \""$1"\" +"$2; exit}'); }
+
+  # Grep recursively for a pattern and open all files that match, in order, in Vim, landing on 1st match
+ X='pattern'; vim +/"$X" `egrep -lr "$X" *`
+
+  # diff directories, quick cut and paste to view the changes
+ diff -q dir1/ dir2/ | grep differ | awk '{ print "vimdiff " $2 " " $4 }'
+
+ # Edit a script that's somewhere in your path.
+ vim `which <scriptname>`
+
+  # Recursively create a TAGS file for an entire source tree. TAGS files are useful for editors like Vim and      Emacs
+ ctags -R
+
+  # VIM subst any char different from literal " + EOL with searched string + white space
+ :%s/\([^\"]\)\(\n\)/\1 /g
+
+  # Using vim to save and run your python script.
+ vim ... :nmap <F5> :w^M:!python %<CR>
+
+  # Execute a file in vim with the #!/bin/interpreter in the first line
+ :exe getline(1)[1:] @%
+
+  # Run a command, redirecting output to a file, then edit the file with vim.
+ vimcmd() { $1 > $2 && vim $2; }
+
+  # Include a remote file (in vim)
+ :r scp://yourhost//your/file
+
+  # Grep inside Vim and navigate results
+ :vimgrep pattern %
+
+  # Opens files containing search term in vim with search term highlighted
+ ack-open () { local x="$(ack -l $* | xargs)"; if [[ -n $x ]]; then eval vim -c "/$*[-1] $x"; else echo "No files found"; fi }
+
+ # Load your [git-controlled] working files into the vi arglist.
+ vim $(git diff origin/master --name-only)
+
+  # Pipe a textfile to vim and move the cursor to a certain line
+ zcat /usr/share/doc/vim-common/README.gz | vim -g +23 -
+
+  # Save a file you edited in vim without the needed permissions
+ :%!sudo tee %
+
+  # Get the SUM of visual blocked digits in vim
+ vmap <c-a> y:$<CR>o<Esc>map<Esc>:'a,$!awk '{sum+=$0}END{print "SUM:" sum}'<CR>dd'>p
+
+  # Cut/Copy everything arround brackets or parentheses on vim (in normal mode)
+ d%
+
+  # Open (in vim) all modified files in a git repository
+ vim `git diff --name-only`
+
+  # Grep across a directory and open matching files in vim (one tab per file)
+ vim -p `grep -r PATTERN TARGET_DIR | cut -f1 -d: | sort | uniq | xargs echo -n`
+
+  alias busy='rnd_file=$(find /usr/include -type f -size +5k | sort -R | head -n 1) && vim +$((RANDOM%$(wc -l $rnd_file | cut -f1 -d" "))) $rnd_file'
+
+   # Open (in vim) all modified files in a git repository                                                          vim `git status | grep modified | awk '{print $3}'`
+
+    # This little command edits your gitignore from anywhere in your repo
+ vim $(git rev-parse --show-toplevel)/.gitignore
+
+  # display embeded comments for every --opt, usefull for auto documenting your script
+ vim -n -es -c 'g/# CommandParse/+2,/^\s\+esac/-1 d p | % d | put p | %<' -c 'g/^\([-+]\+[^)]\+\))/,/^\(\s\+[^-  \t#]\|^$\)/-1 p' -c 'q!' $0
+
+  # Compare local and remote files using SCP/VIM/DIFF
+ vimdiff local_dir1/local_file.xml scp://user@remote_host//remote_absolute_location/remote_file.xml
+
+  # Displays all the fields of a table, really usefull to run it inside editor (Emacs or vim)
+ echo "DESCRIBE dbname.table_name" | mysql -u dbusername | awk '{print $1}' | grep -v Field
+
+  # vi a remote file with port
+ vim sftp://[user@]host.domain.tld:[port]/[path/][file]
+
+  # Increment next number in vim
+ CTRL + A   ( in normal mode )
+
+  # Open multiple files from STDIN with VIM
+ vim -p $(complicated command to list the files you want)
+
+  # Ignore all Comment in Vim
+ hi! link Comment Ignore
+
+  # Open (in vim) all modified files in a git repository
+ git status --porcelain | sed -ne 's/^ M //p' | tr '\n' '\0' | tr -d '"' | xargs -0 vim
+
+  # Open a file using vim in read only (like less)
+ view /file/name
+
+  # Display a block of text with vim with offset, like with AWK
+ vim -e -s -c 'g/start_pattern/+1,/stop_pattern/-1 p' -cq file.txt
+
+  # Sort the current buffer in vi or vim.
+ :1,$!sort
+
+  # Quickly write and run a C program.
+ vim test.c && gcc -x c -o a.out test.c && ./a.out && rm a.out test.c
+
+  # Format source code noninteractively (possibly en masse) using vim's formatting functionality
+ vim +"bufdo norm gg=G" +wa +qa FILES
+
+  # VIM: Go back to the last place you were in a document
+  ''
+
+ # Create a series of incrementing numbers in vim
+ :.,$!perl -pne 'for $i ("0001".."0004"){ s/XXXX/$i/ if($i == $.) }'
+
+  # Map \r do insert random number in vim
+ imap <leader>r <C-r>=system('echo "$(($RANDOM % 100))"')<cr>
+
+  # Re-run [re-edited] sequence of commands in vim history
+ In vim: q: && v[cursor movement]y && [paste/edit/save to /tmp/tmp.vim] && move to window to modify && :so /tmp/ tmp.vim
+
+  # Insert line number in vim
+ :%s/^/\=line('.').'  '
+
+  # Find and edit multiple files given a regex in vim buffers
+ vim `find . -iname '*.php'`
+
+  # vim insert at beginning of multiple lines
+ :%s!^!foo!
+
+  # call vim help page from shell prompt
+ function :h { vim +":h $1" +'wincmd o' +'nnoremap q :q!<CR>' ;}
+
+  # Remove VIM temp files
+ find ./ -name '*.sw[op]' -delete
+
+ # recursivly open all recently crashed vim buffers in restore mode
+ find ./ -type f -mtime -1 -name .*.sw[po] -print | sed -r 's/^(.+)\/\.(\S+)\.sw[op]$/\1\/\2/' | xargs vim -r
+
+  # Multiple open files and go directly to the line where some string is
+ grep -rl string_to_find  public_html/css/ | xargs -I '{}' vim +/string_to_find  {} -c ":s/string_to_find/       string_replaced"
+
+  # Edit all files found having a specific string found by grep
+ find . -type f -exec grep -qi 'foo' {} \; -print0 | xargs -0 vim
+
+  # Replace spaces with tabs & format file source recursuvely within a directory
+ find $DIR -name *.php -exec vim -u NONE -c 'set ft=php' -c 'set shiftwidth=4' -c 'set tabstop=4' -c 'set        noexpandtab!' -c 'set noet' -c 'retab!' -c 'bufdo! "execute normal gg=G"' -c wq {} \;
+
+ # Delete all empty lines from a file with vim
+ ggqqqqq/^$dd@qq@q
+
+  # Alias nasty quick vim habits
+ alias ':q'='exit'; alias ':e'='vim';
+
+  # Improve Emacs
+ alias emacs='vim'
+
+  # VIM subst any char different from literal
+ :g/\n"/jo
+
+  # Open file with sudo when there is no write-permission
+ if test -w $1; then vim $1; else sudo vim $1; fi
+
+ # Edit a file using vi or vim in read-only mode
+ vi -R filenam
+
+  # Mailing from Vim
+ w: !mailx -s "Some subject" user@host.com
+
+  # Emptying a text file in one shot in VIM
+ :!>test.txt
+
+  # Go to a specified line in a file
+ vim +143 filename.txt
+
+  # vim display hex value char under cursor
+ ga
+
+  # Backup a file before editing it.
+ sedit() { cp "$*"{,.bk}; which $EDITOR > /dev/null && $EDITOR "$*" || vim "$*"; }
+
+  # Open a list of files in VIM using separate terminal windows
+ find . -name "*.java" -exec gnome-terminal \-x vim {} \;
+
+ ###############################################################
+ # STTY
+
+  # Run TOP in Color, split 4 ways for x seconds - the ultimate ps command. Great for init scripts
+  G=$(stty -g);stty rows $((${LINES:-50}/2));top -n1; stty $G;unset G
+
+
+  # Lurk what's going on on remote console
+  a=$(stty -a  -F /dev/tty1| awk -F'[ ;]' '/columns/ { print $9 }'); fold -w$a /dev/vcs1;echo
+
+
+
+  ###############################################################
+  # SSH
+ # start a tunnel from some machine's port 80 to your local post 2001
+ ssh -N -L2001:localhost:80 somemachine
+
+
+  # output your microphone to a remote computer's speaker
+ dd if=/dev/dsp | ssh -c arcfour -C username@host dd of=/dev/dsp
+
+
+  # Mount folder/filesystem through SSH
+ sshfs name@server:/path/to/folder /path/to/mount/point
+
+  # SSH connection through host in the middle
+ ssh -t reachable_host ssh unreachable_host
+
+  # Copy your ssh public key to a server from a machine that doesn't have ssh-copy-id
+ cat ~/.ssh/id_rsa.pub | ssh user@machine "mkdir ~/.ssh; cat >> ~/.ssh/authorized_keys"
+
+
+  # Synchronize date and time with a server over ssh
+ date --set="$(ssh user@server date)"
+
+
+  # Port Knocking!
+ knock <host> 3000 4000 5000 && ssh -p <port> user@host && knock <host> 5000 4000 3000
+
+
+  # run complex remote shell cmds over ssh, without escaping quotes
+ ssh host -l user $(<cmd.txt)
+
+
+  # Get the IP of the host your coming from when logged in remotely
+ echo ${SSH_CLIENT%% *}
+
+
+  # How to establish a remote Gnu screen session that you can re-connect to
+ ssh -t user@some.domain.com /usr/bin/screen -xRR
+
+
+  # Copy a MySQL Database to a new Server via SSH with one command
+ mysqldump --add-drop-table --extended-insert --force --log-error=error.log -uUSER -pPASS OLD_DB_NAME | ssh -C   user@newhost "mysql -uUSER -pPASS NEW_DB_NAME"
+
+
+  # analyze traffic remotely over ssh w/ wireshark
+ ssh root@server.com 'tshark -f "port !22" -w -' | wireshark -k -i -
+
+
+  # Take screenshot through SSH
+ DISPLAY=:0.0 import -window root /tmp/shot.png
+
+
+  # live ssh network throughput test
+ yes | pv | ssh $host "cat > /dev/null"
+
+  # output your microphone to a remote computer's speaker
+ arecord -f dat | ssh -C user@host aplay -f dat
+
+  # Resume scp of a big file
+ rsync --partial --progress --rsh=ssh  $file_source $user@$host:$destination_file
+
+  # Close a hanging ssh session
+ ~.
+
+  # Harder, Faster, Stronger SSH clients
+ ssh -4 -C -c blowfish-cbc
+
+  # Transfer SSH public key to another machine in one step
+ ssh-keygen; ssh-copy-id user@host; ssh user@host
+
+  # Create a local compressed tarball from remote host directory
+ ssh user@host "tar -zcf - /path/to/dir" > dir.tar.gz
+
+
+  # Backup a remote database to your local filesystem
+ ssh user@host 'mysqldump dbname | gzip' > /path/to/backups/db-backup-`date +%Y-%m-%d`.sql.gz
+
+
+ # copy from host1 to host2, through your host
+ ssh root@host1 "cd /somedir/tocopy/ && tar -cf - ." | ssh root@host2 "cd /samedir/tocopyto/ && tar -xf -"
+
+  # Diff files on two remote hosts.
+ diff <(ssh alice cat /etc/apt/sources.list) <(ssh bob cat /etc/apt/sources.list)
+
+  # Run any GUI program remotely
+ ssh -fX <user>@<host> <program>
+
+
+  # Identify differences between directories (possibly on different servers)
+ diff <(ssh server01 'cd config; find . -type f -exec md5sum {} \;| sort -k 2') <(ssh server02 'cd config;       find . -type f -exec md5sum {} \;| sort -k 2')
+
+  # move a lot of files over ssh
+ rsync -az /home/user/test user@sshServer:/tmp/
+
+  # Add your public SSH key to a server in one command
+ cat .ssh/id_rsa.pub | ssh hostname 'cat >> .ssh/authorized_keys'
+
+
+  # tail a log over ssh
+ ssh  -t remotebox "tail -f /var/log/remote.log"
+
+
+  # ssh tunnel with auto reconnect ability
+ while [ ! -f /tmp/stop ]; do ssh -o ExitOnForwardFailure=yes -R 2222:localhost:22 target "while nc -zv          localhost 2222; do sleep 5; done"; sleep 5;done
+
+ # Backup a local drive into a file on the remote host via ssh
+ dd if=/dev/sda | ssh user@server 'dd of=sda.img
+
+  # ssh to machine behind shared NAT
+ ssh -NR 0.0.0.0:2222:127.0.0.1:22 user@jump.host.com
+
+  # Multiple SSH Tunnels
+ ssh -L :: -L :: @
+
+  # Connect via SSH to VirtualBox guest VM without knowing IP address
+  ssh vm-user@`VBoxManage guestproperty get "vm-name" "/VirtualBox/GuestInfo/Net/0/V4/IP" | awk '{ print $2 }'`
+
+ # back ssh from firewalled hosts
+ ssh -R 5497:127.0.0.1:22 -p 62220 user@public.ip
+
+ # backup with mysqldump a really big mysql database to a remote machine over ssh
+ mysqldump -q --skip-opt --force --log-error=dbname_error.log -uroot -pmysqlpassword dbname | ssh -C user@       sshserver 'cd /path/to/backup/dir; cat > dbname.sql'
+
+ # Copy a folder tree through ssh using compression (no temporary files)
+ ssh <host> 'tar -cz /<folder>/<subfolder>' | tar -xvz
+
+
+
+  ###############################################################
+  # SCREEN

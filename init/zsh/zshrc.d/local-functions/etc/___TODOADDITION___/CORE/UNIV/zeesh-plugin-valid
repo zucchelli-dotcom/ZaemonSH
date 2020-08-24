@@ -1,0 +1,9 @@
+zeesh-plugin-valid() {
+    if [ $1 ] && [[ -d .zsh/plugins/$1 ]] && [[ -f .zsh/plugins/$1/plugin.zsh ]]; then
+        echo 'true'
+    else
+        echo 'false'
+    fi
+}
+
+# vim: ft=zsh

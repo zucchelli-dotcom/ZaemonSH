@@ -1,0 +1,1154 @@
+#!/usr/bin/env zsh -f
+
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+ #  2```   		╚⊙ ⊙╝
+ #  2         ╚═(███)═╝
+ #  2        ╚═(███)═╝
+ #  2       ╚═(███)═╝
+ #  2      ╚═(███)═╝
+ #  2    ╚═(███)═╝
+ #  2  ╚═(███)═╝
+ #  2 ╚═(███)═╝
+ #  2  ╚═(███)═╝
+ #  2    ╚═(███)═╝
+ #  2     ╚═(███)═╝
+ #  2  	    ╚═(███)═╝
+ #  2``		 ╚═(███)═╝
+ #
+# MacOSPostInstall v0.0.1 :
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 22/11/2019 :
+
+
+#-------------------------------------------------------------------------------------------#
+#                                               NOTES
+#-------------------------------------------------------------------------------------------#
+# 22/11/2019 :
+
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 20/11/2019 :
+# # Create this.
+
+#-------------------------------------------------------------------------------------------#
+#                                              CONFIG
+#-------------------------------------------------------------------------------------------#
+
+#-------------------------------------------------------------------------------------------#
+#                                             FUNCTIONS
+#-------------------------------------------------------------------------------------------#
+## Verify user is admin
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+
+###############################################################################
+# Ruby
+###############################################################################
+
+# rbenv *should* be installed at this point
+hash rbenv 2>/dev/null || echo "Please install rbenv before continuing"
+
+# Install latest (stable) Ruby
+ruby_latest=$(rbenv install -l 2>/dev/null | awk '$1 ~ /^[0-9.]*$/ {latest=$1} END {print latest}')
+rbenv install $ruby_latest
+rbenv global $ruby_latest
+rbenv rehash
+
+# Install gems from Gemfile
+gem install bundler \
+ && rbenv rehash \
+
+###############################################################################
+# Homebrew Packages
+###############################################################################
+		# ----------------------------------------
+		#  Homebrew Install
+		# ---------------------
+		echo "Checking for Homebrew..."
+		if test ! $(which brew); then
+		  echo "Installing homebrew..."
+		  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+		fi
+		# echo "Setting brew permissions..."
+		# chown -R $USER /usr/local/include
+		# chown -R $USER /usr/local/lib/pkgconfig
+
+		# ----------------------------------------
+		# Schedule Homebrew Updates
+		# ---------------------
+		cron_entry='0 */6 * * * /usr/local/bin/brew update &>/dev/null'
+		if ! crontab -l | fgrep "$cron_entry" >/dev/null; then
+		  (crontab -l 2>/dev/null; echo "$cron_entry") | crontab -
+		fi
+
+		# ----------------------------------------
+		#  Homebrew Update
+		# ---------------------
+		echo "Updating brew..."
+		brew update
+
+        # ----------------------------------------
+		#  Homebrew Packages Install
+		# ---------------------
+    	##
+        if brew list | grep -Fq brew-cask; then
+		  echo "Uninstalling old Homebrew-Cask ..."
+		  brew uninstall --force brew-cask
+		fi
+
+        ##
+		# if [[ $(which cask | grep "cask is") ]]; then
+                # echo "Cask already installed";
+                # :
+            # else
+          #       echo "Installing Cask..."
+		        # brew install caskroom/cask/brew-cask
+        # fi
+        echo "Installing Cask..."
+		brew install caskroom/cask/brew-cask
+
+        ##
+        echo "Adding nightly/beta Cask versions..."
+		brew tap caskroom/versions
+
+        ##
+        tap "caskroom/core"
+        brew install caskroom/core/volatility
+
+        ##
+       	tap "Homebrew/bundle"
+
+		# ----------------------------------------
+		#  Updating Homebrew formulae
+		# ---------------------
+        echo "Updating Homebrew formulae ..."
+		brew update --force # https://github.com/Homebrew/brew/issues/1151
+		brew bundle --file=- << EOF
+		# Install Homebrew Bundle
+		tap "caskroom/cask"
+		tap "caskroom/fonts"
+		tap "homebrew/core"
+		tap "homebrew/dupes"
+        brew volatility
+        tap "homebrew/headonly"
+		tap "homebrew/services"
+
+		#########
+        # AVR CLI TOOLS
+        brew picocom
+        brew avra
+
+        #########
+		# Cask dependencies
+		brew "mas"
+		cask "java
+		cask "xquartz"
+
+		#########
+		# GitHub
+		brew "hub"
+		brew "ghi" 		  ## GitHub Issues
+		brew ndm     ## Manage npm packages
+
+
+		#########
+		# Unix
+
+        brew "colordiff"
+        brew "colormake"
+        brew "colorgcc"
+
+        brew install diff-so-fancy
+		brew "screen"
+        brew "fdupes"
+		brew "ngrep"
+		brew "lnav"
+		brew "ack"
+		brew "coreutils"
+		tap "universal-ctags/universal-ctags"
+		brew "universal-ctags", args: ["HEAD"]
+		brew "readline"
+		brew "srm"
+		#brew "zsh"
+		#brew "ranger"
+		#brew "xhyve"
+		brew "ccat"       ## Colorized Cat
+		# OpenSSL
+		brew "openssl"
+		# OpenSSL OSX CA
+		brew tap raggi/ale
+		brew install openssl-osx-ca
+		brew "rcm"
+		brew "the_silver_searcher"
+		brew "vim"
+		brew "bash"
+		brew "zsh"
+		brew "parallel"
+		brew "jq"         ## JSON CLI Parser
+		brew "pv"         ## Pipe Viewer
+		brew "tmux"
+		brew "reattach-to-user-namespace"
+		brew "fzf"
+		brew "memcached"
+		brew "terminal-notifier"
+		brew "htop"
+		brew "ioping"
+		brew "mas"       ## Mac App Store
+		brew "vim", args: ["override-system-vi"]
+		brew "highlight"
+		brew "multimarkdown"
+		#brew "openmeta"
+		brew "pandoc"
+		brew "xmlstarlet"
+		cask "nmap"
+		brew "foremost"x
+		brew "sqlmap"
+        brew "grep"
+        brew "highlight"
+		# Mac OS tools
+		brew "duti" # Required for setting preferences
+		brew "imagesnap"
+		brew "mackup"
+		brew "tccutil" # Required for setting ereferences
+        brew "rsync"
+
+        ### Compression
+        brew "bzip2"
+        brew "cabextract"
+        brew "lbzip2"
+        brew "lz4"
+        brew "p7zip"
+        brew "pbzip2"
+        brew "pigz"
+        brew "pixz"
+        brew "pxz"
+        brew "snappy"
+        brew "unar"
+        brew "xz"
+        brew "zopfli", args: ["HEAD"]
+
+		#########
+		# Image manipulation
+		brew "imagemagick", args: ["with-fftw", "with-hdri", "with-liblqr", "with-librsvg", "with-opencl", "with-openmp", "with-webp"]
+
+
+		#########
+		# Video
+		brew "ffmpeg"
+
+		#########
+		# Testing
+		brew "qt@5.5" if MacOS::Xcode.installed?
+
+		#########
+		# Programming language prerequisites and package managers
+        brew "gdb"
+        brew "libyaml" # should come after openssl
+		brew "coreutils"
+		brew "yarn"
+		brew "gdbm"
+		brew "rbenv"
+		brew "ruby-build"
+		brew "rbenv-vars"
+		brew "rbenv-ctags"
+        brew "capstone"
+
+		#########
+		# Network
+		brew "curl", args: ["with-openssl"]
+		brew "lynx", args: ["with-openssl"]
+		brew "wget", args: ["with-openssl"]
+		cask "firefox-nightly"
+
+		#########
+		## Security
+		brew "privoxy"
+		brew "tor"
+        brew "dnscrypt-proxy"
+		brew "dnsmasq", args: ["dnssec"]
+		brew "lynis"
+		brew "shellcheck"
+        brew "gnupg"
+		cask "gpg-suite"
+		brew "foremost"
+		brew "hashdump"
+		brew "sqlmap"
+		brew "wireshark"
+
+		#########
+		# Databases
+#		brew "postgres", restart_service: :changed
+#		brew "redis", restart_service: :changed
+
+
+		####
+		# Net Utility
+		brew "aircrack-ng"
+		brew "arp-scan"
+		brew "arping"
+		brew "arpoison"
+		brew "dhcping"
+		brew "dnscontrol"
+		brew "dnsperf"
+		brew "dnstop"
+		brew "dnsviz"
+		brew "fping"
+		brew "hping"
+		brew "httpie"
+		brew "httping"
+		brew "ldns"
+
+		brew "fselect"
+		brew "graphviz"
+		brew "gnu-sed"
+		brew "fzf"
+		brew "gmp"
+		brew "hfsutil"
+
+		brew "json-c"
+		brew "sqlite"
+
+
+		brew "wp-cli"
+		brew "wp-cli-completion"
+
+
+		#########
+ 		# Virtulization applications
+ 		brew "docker"
+ 		brew "docker-machine"
+ 		brew "doccker-machine-driver-xhyve"
+ 		brew "xhyve"
+
+		cask "vmware-fusion"
+
+		# Services
+		cask "markdown-service-tool"
+
+
+        # QuickLook plugins
+        cask "qlcolorcode"
+        cask "qlmarkdown"
+        cask "qlstephen"
+        cask "webpquicklook"
+
+        # Color Picker plugins
+        cask "colorpicker-skalacolor"
+
+        cask zterm
+        cask arduino
+        cask processing
+
+        cask atom
+        cask sublime-text3
+
+        cask arduino
+        cask
+        cask xquartz
+        cask iterm2
+        cash dash
+        cask lingon-x
+        cask caffeine
+        cask quicksilver
+        cask osxfuse
+        cask quicklook-json
+
+        cask spectacle
+        cask VLC
+EOF
+
+        ## Ensuring homebrew binaries are the default with
+        echo "Relinking binaries..."
+        for i in "curl wget bash zsh rsync grep ..."; do
+            brew link --force $binary
+        done
+
+        echo "Cleaning up..."
+        brew cleanup && brew prune
+
+        # Remove outdated cask versions from the cellar
+        brew cask cleanup
+
+
+		### Periodic Homebrew Update and Upgrade
+		To leverage the notification system, this agent requires [terminal-notifier](https://github.com/julienXX/terminal-notifier), which can be installed via `brew install terminal-notifier`.
+		```xml
+		<?xml version="1.0" encoding="UTF-8"?>
+		<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+		<plist version="1.0">
+		<dict>
+		    <key>Label</key>
+		    <string>com.example.homebrew-upgrade</string>
+		    <key>ProcessType</key>
+		    <string>Background</string>
+		    <key>ProgramArguments</key>
+		    <array>
+		        <string>/bin/sh</string>
+		        <string>-c</string>
+		        <string>/usr/local/bin/brew update &amp;&amp; /usr/local/bin/brew upgrade &amp;&amp; /usr/local/bin/terminal-notifier -title 'Homebrew Upgrader' -message 'Homebrew upgraded!' -appIcon http://cdn.curvve.com/wp-content/uploads/2013/09/homebrew_osx_logo.png</string>
+		    </array>
+		    <key>RunAtLoad</key>
+		    <true/>
+		    <key>StandardErrorPath</key>
+		    <string>/tmp/com.example.homebrew-upgrade.stderr</string>
+		    <key>StandardOutPath</key>
+		    <string>/tmp/com.example.homebrew-upgrade.stdout</string>
+		    <key>StartCalendarInterval</key>
+		    <array>
+		        <dict>
+		            <key>Hour</key>
+		            <integer>8</integer>
+		        </dict>
+		    </array>
+		</dict>
+		</plist>
+
+		# ----------------------------------------
+		#  Homebrew Packages Config
+		# ---------------------
+				# #--- Zsh ---#
+				update_shell() {
+				  local shell_path;
+				  shell_path="$(which zsh)"
+
+				  fancy_echo "Changing your shell to zsh ..."
+				  if ! grep "$shell_path" /etc/shells > /dev/null 2>&1 ; then
+				    fancy_echo "Adding '$shell_path' to /etc/shells"
+				    sudo sh -c "echo $shell_path >> /etc/shells"
+				  fi
+				  sudo chsh -s "$shell_path" "$USER"
+				}
+			 #    ## Add the path of the Bash version installed through Homebrew
+			 #    # to the list of login shells from the `/etc/shells` file.
+			 #    #
+			 #    # This needs to be done because applications use this file to
+			 #    # determine whether a shell is valid (e.g.: `chsh` consults the
+			 #    # `/etc/shells` to determine whether an unprivileged user may
+			 #    # change the login shell for her own account).
+			 #    HOMEBREW_PREFIX="$(brew --prefix)"
+
+			 #    if [ -z "$(cat /etc/shells | grep "$HOMEBREW_PREFIX")" ]; then
+			 #        sudo sh -c "printf \"$HOMEBREW_PREFIX/bin/bash\n\" >> /etc/shells"
+			 #        print_result $? "Add \`$HOMEBREW_PREFIX/bin/bash\` in \`/etc/shells\`"
+			 #    fi
+			 #    ## Make OS X use the Bash version installed through Homebrew
+			 #    chsh -s "$HOMEBREW_PREFIX/bin/zsh" &> /dev/null
+			 #    print_result $? 'Use latest version of zsh'
+
+			 #    #--- Curl ---#
+			 #    ~/.curlrc` (see `man curl` for more):
+				# ```
+				# user-agent = "Mozilla/5.0 (Windows NT 6.1; rv:45.0) Gecko/20100101 Firefox/45.0"
+				# referer = ";auto"
+				# connect-timeout = 10
+				# progress-bar
+				# max-time = 90
+				# verbose
+				# show-error
+				# remote-time
+				# ipv4
+				# ```
+
+				#--- Privoxy ---#
+				TODO
+                #--- Tor ---#
+				TODO
+
+                #--- dnscrypt ---#
+				# ## Use to encrypt DNS traffic to the provider of choice.
+				# # Install the program:
+				# sudo cp -fv /usr/local/opt/dnscrypt-proxy/*.plist /Library/LaunchDaemons
+				# sudo chown root /Library/LaunchDaemons/homebrew.mxcl.dnscrypt-proxy.plist
+				# # If using in combination with `dnsmasq`, edit `/Library/LaunchDaemons/homebrew.mxcl.dnscrypt-proxy.plist`
+				# # to have this line:
+				#     <string>--local-address=127.0.0.1:5355</string>
+				# # Below the line:
+				#     <string>/usr/local/opt/dnscrypt-proxy/sbin/dnscrypt-proxy</string>
+				# # *Append a local-address line to use dnscrypt on a port other than 53, like 5355.*
+				# # This can also be done using Homebrew, by installing `gnu-sed` and using the command:
+
+				#     $ sudo sed -i "/sbin\\/dnscrypt-proxy<\\/string>/a<string>--local-address=127.0.0.1:5355<\\/string>\n" /Library/LaunchDaemons/homebrew.mxcl.dnscrypt-proxy.plist
+
+				# # By default, the `resolvers-list` will point to the dnscrypt version specific resolvers
+                # # file. When dnscrypt is updated, this version may no longer exist, and if it does, may
+                # point to an  outdated file. This can be fixed by changing the resolvers file in
+				# # `/Library/LaunchDaemons/homebrew.mxcl.dnscrypt-proxy.plist` to the symlinked
+				# # version in `/usr/local/share`:
+				#     <string>--resolvers-list=/usr/local/share/dnscrypt-proxy/dnscrypt-resolvers.csv</string>
+
+                # Start the program:
+				# $ sudo launchctl load /Library/LaunchDaemons/homebrew.mxcl.dnscrypt-proxy.plist
+				# Make sure `dnscrypt` is running with `sudo lsof -ni UDP:5355` or `ps -ef | grep '[d]nscrypt'`
+				# > By default, dnscrypt-proxy runs on localhost (127.0.0.1), port 53,
+				# and under the "nobody" user using the dnscrypt.eu-dk DNSCrypt-enabled
+				# resolver. If you would like to change these settings, you will have to edit the plist file (e.g., --resolver-address, --provider-name, --provider-key, etc.)
+
+				# This can be accomplished by editing `/Library/LaunchDaemons/homebrew.mxcl.dnscrypt-proxy.plist`.
+				# You can run your own [dnscrypt server](https://github.com/Cofyc/dnscrypt-wrapper)
+				# from a trusted location or use one of many [public servers]
+				# (https://github.com/jedisct1/dnscrypt-proxy/blob/master/dnscrypt-resolvers.csv) instead.
+				# Confirm outgoing dns traffic is encrypted:
+				#     $ sudo tcpdump -qtni en0
+				#     IP 10.8.8.8.59636 > 77.66.84.233.443: UDP, length 512
+				#     IP 77.66.84.233.443 > 10.8.8.8.59636: UDP, length 368
+
+				#     $ dig +short -x 77.66.84.233
+				#     resolver2.dnscrypt.eu
+				# See also
+				# [What is a DNS leak and why should I care?]
+				# (https://dnsleaktest.com/what-is-a-dns-leak.html) and the
+				# [mDNSResponder manual page]
+				# (https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man8/mDNSResponder.8.html).
+				# Precise test: [ipv6-test.com](http://ipv6-test.com/).
+
+				#--- Dnsmasq ---#
+				# Among other features, [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html)
+				# is able to cache replies, prevent upstreaming queries for unqualified names, and block entire TLDs.
+				# Use in combination with DNSCrypt to additionally encrypt outgoing DNS traffic.
+
+				# **(Optional)** [DNSSEC](https://en.wikipedia.org/wiki/Domain_Name_System_Security_Extensions)
+				# is a set of extensions to DNS which provide to DNS clients (resolvers) origin authentication of DNS data,
+				# authenticated denial of existence, and data integrity. All answers from DNSSEC protected zones are digitally signed.
+				# The signed records are authenticated via a chain of trust, starting with a set of verified public keys for the DNS root-zone.
+				# The current root-zone trust anchors may be downloaded [from IANA website](https://www.iana.org/dnssec/files).
+				# There are a number of resources on DNSSEC, but probably the best one is [dnssec.net website](http://www.dnssec.net).
+				# Edit the configuration:
+				# ```
+				# $ vim /usr/local/etc/dnsmasq.conf
+				# ```
+				# Examine all the options. Here are a few recommended settings to enable:
+				# ```
+				# # Forward queries to DNSCrypt on localhost port 5355
+				# server=127.0.0.1#5355
+				# # Uncomment to forward queries to Google Public DNS, if DNSCrypt is not used
+				# # You may also use your own DNS server or other public DNS server you trust
+				# #server=8.8.8.8
+				# #server=8.8.4.4
+				# # Never forward plain (local) names
+				# domain-needed
+
+				# # Examples of blocking TLDs or subdomains
+				# #address=/.onion/0.0.0.0
+				# #address=/.local/0.0.0.0
+				# #address=/.mycoolnetwork/0.0.0.0
+				# #address=/.facebook.com/0.0.0.0
+				# #address=/.push.apple.com/0.0.0.0
+				#
+				# # Never forward addresses in the non-routed address spaces
+				# bogus-priv
+				# # Reject private addresses from upstream nameservers
+				# stop-dns-rebind
+				# # Query servers in order
+				# strict-order
+				# # Set the size of the cache
+				# # The default is to keep 150 hostnames
+				# cache-size=8192
+				# # Optional logging directives
+				# log-async
+				# log-dhcp
+				# log-facility=/var/log/dnsmasq.log
+				# # Log all queries
+				# #log-queries
+				# # Path to list of additional hosts
+				# #addn-hosts=/etc/blacklist
+				# # Enable DNSSEC (see https://www.iana.org/dnssec/files)
+				# #dnssec
+				# #trust-anchor=.,19036,8,2,49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5
+				# #dnssec-check-unsigned
+				# ```
+				# Install and start the program (sudo is required to bind to
+				# [privileged port](https://unix.stackexchange.com/questions/16564/why-are-the-first-1024-ports-restricted-to-the-root-user-only) 53):
+				# ```
+				# $ sudo brew services start dnsmasq
+				# ```
+				# To set Dnsmasq as your local DNS server, open **System Preferences**
+				# > **Network** and select the active interface, then the **DNS** tab,
+				# select **+** and add `127.0.0.1`, or use:
+				# ```
+				# $ sudo networksetup -setdnsservers "Wi-Fi" 127.0.0.1
+				# ```
+				# Make sure Dnsmasq is correctly configured:
+				# ```
+				# $ scutil --dns
+				# DNS configuration
+				# resolver #1
+				#   search domain[0] : whatever
+				#   nameserver[0] : 127.0.0.1
+				#   flags    : Request A records, Request AAAA records
+				#   reach    : Reachable, Local Address, Directly Reachable Address
+				# $ networksetup -getdnsservers "Wi-Fi"
+				# 127.0.0.1
+				# ```
+				# **Note** Some VPN software overrides DNS settings on connect.
+				# ##### Test DNSSEC validation
+				# Test DNSSEC validation succeeds for signed zones:
+				#     $ dig +dnssec icann.org
+				# Reply should have `NOERROR` status and contain `ad` flag. For instance,
+				#     ;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 47039
+				#     ;; flags: qr rd ra ad; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1
+				# Test DNSSEC validation fails for zones that are signed improperly:
+				#     $ dig www.dnssec-failed.org
+				# Reply should have `SERVFAIL` status. For instance,
+				#     ;; ->>HEADER<<- opcode: QUERY, status: SERVFAIL, id: 15190
+				#     ;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 1
+
+
+				#--- Securing HTTP with privoxy ---#
+				# Consider using [Privoxy](http://www.privoxy.org/) as a local proxy to filter Web browsing traffic.
+				# **Note** macOS proxy settings are not universal; apps and services may or may not honor system proxy settings.
+				# Ensure the app you wish to proxy is correctly configured and manually verify connections don't leak.
+				# Additionally, it may be possible to configure the *pf* firewall to transparently proxy all traffic.
+				# A signed installation package for privoxy can be downloaded from
+				# [silvester.org.uk](https://silvester.org.uk/privoxy/OSX/) or
+				# [Sourceforge](https://sourceforge.net/projects/ijbswa/files/Macintosh%20%28OS%20X%29/).
+				# The signed package is [more secure](https://github.com/drduh/OS-X-Security-and-Privacy-Guide/issues/65)
+				# than the Homebrew version, and attracts full support from the Privoxy project.
+				# Alternatively, install and start privoxy using Homebrew:
+				#     $ brew install privoxy
+				#     $ brew services start privoxy
+				# By default, privoxy listens on local TCP port 8118.
+				# Set the system **HTTP** proxy for your active network interface `127.0.0.1` and `8118` (This can be done through **System Preferences > Network > Advanced > Proxies**):
+				#     $ sudo networksetup -setwebproxy "Wi-Fi" 127.0.0.1 8118
+				# **(Optional)** Set the system **HTTPS** proxy, which still allows for domain name filtering, with:
+				#     $ sudo networksetup -setsecurewebproxy "Wi-Fi" 127.0.0.1 8118
+				# Confirm the proxy is set:
+				# ```
+				# $ scutil --proxy
+				# <dictionary> {
+				#   ExceptionsList : <array> {
+				#     0 : *.local
+				#     1 : 169.254/16
+				#   }
+				#   FTPPassive : 1
+				#   HTTPEnable : 1
+				#   HTTPPort : 8118
+				#   HTTPProxy : 127.0.0.1
+				# }
+				# ```
+				# Visit <http://p.p/> in a browser, or with Curl:
+				# ```
+				# $ ALL_PROXY=127.0.0.1:8118 curl -I http://p.p/
+				# HTTP/1.1 200 OK
+				# Content-Length: 2401
+				# Content-Type: text/html
+				# Cache-Control: no-cache
+				# ```
+				### Privoxy already comes with many good rules, however you can also write your own.
+				# Edit `~/homebrew/etc/privoxy/user.action` to filter elements by domain or with regular expressions.
+				# Here are some examples:
+				# ```
+				# { +block{social networking} }
+				# www.facebook.com/(extern|plugins)/(login_status|like(box)?|activity|fan)\.php
+				# .facebook.com
+
+				# { +block{unwanted images} +handle-as-image }
+				# .com/ads/
+				# /.*1x1.gif
+				# /.*fb-icon.[jpg|gif|png]
+				# /assets/social-.*
+				# /cleardot.gif
+				# /img/social.*
+				# ads.*.co.*/
+				# ads.*.com/
+
+				# { +redirect{s@http://@https://@} }
+				# .google.com
+				# .wikipedia.org
+				# code.jquery.com
+				# imgur.com
+				# ```
+				# Verify Privoxy is blocking and redirecting:
+				# ```
+				# $ ALL_PROXY=127.0.0.1:8118 curl ads.foo.com/ -IL
+				# HTTP/1.1 403 Request blocked by Privoxy
+				# Content-Type: image/gif
+				# Content-Length: 64
+				# Cache-Control: no-cache
+
+				# $ ALL_PROXY=127.0.0.1:8118 curl imgur.com/ -IL
+				# HTTP/1.1 302 Local Redirect from Privoxy
+				# Location: https://imgur.com/
+				# Content-Length: 0
+				# Date: Sun, 09 Oct 2016 18:48:19 GMT
+
+				# HTTP/1.1 200 OK
+				# Content-Type: text/html; charset=utf-8
+				# ```
+				# You can replace ad images with pictures of kittens, for example, by starting the a local Web server and [redirecting blocked requests]
+				# (https://www.privoxy.org/user-manual/actions-file.html#SET-IMAGE-BLOCKER) to localhost.
+
+				#--- PGP/GPG ---#
+				# Here are several [recommended options](https://github.com/drduh/config/blob/master/gpg.conf) to add to `~/.gnupg/gpg.conf`:
+				# ```
+				# auto-key-locate keyserver
+				# keyserver hkps://hkps.pool.sks-keyservers.net
+				# keyserver-options no-honor-keyserver-url
+				# personal-cipher-preferences AES256 AES192 AES CAST5
+				# personal-digest-preferences SHA512 SHA384 SHA256 SHA224
+				# default-preference-list SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 ZLIB BZIP2 ZIP Uncompressed
+				# cert-digest-algo SHA512
+				# s2k-digest-algo SHA512
+				# s2k-cipher-algo AES256
+				# charset utf-8
+				# fixed-list-mode
+				# no-comments
+				# no-emit-version
+				# keyid-format 0xlong
+				# list-options show-uid-validity
+				# verify-options show-uid-validity
+				# with-fingerprint
+				# ```
+				# These settings will configure GnuPG to use SSL when fetching new keys and prefer strong cryptographic primitives.
+
+				#     if [ ! -f /usr/local/bin/istats ]; then
+				#         printf "${LIGHTGREEN}"
+				#         read -r -p "Would you like to install iStats access information about your Mac temperature and fan speed? (Yes / No)" response
+				#         case $response in
+				#             [yY][eE][sS]|[yY])
+				#                 echo "Installing iStats..."
+				#                 echo "${GREEN}sudo gem install iStats -n/usr/local/bin\n\n${NC}"
+				#                 sudo gem install iStats -n/usr/local/bin
+				#                 ;;
+				#             *)
+				#                 ;;
+				#         esac
+				#         printf "${NC}"
+				#     fi
+
+				#--- MAMP ---#
+				#!/usr/bin/env bash
+
+				# APACHE_CONF_DIR="/etc/apache2"
+
+				# ################################################################################
+				# ## DNS Configuration
+				# # Create DNSmasq configuration file
+				# cp /usr/local/opt/dnsmasq/dnsmasq.conf.example /usr/local/etc/dnsmasq.conf
+				# # Enable DNSmasq LaunchDaemon
+				# sudo cp -fv /usr/local/opt/dnsmasq/*.plist /Library/LaunchDaemons
+				# sudo chown root /Library/LaunchDaemons/homebrew.mxcl.dnsmasq.plist
+				# # Write local `.dev` DNS listener to DNSmasq configuration
+				# cat <<HERE >> $(brew --prefix)/etc/dnsmasq.conf
+				# # Local development DNS
+				# address=/dev/127.0.0.1
+				# listen-address=127.0.0.1
+				# HERE
+				# # Add `.dev` DNS resolver
+				# sudo mkdir -p /etc/resolver
+				# sudo bash -c 'echo "nameserver 127.0.0.1" > /etc/resolver/dev'
+				# # Load DNSmasq
+				# sudo launchctl load -w /Library/LaunchDaemons/homebrew.mxcl.dnsmasq.plist
+
+				# ################################################################################
+				# ## PHP Configuration
+
+				# # Add (Homebrew) PHP 5.6 module to Apache configuration
+				# sudo sed -i '' -E 's%^#LoadModule php5_module .*%&\
+				# LoadModule php5_module /usr/local/opt/php56/libexec/apache2/libphp5.so%' ${APACHE_CONF_DIR}/httpd.conf
+
+				# # Enable PHP LaunchAgent
+				# mkdir -p ~/Library/LaunchAgents
+				# ln -sfv /usr/local/opt/php56/*.plist ~/Library/LaunchAgents/
+				# launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.php56.plist
+
+				# ################################################################################
+				# ## SSL Configuration
+
+				# # Create SSL Direcotry
+				# sudo mkdir ${APACHE_CONF_DIR}/ssl
+
+				# # Generate SSL Certificate
+				# sudo openssl req \
+				#   -x509 -nodes -days 3650 -newkey rsa:4096 \
+				#   -subj "/C=US/ST=/L=/O=/OU=$(logname)/CN=*.dev" \
+				#   -keyout "${APACHE_CONF_DIR}/ssl/localhost.key" \
+				#   -out "${APACHE_CONF_DIR}/ssl/localhost.crt"
+
+				# # Trust certificate
+				# sudo security add-trusted-cert \
+				#   -d -r trustRoot -k "/Library/Keychains/System.keychain" \
+				#   "${APACHE_CONF_DIR}/ssl/localhost.crt"
+
+				# ################################################################################
+				# ## Apache Configuration
+
+				# ## Modules
+
+				# # Enable Apache modules
+
+				# # join helper function
+				# function join { local IFS="$1"; shift; echo "$*"; }
+
+				# modules=(
+				#   userdir_module
+				#   vhost_alias_module
+				#   deflate_module
+				#   expires_module
+				#   ssl_module
+				#   rewrite_module
+				#   ratelimit_module
+				# )
+
+				# sudo sed -i '' -E "s/^#(LoadModule ($(join '|' ${modules[@]})))/\1/g" ${APACHE_CONF_DIR}/httpd.conf
+
+				# ## Extras
+
+				# # Enable Extras
+				# extras=(
+				#   httpd-userdir.conf
+				# )
+
+				# sudo sed -i '' -E "s%^#(Include .*/extra/($(join '|' ${extras[@]})))%\1%g" ${APACHE_CONF_DIR}/httpd.conf
+
+				# # Enable user config files
+				# sudo sed -i '' -E 's%^#(Include .*/users/\*.conf)%\1%g' ${APACHE_CONF_DIR}/extra/httpd-userdir.conf
+
+				# ## Create user virtual hosts file
+				# cat > ${APACHE_CONF_DIR}/users/$(logname).conf <<EOF
+				# ## Default configurations
+				# ################################################################################
+
+				# # Set default charset
+				# AddDefaultCharset utf-8
+
+				# # Remove "charset=iso-8859-1" from error documents
+				# # https://httpd.apache.org/docs/trunk/env.html#suppress-error-charset
+				# SetEnvIf Host ^ suppress-error-charset
+
+				# # Reduce information presented in server headers
+				# ServerTokens ProductOnly
+				# ServerSignature Off
+
+				# # Disable server response headers
+				# <IfModule mod_headers.c>
+				#   Header unset X-Powered-By
+				#   Header always unset X-Powered-By
+				# </IfModule>
+
+				# <IfModule mod_rewrite.c>
+				#     RewriteEngine On
+
+				#     # Add map to force lowercase URLs
+				#     RewriteMap lowercase int:tolower
+				# </IfModule>
+
+				# <Directory "${HOME}/Sites/">
+				#     Options Indexes MultiViews FollowSymLinks Includes
+
+				#     # http://httpd.apache.org/docs/2.4/upgrading.html#run-time
+				#     AllowOverride All
+				#     Require all granted
+				# </Directory>
+
+
+				# # Environment Variables
+				# ################################################################################
+
+				# <IfModule mod_env>
+				#     # Enable Magento developer mode
+				#     SetEnv MAGE_IS_DEVELOPER_MODE "1"
+				# </IfModule>
+
+
+				# ## Automatic HTTP Mapping
+				# ################################################################################
+
+				# <VirtualHost *:80>
+				#     UseCanonicalName off
+
+				#     # Handle subdomains
+				#     # http://httpd.apache.org/docs/2.4/mod/mod_vhost_alias.html#interpol
+				#     ServerAlias *.*.*
+				#     # Alternatively grab domain name and the tld with:
+				#     # %-2.0.%-1.0
+				#     VirtualDocumentRoot ${HOME}/Sites/%-2/%-3+/
+				# </VirtualHost>
+
+				# <VirtualHost *:80>
+				#     UseCanonicalName off
+
+				#     # Handle subdomains
+				#     # http://httpd.apache.org/docs/2.4/mod/mod_vhost_alias.html#interpol
+				#     ServerAlias *.*
+				#     VirtualDocumentRoot ${HOME}/Sites/%1/www/
+				# </VirtualHost>
+
+
+				# ## Automatic HTTPS/SSL Mapping
+				# ################################################################################
+
+				# # Listen for secure traffic
+				# Listen 443
+
+				# <VirtualHost *:443>
+				#     UseCanonicalName off
+
+				#     # Subdomains mapped to subdirectories
+				#     # http://httpd.apache.org/docs/2.4/mod/mod_vhost_alias.html#interpol
+				#     ServerAlias *.*.*
+				#     VirtualDocumentRoot ${HOME}/Sites/%-2/%-3+/
+
+				#     # Enable SSL
+				#     <IfModule mod_ssl.c>
+				#         SSLEngine on
+				#         SSLCertificateFile    ${APACHE_CONF_DIR}/ssl/localhost.crt
+				#         SSLCertificateKeyFile ${APACHE_CONF_DIR}/ssl/localhost.key
+				#     </IfModule>
+				# </VirtualHost>
+
+				# <VirtualHost *:443>
+				#     UseCanonicalName off
+
+				#     # Primary domain mapped to www subdirectory
+				#     # http://httpd.apache.org/docs/2.4/mod/mod_vhost_alias.html#interpol
+				#     ServerAlias *.*
+				#     VirtualDocumentRoot ${HOME}/Sites/%1/www/
+
+				#     # Enable SSL
+				#     <IfModule mod_ssl.c>
+				#         SSLEngine on
+				#         SSLCertificateFile    ${APACHE_CONF_DIR}/ssl/localhost.crt
+				#         SSLCertificateKeyFile ${APACHE_CONF_DIR}/ssl/localhost.key
+				#     </IfModule>
+				# </VirtualHost>
+				# EOF
+
+				# ################################################################################
+				# ## Restart Services
+
+				# # Restart Network services
+				# enabled_services=$(networksetup listallnetworkservices | sed '1d;/^\*/d')
+				# echo "$enabled_services" | xargs -I {} bash -c '
+				#   sudo networksetup -setnetworkserviceenabled "{}" off;
+				#   sudo networksetup -setnetworkserviceenabled "{}" on'
+
+				# # Restart apache
+				# sudo apachectl restart
+
+				#--- MYSQL ---#
+				## MySQL Configuration
+
+				# mysql_pkg=mysql
+
+				# # Use percona as a drop-in replacement, if available
+				# [ -n "$(brew ls --versions percona-server)" ] && mysql_pkg=percona-server
+
+				# # Enable MySQL LaunchAgent
+				# ln -sfv /usr/local/opt/${mysql_pkg}/*.plist ~/Library/LaunchAgents
+				# launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.${mysql_pkg}.plist
+
+				# # Configure MySQL
+				# mysql -f -uroot 2>/dev/null < <( cat <<EOF
+				#   USE mysql;
+
+				#   # Secure MySQL Installation
+				#   # Similar to mysql_secure_installation
+				#   # Remove the anonymous users
+				#   DROP USER ''@'localhost';
+				#   DROP USER ''@'$(hostname)';
+				#   # Disallow root login remotely
+				#   DELETE FROM user WHERE user = 'root' AND host NOT IN ('localhost', '127.0.0.1', '::1');
+				#   # Remove test database
+				#   DROP DATABASE test;
+
+				#   # Rename root user to current username
+				#   UPDATE user SET user = '$(logname)' WHERE user = 'root';
+				#   # Set password
+				#   # UPDATE user SET password = PASSWORD('') WHERE user = '$(logname)';
+
+				#   # Reload privilege tables
+				#   FLUSH PRIVILEGES;
+				# EOF
+				# )
+# # -------------------------------------------------------------------------
+# ##.  Ruby Gems packages
+# # -------------------------------------------------------------------------
+gem_install_or_update() {
+  if gem list "$1" --installed > /dev/null; then
+    gem update "$@"
+  else
+    gem install "$@"
+  fi
+}
+
+# # rbenv *should* be installed at this point
+# hash rbenv 2>/dev/null || echo "Please install rbenv before continuing"
+
+# # Install latest (stable) Ruby
+# ruby_latest=$(rbenv install -l 2>/dev/null | awk '$1 ~ /^[0-9.]*$/ {latest=$1} END {print latest}')
+# rbenv install $ruby_latest
+# rbenv global $ruby_latest
+# rbenv rehash
+
+# # Install gems from Gemfile
+# gem install bundler \
+#  && rbenv rehash \
+#  && bundle install --gemfile=installers/ruby/Gemfile --system \
+#  && rbenv rehash
+
+
+# # -------------------------------------------------------------------------
+# ##.  Python Pip packages
+# # -------------------------------------------------------------------------
+#     if [ ! -f /usr/local/bin/glances ]; then
+#         printf "${LIGHTGREEN}"
+#         read -r -p "Would you like to install Glances to access advanced information about the system (https://github.com/nicolargo/glances)? (Yes / No)" response
+#         case $response in
+#             [yY][eE][sS]|[yY])
+#                 echo "Installing Glances (https://github.com/nicolargo/glances)..."
+#                 echo "${GREEN}pip install glances\n${NC}"
+#                 pip install glances
+#                 ;;
+#             *)
+#                 ;;
+#         esac
+#         printf "${NC}"
+# 	fi
+
+# # pyenv *should* be installed at this point
+# hash pyenv 2>/dev/null || echo "Please install pyenv before continuing"
+
+# # Install latest (stable) Python
+# python2_latest=$(pyenv install -l 2>/dev/null | awk '$1 ~ /^2[0-9.]*$/ {latest=$1} END {print latest}')
+# python_latest=$(pyenv install -l 2>/dev/null | awk '$1 ~ /^[0-9.]*$/ {latest=$1} END {print latest}')
+# pyenv install --skip-existing $python2_latest
+# pyenv install --skip-existing $python_latest
+# pyenv rehash
+# pyenv global $python2_latest
+
+# # pip *should* be installed at this point
+# hash pip 2>/dev/null || echo "Please install pip before continuing"
+
+# pip_packages=(
+#   pip
+#   fonttools
+#   qtfaststart
+#   dnsyo
+#   powerline-status
+# )
+
+# # Loop through each package individally because
+# # any errors will stop all installations
+# for package in "${pip_packages[@]}"; do
+#   pip install --upgrade "$package"
+# done
+
+
+# # -------------------------------------------------------------------------
+# ##.  Npn packages
+# # -------------------------------------------------------------------------
+#
+# # # -------------------------------------------------------------------------
+# ##.  Xcode
+# # -------------------------------------------------------------------------
+xcodeInstall() {
+
+    if ! xcode-select -p &> /dev/null; then
+
+        # Prompt user to install the XCode Command Line Tools
+        xcode-select --install &> /dev/null
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Wait until the XCode Command Line Tools are installed
+        while ! xcode-select -p &> /dev/null; do
+            sleep 5
+        done
+        print_result $? 'Install XCode Command Line Tools'
+		# Accept the Xcode/iOS license agreement
+		if ! $(sudo xcodebuild -license status); then
+		  sudo xcodebuild -license accept
+		fi
+
+		# Install additional required components
+		# /Applications/Xcode.app/Contents/MacOS/Xcode -installComponents
+		for pkg in /Applications/Xcode.app/Contents/Resources/Packages/*.pkg; do
+		  sudo installer -pkg "$pkg" -target /
+		done
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Point the `xcode-select` developer directory to
+        # the appropriate directory from within `Xcode.app`
+        # https://github.com/alrra/dotfiles/issues/13
+        sudo xcode-select -switch /Applications/Xcode.app/Contents/Developer
+        print_result $? 'Make "xcode-select" developer directory point to Xcode'
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Prompt user to agree to the terms of the Xcode license
+        # https://github.com/alrra/dotfiles/issues/10
+
+        sudo xcodebuild -license
+        print_result $? 'Agree with the XCode Command Line Tools licence'
+
+    fi
+
+    print_result $? 'XCode Command Line Tools'
+
+}
+xcodeInstall

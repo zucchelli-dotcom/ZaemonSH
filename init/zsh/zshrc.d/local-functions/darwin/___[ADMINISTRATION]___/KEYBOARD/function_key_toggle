@@ -1,0 +1,192 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# function_key_toggle :
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.2"
+FCT_NAME="$(echo $0)"
+
+tab_number=1
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+# Activate the function keys.
+print "Please wait ...."
+         
+osascript <<-eof
+tell application "Finder"
+	activate
+	activate application "System Preferences"
+	tell application "System Events"
+		if (system attribute "sysv") is greater than or equal to 4144 then -- Mac OS X 10.3.0  
+			if UI elements enabled then
+				tell application process "System Preferences"
+					-- note there is no space after the "&" and Mouse is on a new line 
+					click button "Keyboard" of scroll area 1 of window "System Preferences"
+					delay 3
+					click radio button $tab_number of tab group 1 of window "Keyboard"
+					click checkbox of tab group 1 of window "Keyboard"
+					delay 2  
+				end tell
+
+				# tell application "System Preferences"
+				#     activate
+				#     set current pane to pane "com.apple.preference.keyboard"
+				# end tell
+				
+				# try
+				#     tell application "System Events"
+				#         tell tab group 1 of window "Keyboard" of process "System Preferences"
+				#             delay 1
+				#             click radio button "input Sources"
+				# 			delay 2			
+				#             click checkbox "Show input menu in menu bar"
+				#         	delay 2
+				#         end tell
+				#     end tell
+				# end try
+
+				# try
+				#     tell application "System Events"
+				#         tell tab group 1 of window "Keyboard" of process "System Preferences"
+				#             delay 1
+				#             click radio button "Keyboard"
+				#             delay 2
+				#             click checkbox "Show keyboard and emoji viewers in menu bar"
+				#         	delay 2
+				#         end tell
+				#     end tell
+				# end try
+
+
+
+
+
+
+
+				
+				
+				
+			else
+				beep
+				display dialog "GUI Scripting is not enabled" & return & return & "Open System Preferences and check \"Enable access for assistive devices\" in the Universal Access preference pane, then run this script again." with icon stop
+				if button returned of result is "OK" then
+					tell application "System Preferences"
+						activate
+						set current pane to pane "com.apple.preference.universalaccess"
+					end tell
+				end if
+			end if
+		else
+			beep
+			display dialog "This computer can't run this script" & return & return & "The script uses Apple's GUI Scripting technology, which requires an upgrade to Mac OS X 10.3 \"Panther\" or newer." with icon caution buttons {"Quit"} default button "Quit"
+		end if
+	end tell
+	tell application "System Preferences"
+		quit
+	end tell
+end tell
+eof
+
+
+
+#  osascript <<-eof
+# tell application "System Preferences"
+#     activate
+#     set current pane to pane "com.apple.preference.keyboard"
+# end tell
+
+# try
+#     tell application "System Events"
+#         tell tab group 1 of window "Keyboard" of process "System Preferences"
+#             delay 1
+#             click radio button "input Sources"
+#             delay 1
+#             click checkbox "Show input menu in menu bar"
+#         end tell
+#     end tell
+# end try
+# eof
+
+
+
+ 

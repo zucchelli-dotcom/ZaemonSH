@@ -1,0 +1,8 @@
+# shorthand for loop, usage: loop <what to do> <number of times to do it>
+loop() {
+  for i in {1..$2}; do
+    echo $1 | sh
+  done
+}
+
+# vim: ft=zsh

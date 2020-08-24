@@ -1,0 +1,2557 @@
+
+
+2```
+ 2    ╚⊙ ⊙╝
+ 2  ╚═(███)═╝
+ 2 ╚═(███)═╝
+ 2╚═(███)═╝
+ 2 ╚═(███)═╝
+ 2  ╚═(███)═╝
+ 2   ╚═(███)═╝
+2```
+
+
+#=============================================================================
+#==============================================================================
+# ------------------------------------------------------------------------------
+# \                                                                             \
+#  ------------------------------------------------------------------------------
+#  |                                                                             |
+#  |               [[-----[[OSX SYSTEM ADMINISTRATION]]-----]]                   |
+#  |                                       					 					 |
+# \|                                                                             |
+#   -----------------------------------------------------------------------------
+
+#--------------------------------------------------------------------
+#     					           |SUDO|
+#--------------------------------------------------------------------
+# Before we start using sudo and making changes, let’s start with some
+# queries to get comfortable. I’ve fabricated the output of commands
+# based on real output, as well as trimmed a bunch of data to save on
+# space, but you should get the idea.
+
+
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                		|||| SYSTEM INFOS/SETUP ||||         		 |
+#                                        	                   	     |
+#                                                                    |
+# -------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                           	 CRLREFRESH
+# --------------------------------------------------------------------------------
+# #Refresh OS X CRLs
+#I recently found an existing image with a lot of stale crl information. We couldn’t rebuild the image, so we decided to instead refresh all of the crl information. This information is stored in /var/db/crls/crlcache.db. Deleting the file turned out to be problematic so we needed to clear items out of the tables instead. While this could be done using a few different tools, it turns out there’s a command built into os x to take care of this process for us called crlrefresh.
+To use crlrefresh to clean up stale crlinformation and fetch new crlinformation for all CRL and certificates, use:
+
+crlrefresh rpvv
+
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                           	 IOREG
+# --------------------------------------------------------------------------------
+# Show EFI (firmware ABI) type
+ioreg -l -p IODeviceTree | grep firmware-abi | sed s/"    | |   \"firmware-abi\" = <\""// | sed s/"\">"//g
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                            HARDWARE-INFOS
+# --------------------------------------------------------------------------------
+## Affiche infos de la batterie
+# Pourcentage
+# show battery charge percentage
+$ ioreg -l | grep -i capacity | tr '\n' ' | ' | awk '{printf("%.2f%%", $10/$5 * 100)}'
+
+pmset -g batt | egrep "([0-9]+\%).*" -o --colour=auto | cut -f1 -d';'
+# Pourcentage sans signe %
+pmset -g batt | egrep "([0-9]+\%).*" -o --colour=auto | cut -f1 -d';' | sed s'/.$//'
+# Etat
+pmset -g batt | egrep "([0-9]+\%).*" -o --colour=auto | cut -f2 -d';'
+# Temps restant
+pmset -g batt | egrep "([0-9]+\%).*" -o --colour=auto | cut -f3 -d';'
+
+# Set standby delay to 24 hours (default is 1 hour)
+sudo pmset -a standbydelay 86400
+
+
+# Disable the sudden motion sensor as it’s not useful for SSDs
+sudo pmset -a sms 0
+
+# Disable hibernation (speeds up entering sleep mode)
+sudo pmset -a hibernatemode 0
+#--------------------------------------------------------------------
+#     					       	 |NVRAM|
+#--------------------------------------------------------------------
+$ nvram -p  # Afficher les variables de la nvram.
+
+# Wifi passwords can be retrieved from NVRAM like this:
+$ /usr/libexec/airportd readNVRAM
+
+$ nvram boot-args="-s rd=*hd:10"  #
+
+$ sudo nvram boot-args=kext-dev-mode=1  # Change the kext signing security
+$ sudo nvram -d boot-args  # To reenable
+
+$ sudo nvram SystemAudioVolume=" " # Disable the sound effects on boot
+
+$ sudo nvram boot-args="mbasd=1" # Enable the MacBook Air SuperDrive on any Mac
+#-------------------------------------------------------------------------
+#     					        |GETCONF|
+#-------------------------------------------------------------------------
+ getconf LONG_BIT  # Pour voir si le système est 32 ou 64 bits
+#-------------------------------------------------------------------------
+#     					         |UNAME|
+#-------------------------------------------------------------------------
+$ uname -a # Montre informations importantes sur le système.
+#-------------------------------------------------------------------------
+#     					  |OSX INSTALLATION DATE|
+#-------------------------------------------------------------------------
+$ ls -lct /etc | tail -1 | awk '{print $6, $7}'  # Affiche depuis quand est
+						 # installé le système.
+
+#-------------------------------------------------------------------------
+#		                         |LAST|
+#-------------------------------------------------------------------------
+# Check mac last reboot
+last reboot
+#--------------------------------------------------------------------
+#     					       SW_VERS|	    #
+#--------------------------------------------------------------------
+# Get system Information
+$ sw_vers
+
+# show system and build versions
+$ echo 'System Version: ';defaults read loginwindow SystemVersionStampAsString;echo ' Build Version: ';defaults read loginwindow BuildVersionStampAsString
+#--------------------------------------------------------------------
+#     					       SYSDIAGNOSE|	    #
+#--------------------------------------------------------------------
+# Getting detailed mac system & performance reports
+sudo sysdiagnose -f  ~/Desktop/
+#--------------------------------------------------------------------
+#     						     |DATE|	    #
+#--------------------------------------------------------------------
+$ date -s "01/31/2015 23:59:53"  #  Configurer la date.
+
+$ date -d @1234567890  # Convertir unixtime to human-readable.
+
+$ buf () { cp $1{,$(date +%Y%m%d_%H%M%S)}; }  # backup de fichier daté.
+#--------------------------------------------------------------------
+#                                |SCUTIL     #
+#--------------------------------------------------------------------
+# Set computer name (as done via System Preferences → Sharing)
+sudo scutil --set ComputerName "Andrew MBP"
+sudo scutil --set HostName "Andrew MBP"
+sudo scutil --set LocalHostName "Andrew-MBP"
+#--------------------------------------------------------------------
+#     				    >>>APPLE: SYSTEMSETUP(SUDO)	    #
+#--------------------------------------------------------------------
+$ sudo systemsetup -get/setdate # Afficher, Configurer la date.
+
+$ sudo systemsetup -get/settime 16:20:00 # Afficher, Configurer l'heure.
+
+$ sudo systemsetup -get/settimezone US/Pacific # Afficher, Configurer le fuseau horaire.
+
+$ sudo systemsetup -get/setcomputername computername # Afficher, Configurer le nom de
+						     # l'ordinateur.
+$ sudo systemsetup -get/setremoteappleevents on | off  # Afficher, Configurer
+
+$ sudo systemsetup -getremotelogin
+
+$ sudo systemsetup -setremotelogin [-f] on | off
+
+# Ckeck current mac System sleep status
+$ sudo systemsetup -getcomputersleep
+# Turn off system sleep
+$ sudo systemsetup -setcomputer Off
+# Set mac system sleep idle time
+$ sudo systemsetup -setcomputersleep 60
+
+# Restart automatically if the computer freezes
+$ sudo systemsetup -setrestartfreeze on
+
+# Never go into computer sleep mode
+$ sudo systemsetup -setcomputersleep Off > /dev/null
+
+# Set the timezone; see `sudo systemsetup -listtimezones` for other values
+$ sudo systemsetup -settimezone "Europe/Brussels" > /dev/null
+#--------------------------------------------------------------------
+#     					 >>>APPLE: SYSTEMPROFILER	    #
+#--------------------------------------------------------------------
+# Get system Information
+$ systemprofiler | more
+
+$ system_profiler -listDataTypes  # Lister les types de données valables.
+
+$ system_profiler SPSoftwareDataType  # Afficher les informations sur le sytème.
+
+$ system_profiler SPAirPortDataType  # Afficher les informations sur les
+			             # cartes wifi airport.
+$ system_profiler SPNetworkLocationDataType  # Afficher les informations
+				             # sur les locations de réseaux.
+
+$ system_profiler >| $HOME/systemprofile # Générer un rapport de systéme
+					 # sur le bureau de l'utilisateur.
+#-------------------------------------------------------------------------
+#     				          	|EGREP|
+#-------------------------------------------------------------------------
+$ egrep -i " connected|card detect|primary dev" /var/log/Xorg.0.log
+# Identifier le driver video utilisé par Xorg.
+#-------------------------------------------------------------------------
+#     						    |SYSCTL|
+#------------------------------------------------------------------------
+$ sysctl hw.model | sed s/'^hw.model = '// # Montre le model de l'ordinateur
+
+# get kernel state
+sysctl -a | sort
+
+$ sysctl -a    # Lister tous les paramètres de kernel.
+
+$ sysctl hw.machine | sed s/'^hw.machine = '//  #
+
+$ sysctl hw.usermem | sed s/'^hw.usermem = '//  #
+
+# Show boot signature
+$ sysctl kern.bootsignature
+
+# Show boot time
+sysctl kern.boottime | sed s/'^kern.boottime = '//
+
+# Show number of supplemental GIDs
+sysctl kern.ngroups | sed s/'^kern.ngroups = '//
+
+
+#-------------------------------------------------------------------------
+#     			                 |ECHO|
+#-------------------------------------------------------------------------
+$ echo $0  # Affiche le terminal actif.
+
+$ echo $PATH | tr \: \\n  # Afficher les répertoires du PATH ligne par
+		          # ligne.
+#-------------------------------------------------------------------------
+#     						   |SHUTDOWN|
+#-------------------------------------------------------------------------
+$ sudo shutdown -h +10  # Eteindre le systeme après 10 minutes.
+
+$ sudo shutdown -Fr now  # Forcer la vérification du système au reboot.
+#-------------------------------------------------------------------------
+#     					      |FIND| (languages)
+#-------------------------------------------------------------------------
+$ sudo find /Applications ~/Applications /Library ~/Library \( -name '*.lproj' -and \! \( -name 'English.lproj' -or -name 'english.lproj' -or -name 'French.lproj' -or -name 'french.lproj' -or -name -or -name 'En.lproj' -or -name 'Fr.lproj' -or -name 'en.lproj' -or -name 'fr.lproj' -or -name -or -name 'En_*.lproj' -or -name 'Fr_*.lproj' -or -name 'en_*.lproj' -or -name 'fr_*.lproj' \) -and \! \( -path '/Library/Receipts/*' -or -path '~/Library/Receipts/*' \) \) -print0 | xargs -0 rm -fr {}
+# Retirer tous les autres languages que français et anglais, dans les logiciels tiers.
+
+$ sudo find /Applications ~/Applications /Library ~/Library \( -name '*.lproj' -and \! \( -name 'English.lproj' -or -name 'english.lproj' -or -name 'French.lproj' -or -name 'french.lproj' -or -name -or -name 'En.lproj' -or -name 'Fr.lproj' -or -name 'en.lproj' -or -name 'fr.lproj' -or -name -or -name 'En_*.lproj' -or -name 'Fr_*.lproj' -or -name 'en_*.lproj' -or -name 'fr_*.lproj' \) -and \! \( -path '/Library/Receipts/*' -or -path '~/Library/Receipts/*' \) \) -print0 | xargs -0 sudo rm -fr {}
+# Retirer tous les autres languages que français et anglais, dans tous les logiciels, y compris système.
+
+# -------------------------------------------------------------------------
+#                             |WALLPAPER|
+# -------------------------------------------------------------------------
+# Set a custom wallpaper image. `DefaultDesktop.jpg` is already a symlink, and
+# all wallpapers are in `/Library/Desktop Pictures/`. The default is `Wave.jpg`.
+#rm -rf ~/Library/Application Support/Dock/desktoppicture.db
+#sudo rm -rf /System/Library/CoreServices/DefaultDesktop.jpgxcode
+#sudo ln -s /path/to/your/image /System/Library/CoreServices/DefaultDesktop.jpg
+
+
+# -------------------------------------------------------------------------
+#                            TCC (ACCESSIBILITY ACCESS
+# -------------------------------------------------------------------------
+# Modifying the TCC database
+# • This contacts turn out to be stored in an SQLite3 database
+# ~/Library/Application\ Support/com.apple.tcc.db
+# /Library/Application\ Support/com.apple.TCC/TCC.db
+# • There are three valid service names :
+# -KTTCServiceAddressBook ->Contacts
+# -KTTCServiceAccessibility ->Accessibility
+# -KTTCServiceUbiquity ->Icloud
+# • This database in managed by the TCC daemon located at :
+# /System/Library/PrivateFrameworks/TCC.framework/ressources/tccd
+# • We can query it with the sqlite3 CLi
+sqlite3 ~/Library/Application\ Support/com.apple.tcc.db
+SQLite version 3.8.5 2014-08-15 22:37:57
+Enter ".help" for usage hints.
+sqlite> .schema
+sqlite> .tables
+access            access_overrides  access_times      admin
+sqlite> .dump access
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE access (service TEXT NOT NULL, client TEXT NOT NULL, client_type INTEGER NOT NULL, allowed INTEGER NOT NULL, prompt_count INTEGER NOT NULL, csreq BLOB, CONSTRAINT key PRIMARY KEY (service, client, client_type));
+COMMIT;
+
+# Enable access to assistive devices with terminal and TCC database
+# • You can slso use tccutil.py
+sudo sqlite3 ~/Library/Application\ Support/com.apple.tcc.db "INSERT or REPLACE INTO access VALUES ('KTTCServiceAccessibility','com.apple.RemoteDesktopAgent',1,1,1,NULL)"
+# • To remove the entry
+sudo sqlite3 ~/Library/Application\ Support/com.apple.tcc.db "DELETE from access VALUES where client='com.apple.RemoteDesktopAgent'"
+# Automate Accessibility access for Terminal
+sudo sqlite3 ~/Library/Application\ Support/com.apple.tcc.db "INSERT or REPLACE INTO access VALUES ('KTTCServiceAccessibility','com.apple.Terminal',1,1,1,NULL)"
+
+###############################################################################
+# Privacy
+#
+# Privacy should be handled within each application's configuration using
+# the `tccutil` package installed via Homebrew.
+# Note: SIP must be disabled to modify the database.
+#
+# The below outlines an altenrative solution for configuring privacy.
+###############################################################################
+
+# Databases located at:
+#   /Library/Application\ Support/com.apple.TCC/TCC.db
+#   ~/Library/Application\ Support/com.apple.TCC/TCC.db
+
+# All           : kTCCServiceAll
+# Accessibility : kTCCServiceAccessibility
+# Calendar      : kTCCServiceCalendar
+# Contacts      : kTCCServiceAddressBook
+# Location      : kTCCServiceLocation
+# Reminders     : kTCCServiceReminders
+# Facebook      : kTCCServiceFacebook
+# LinkedIn      : kTCCServiceLinkedIn
+# Twitter       : kTCCServiceTwitter
+# SinaWeibo     : kTCCServiceSinaWeibo
+# Liverpool     : kTCCServiceLiverpool
+# Ubiquity      : kTCCServiceUbiquity
+# TencentWeibo  : kTCCServiceTencentWeibo
+
+# service | client | client_type | allowed | prompt_count | csreq | policy_id
+
+# Grant access
+# sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db \
+#   "INSERT INTO access VALUES(${service},${bundle_id},0,1,1,NULL);"
+
+# Reset access
+# sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db \
+#   "DELETE FROM access WHERE client CLIENT '${bundle_id}';"
+
+# Revoke access
+# sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db \
+#   "INSERT INTO access VALUES(${service},${bundle_id},0,0,1,NULL);"
+
+#-------------------------------------------------------------------------
+#                                |ATSUTIL)  FONT
+#-------------------------------------------------------------------------
+### ATSUTIL
+# Correct with fontd became crazy
+sudo atsutil databases -remove
+sudo atsutil shutdown
+
+#-------------------------------------------------------------------------
+#                                |SPCTL|(GATEKEEPER)
+#-------------------------------------------------------------------------
+## Disable gatekeeper
+$ sudo spctl --master-disable
+## Enable gatekeeper
+$ sudo spctl --master-enable
+# Status of Gatekeeper
+spctl --status
+# Codesign Application
+# Verify if an app will be accepeted by gatekeeper
+spctl -a -t exec -vv Foo.app
+# Sign an app
+spctl --sign "Developer ID Application : My Company" Foo.app
+# Resign an alredy signed app
+spctl --force --sign "Developer ID Application : My Company" Foo.app
+# Allow applications downloaded from anywhere
+sudo spctl --master-disable
+
+#==============================================================================
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                  | TMUTIL|(TIME MACHINE)                        |
+# --------------------------------------------------------------------------------
+# Disable local Time Machine snapshots (ssd)
+sudo tmutil disablelocal
+
+#==============================================================================
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                  | CRUTIL|(SIP)                                 |
+# --------------------------------------------------------------------------------
+###To turn off
+#Turn off your Mac (Apple > Shut Down).
+#Hold down Command-R and press the Power button. Keep holding Command-R until the Apple logo appears.
+#Wait for OS X to boot into the OS X Utilities window.
+#Choose Utilities > Terminal.
+#enter >>>
+$ csrutil disable && reboot
+
+###To turn on
+#Turn on your Mac (Apple > Shut Down).
+#Hold down Command-R and press the Power button. Keep holding Command-R until the Apple logo appears.
+#Wait for OS X to boot into the OS X Utilities window.
+#Choose Utilities > Terminal.
+#enter >>>
+$ csrutil enable && reboot
+
+#==============================================================================
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                            | REMOTE SCREENSHARING|(ARD)                         |
+# --------------------------------------------------------------------------------
+# Enabling Osx screensharing
+sudo /System/Library/Coreservices/RemoteManagement/ARDAgent.app/Contents/Ressources/kickstart -activate -configure -access -off -restart -agent -privs -all -allowAccessFor -allUsers
+
+#==============================================================================
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                              FDSETUP(FILEVAULT2)                               |
+# --------------------------------------------------------------------------------
+# Managed filevault2
+$ sudo fdesetup enable
+#and follow the prompt procedure, don't follow to backup the recovery key
+## OR
+# You can also also add additional user accounts at the time of encryption
+$ sudo fdesetup enable -user username -usertoadd other_username -usertoadd another_username
+
+# Enable FileVault (if not already enabled)
+# This requires a user password, and outputs a recovery key that should be
+# copied to a secure location
+if [[ $(sudo fdesetup status | head -1) == "FileVault is Off." ]]; then
+  sudo fdesetup enable -user `whoami`
+fi
+
+#==============================================================================
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                  PASSWORD                                      |
+# --------------------------------------------------------------------------------
+# You can generate strong passwords with OpenSSL:
+$ openssl rand -base64 30
+"LK9xkjUEAemc1gV2Ux5xqku+PDmMmCbSTmwfiMRI"
+# Or GPG:
+$ gpg --gen-random -a 0 30
+"4/bGZL+yUEe8fOqQhF5V01HpGwFSpUPwFcU3aOWQ"
+Or `/dev/urandom` output:
+$ dd if=/dev/urandom bs=1 count=30 2>/dev/null | base64
+"CbRGKASFI4eTa96NMrgyamj8dLZdFYBaqtWUSxKe"
+# With control over character sets:
+$ LANG=C tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 40 | head -n 1
+"jm0iKn7ngQST8I0mMMCbbi6SKPcoUWwCb5lWEjxK"
+
+$ LANG=C tr -dc 'DrDuh0-9' < /dev/urandom | fold -w 40 | head -n 1
+"686672u2Dh7r754209uD312hhh23uD7u41h3875D"
+
+## Encrypt file with openssl
+# Encrypt
+$ openssl des3 -salt -in file.txt -out encryptedfile.txt
+# Decrypt
+$ openssl des3 -d -salt -in encryptedfile.txt -out normal.file
+###
+# Verify SHA1 hash with opennssl
+$ openssl sha1 /path/to/the/file
+
+# Password reset on yosemite
+$ unsetpassword
+#=========================================================================
+## END |||| SYSTEM INFOS/SETUP ||||
+
+
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                       |||| VIRTUAL ENV ||||                        |
+#                                                                    |
+#                                                                    |
+# -------------------------------------------------------------------
+#==============================================================================
+# ------------------------------------------------------------------------------
+#                                                                               \
+# --------------------------------------------------------------------------------
+#                                    QEMU-IMG                                     |
+# --------------------------------------------------------------------------------
+
+#
+### VMDK TO VDI
+# With Qemu utils
+qemu-img convert /path/to/original.vmdk converted.bin
+# With VB utils
+VBoxManage convertdd converted.bin converted.vdi
+#=========================================================================
+## END |||| VIRTUAL ENV ||||
+
+
+
+
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                       |||| DISK COMMANDS ||||                      |
+#                                        			                 |
+#                                                                    |
+# -------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     						    |HDIK|
+#--------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     						   |DISKUTIL|
+#--------------------------------------------------------------------
+$ diskutil list  # Lister les disques, avec type, nom, taille, identidier.
+
+$ diskutil info /dev/rdisk[N] # Affiche les infos complètes sur un disque
+							   # en particulier.
+$ diskutil listFilesystems  # Affiche les systèmes de fichier disponibles.
+$ diskutil mount /dev/disk[N]s[N]  # Monte une partition d'un disque.
+
+$ diskutil unmount/umount force [DEVICE] # Démonte une partition.
+
+$ diskutil unmountDisk/umountDisk force [DEVICE] # Démonte un disque.
+
+$ diskutil eject  [DEVICE] # Ejecter un disque.
+
+$ diskutil eraseDisk /dev/rdisk[N]  # Efface un disque.
+
+$ diskutil eraseVolume /dev/rdisk[N]s[N]  # Efface la partition d'un disque.
+
+$ diskutil reformat /dev/rdisk[N]s[N]  # Efface la partition d'un disque, avec le même
+										# nom et le même type.
+$ diskutil zeroDisk /dev/rdisk[N]s[N]  # Efface un disque, en inscrivant des zéros.
+
+## Repair perrmissions
+# OLD
+$ diskutil repairPermissions [/dev/rdisk[N]s[N]|/Volumes/VolumeName]
+# NEW
+$ /usr/libexec/repair_packages --repair --standard-pkgs --verbose
+
+# You may also create encrypted volumes using **Disk Utility** or `hdiutil`:
+$ hdiutil create ~/Desktop/encrypted.dmg -encryption -size 1g -volname "Name" -fs JHFS+
+
+#--------------------------------------------------------------------
+#     					        |BLESS|
+#--------------------------------------------------------------------
+# Show boot options
+$ bless -getBoot
+
+# show verbose boot/startup disk options
+$ bless -info -verbose
+
+# Show verbose boot options
+$ bless -getBoot -verbose
+#--------------------------------------------------------------------
+#     						     |DD|
+#--------------------------------------------------------------------
+$ dd if=[USBMOUNTPATH] | pv | of=dvd.iso bs=4m  # Copier un iso vers usb
+
+$ dd if=/dev/sda of=~/MBR.image bs=512 count=1
+# Créer ume image du master boot record avec table de partition.
+
+$ dd if=/dev/sda3 of=/dev/sdb3 bs=4096 conv=notrunc,noerror
+# Copie une partion sur une autre.
+
+$ dd if=/dev/sda1 | gzip -c | split -b 2000m - /mnt/hdc1/backup.img.gz
+# Create a gzipped image of a partition using split
+
+$ cat /mnt/hdc1/backup.img.gz.* | gzip -dc | dd of=/dev/sda1
+# Restaurer le backup de la commande pécédente.
+
+$ dd if=/dev/sda of=/dev/null bs=1m # Vérifier la présence de badblock.
+
+$ dd if=/dev/zero of=/dev/null bs=1M count=32768
+# Donne la bande passante de la mémoire du processeurs.
+
+$ dd if=/dev/zero of=/dev/sda bs=4k # Ecrire des 0 sur un disque.
+
+$ dd if=/dev/urandom of=/dev/sda bs=4k # Ecrire des données aléatoire
+										# sur un disque.
+
+$ dd if=/dev/zero of=/dev/null bs=1M count=32768
+# Donne la bande passante de la mémoire du processeurs.
+#-------------------------------------------------------------------
+#     						    |MOUNT|
+#-------------------------------------------------------------------
+$ cat /etc/fstab # Fichier de configuration des points de montage.
+
+$ mount
+$ ls /dev | grep disk   # Pour la table de montage.
+						# Monter un système de fichier DOS
+ 						# Monter une image iso.
+#-------------------------------------------------------------------
+#     						    |UMOUNT|
+#-------------------------------------------------------------------
+$ umount [MOUNTPOINTPATH]  # Démonter un disque/partition.
+#-------------------------------------------------------------------
+#     						    |NEWFS|
+#-------------------------------------------------------------------
+$ newfs_msdos -F [FAT-type:12,16,32] /dev/disk0s1  # créer un système de fichier en msdos.
+							                        # sur la partition 1 du disk 0.
+#-------------------------------------------------------------------
+#     						    |FSCK|
+#-------------------------------------------------------------------
+$ fsck_hfs -
+#===================================================================
+				      ## END |||| DISK COMMANDS ||||
+
+
+
+
+
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                		|||| PACKAGE MANAGER ||||            		 |
+#                                        		             		 |
+#                                                                    |
+# -------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     					     	|PKGUTIL|
+#--------------------------------------------------------------------
+
+The macOS Sierra installer application is [code signed] which should be verified to make sure you received a legitimate copy, using the `spctl -a -v` or `pkgutil --check-signature` commands:
+
+```
+$ pkgutil --check-signature /Applications/Install\ macOS\ Sierra.app
+Package "Install macOS Sierra.app":
+   Status: signed by a certificate trusted by Mac OS X
+   Certificate Chain:
+    1. Apple Mac OS Application Signing
+       SHA1 fingerprint: B9 3B DA AA F1 A8 84 6B 34 BA 32 33 26 35 CB 2B 84 85 3D A8
+       -----------------------------------------------------------------------------
+    2. Apple Worldwide Developer Relations Certification Authority
+       SHA1 fingerprint: FF 67 97 79 3A 3C D7 98 DC 5B 2A BE F5 6F 73 ED C9 F8 3A 64
+       -----------------------------------------------------------------------------
+    3. Apple Root CA
+       SHA1 fingerprint: 61 1E 5B 66 2C 59 3A 08 FF 58 D1 4A E2 24 52 D1 98 DF 6C 60
+
+```
+
+#--------------------------------------------------------------------
+#     					        |PKGBUILD|
+#--------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     						  |SOFWAREUPDATE|
+#--------------------------------------------------------------------
+###MANAGING SOFTWARE UPDATE---
+# Ignore some packages
+$ sudo softwareupdate --ignore JavaForOSX (where JavaForOSX-1.0 appears in avalaible list)
+
+# Reset ignore packages settings
+$ sudo softwareupdate --reset-ignored
+#
+$ sudo softwareupdate --schedule on | off
+###UPDATING SYSTEM---
+# Download  software updates.
+$ sudo softwareupdate --download
+
+# Download and install all software updates.
+$ sudo softwareupdate --download --all --install
+
+# Install just one package
+$ sudo softwareupdate --install JavaForOSX-1.0
+
+###SEARCH PACKAGES---
+$ softwareupdate --list
+# checks and lists available  updates for download
+
+###CONFIGURING REPOSITORIES---
+# Set catalog's softwareupdate for betaUpdate
+$ sudo /usr/bin/softwareupdate --set-catalog "https://swscan.apple.com/catalogs/others/index-10.10seed-10.10-10.9-mountainlion-lion-snowleopard-leopard-merged-1.sucatolog.gz"
+# • To undo
+$ sudo /usr/bin/softwareupdate --clear-catalog
+
+###VERIFY SOFTWARE INTEGRITY
+$ sudo /usr/bin/openssl sha1 $full_path_filename
+
+## Update by the commandline
+# List all update available
+$ softwareupdate -l
+# Install specified package
+$ sudo sofwareupdate -i [packagename]
+# Install all available available
+$ sudo sofwareupdate -i -a
+# Install only the recommanded updates available
+$ sudo softwareupdate -i -r
+# Ignore specified updates
+$ sudo softwareupdate --ignore [packagename]
+#=========================================================================
+## END |||| PACKAGE MANAGER ||||
+
+
+
+
+
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                   |||| OSX USER/GROUP COMMANDS ||||                |
+#                                        			     			 |
+#                                                                    |
+# -------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     						 |DSENABLEROOT|
+#--------------------------------------------------------------------
+$ dsenableroot -d # Disable root user
+#--------------------------------------------------------------------
+#     						   |DEFAULT|
+#--------------------------------------------------------------------
+# Enable/Disable guest account
+$ sudo defaults write /Library/Preferences/com.apple.loginwindow GuestEnabled -bool YES|NO
+#--------------------------------------------------------------------
+#     						 |DSEDITGROUP|
+#--------------------------------------------------------------------
+#####
+# Add the humans group. See man page for explanation of options.
+$ sudo dseditgroup -o create -r "Group for Humans not tentacles" humans
+
+#####
+# Add user to group
+$ sudo dseditgroup -o edit -a hoagie -t user humans
+
+######
+##  add a user to the local Apache group
+$ sudo dseditgroup -o edit -a `whoami` -t user _www
+## add a user to the local admin group
+$ sudo /usr/sbin/dseditgroup -o edit -a gneagle -t user admin
+#####
+
+## To delete a user from the local admin group:
+$ sudo /usr/sbin/dseditgroup -o edit -d $username_to_add -t user admin
+$ sudo dseditgroup -o edit -a $username_to_add -t user wheel
+
+# Let's do some admin type stuff
+# Add yourself to the `wheel` group
+ppinfo "Add yourself to the \`wheel\` group"
+sudo dseditgroup -o edit -a $(echo $USER) -t user wheel
+
+# add myself to staff group
+ppinfo "add myself to \`staff\` group"
+sudo dseditgroup -o edit -a $(echo $USER) -t user staff:wq
+
+#####
+## You can also use dseditgroup on a network directory service if you have admin credentials for the directory server:
+$ sudo dseditgroup -o edit -n /LDAPv3/ldap.company.com -u dsadminusername -p -a gneagle -t user group_on_network_directory
+
+#This will prompt you for the dsadminusername’s password interactively. You can include the
+#dsadminuser’s password like so:
+$ sudo dseditgroup -o edit -n /LDAPv3/ldap.company.com -u dsadminusername -P
+$ sudo dsadminuserpassword -a gneagle -t user group_on_network_directory
+
+## dseditgroup can do many other things, like create and delete groups, add nested groups to an
+## existing group, and check membership of a given user for a given group.
+
+#--------------------------------------------------------------------
+#     					   |DSMEMBERUTIL|(accountsd)
+#--------------------------------------------------------------------
+# For example, you can check group membership by feeding in a uid with the -u option
+# (here using the uid of 509) and a gid with the -g (here a gid of 10) option:
+$ dsmemberutil checkmembership -u 509 -g 10
+
+# Each account still has a uuid. This can be obtained with -u for a user or -g for a group (ids):
+$ dsmemberutil getuuid -u 509
+"ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000000"
+
+# Each account still has a uuid. This can be obtained with -u for a user or -g for a group (ids):
+dsmemberutil getuuid -u 509
+
+# Get a user's uuid:
+% dsmemberutil getuuid -u 501
+"EEA4F2F6-B268-49E7-9C6F-E3C4A37DA4FD"
+
+# Get a group's uuid
+% dsmemberutil getuuid -g 0
+"ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000000"
+
+# Get a user's or group's id from a uuid
+% dsmemberutil getid -X ABCDEFAB-CDEF-ABCD-EFAB-CDEF0000000C
+"gid: 12"
+
+# Check a user's membership in a group (using UID and GID)
+% dsmemberutil checkmembership -u 501 -g 0
+"user is not a member of the group"
+
+# Check a user's membership in a group (using names)
+% dsmemberutil checkmembership -U root -G wheel
+"user is a member of the group"
+
+# Flush the directory services cache resolver,
+# using the flushcache verb
+$ dsmemberutil flushcache
+
+# The files that comprise accounts can also be viewed and changed manually. Here, we’re going to just look at an
+# account called charles:
+sudo defaults read /var/db/dslocal/nodes/Default/users/charles.plist
+t, as well as trimmed a bunch of data to save on space, but you should get the idea.
+
+#--------------------------------------------------------------------
+#                               |XAR|
+#--------------------------------------------------------------------
+# Backup
+cd /private/var/db
+xar -xf dslocal-backup.xar dslocal/nodes/Default/users/username.plist
+xar -xf shadow-backup.xa
+#--------------------------------------------------------------------
+#                               |ODUTIL|
+#--------------------------------------------------------------------
+### ODUTIL (inspecting the membership cache)
+$ odutil show cache
+#--------------------------------------------------------------------
+#     						    |DSCL|
+#--------------------------------------------------------------------
+			## Créer un utilisateur.
+
+$			# Changer le groupe d'un utilisateur.
+$ 			# Effacer un utilisateur.
+$			# Désactiver un acompte.
+
+#--------------------------------------------------------------------
+#
+$ dscl . -list /  #
+
+#--------------------------------------------------------------------
+#
+$ dscl . -list /Aliases
+
+#--------------------------------------------------------------------
+# List the subdirectories under /Groups - i.e. the groups on the system
+$ dscl . -list /Groups
+"
+tentacles
+daemon
+staff
+...
+"
+
+#--------------------------------------------------------------------
+#
+$ dscl . -list /Machines
+
+
+#--------------------------------------------------------------------
+#
+$ dscl . -list /Networks
+
+
+#--------------------------------------------------------------------
+# List the subdirectories under /Users - i.e. list the users on the system
+$ dscl . -list /Users
+"
+greententacle
+purpletentacle
+bernard
+...
+"
+
+
+#--------------------------------------------------------------------
+## Read all keys in directory and output their values
+$ dscl . -read /Users/purpletentacle
+
+"
+PrimaryGroupID: 42
+RealName:
+Purple Tentacle
+UniqueID: 505
+UserShell: /bin/bash
+"
+
+#--------------------------------------------------------------------
+#
+$ dscl . -read /Users/`whoami`
+
+#--------------------------------------------------------------------
+# "# List paths with the value of a key"
+$ dscl . -list /Users UniqueID
+
+"
+greententacle   501
+purpletentacle  505
+bernard         502
+...
+"
+
+#--------------------------------------------------------------------
+# Get the current highest user ID so we can pick something higher
+# Important to create new user for UniqueID.
+#$ dscl . -list /Users UniqueID | awk '{print $3}' | sort -n | tail -1
+$ dscl . -list /Users UniqueID | awk '{print $2}' | sort -n | tail -1
+
+"UniqueID: 505"
+
+
+#--------------------------------------------------------------------
+# Create the user
+LastID=`dscl . -list /Users UniqueID | awk '{print $2}' | sort -n | tail -1`
+NextID=$((LastID + 1))
+$ sudo dscl . -create /Users/hoagie
+$ sudo dscl . -create /Users/hoagie UserShell /bin/bash # /usr/bin/false if you don't want the user to have a shell
+$ sudo dscl . -create /Users/hoagie RealName "Hoagie"
+$ sudo dscl . -create /Users/hoagie UniqueID "$NextID"
+$ sudo dscl . -create /Users/hoagie PrimaryGroupID 20
+$ sudo dscl . -create /Users/hoagie NFSHomeDirectory /Users/hoagie
+$ sudo dscl . -passwd /Users/hoagie password
+
+#--------------------------------------------------------------------
+# Create the admin user --VERSION1
+$ sudo dscl  . -create /Users/joeadmin
+$ sudo dscl  . -create /Users/joeadmin UserShell /bin/bash
+$ sudo dscl  . -create /Users/joeadmin RealName "Joe Admin"
+$ sudo dscl  . -create /Users/joeadmin UniqueID "510"
+$ sudo dscl  . -create /Users/joeadmin PrimaryGroupID 20
+$ sudo dscl  . -create /Users/joeadmin NFSHomeDirectory /Users/joeadmin
+$ sudo dscl  . -passwd /Users/joeadmin password
+$ sudo dscl  . -append /Groups/admin GroupMembership joeadmin
+
+
+#--------------------------------------------------------------------
+# Create the admin user --VERSION2
+. /etc/rc.common
+dscl . create /Users/administrator
+dscl . create /Users/administrator RealName "Administrator Account"
+dscl . create /Users/administrator hint "Password Hint"
+dscl . create /Users/administrator picture "/Path/To/Picture.png"
+dscl . passwd /Users/administrator thisistheaccountpassword
+LastID=`dscl . -list /Users UniqueID | awk '{print $2}' | sort -n | tail -1`
+NextID=$((LastID + 1))
+dscl . create /Users/administrator UniqueID 501
+dscl . create /Users/administrator PrimaryGroupID 80
+dscl . create /Users/administrator UserShell /bin/bash
+dscl . create /Users/administrator NFSHomeDirectory /Users/administrator
+cp -R /System/Library/User\ Template/English.lproj /Users/administrator
+chown -R administrator:staff /Users/administrator
+
+"
+Some notes to mention:
+I have this saved as an executable ".sh" file.
+Since it executes during NetInstall it runs as root, and needs to run as root to work
+properly. You can also subtract the first two lines, add a "sudo" to the beginning of each
+subsequent line, and manually run these as individual commands in Terminal.
+
+Modify UniqueID from 501 to a number that you will know is safe on all systems (501 is
+taken by the first account created on a Mac, generally something higher like 550 will
+probably be safe, depending on how many users you have on your system).
+
+PrimaryGroupID of 80 creates an Admin user. Change to PrimaryGroupID of 20 to create
+a Standard user.
+
+I've imaged well over 50 Macs this way with no issues. I use this account to run
+commands via SSH, to push out patches via ARD and to do local desk-side
+administration."
+
+
+#--------------------------------------------------------------------
+## Create an Hidden local Admin Old Method (before yosemite)
+	# •• Create and hide the account
+	# 	• Create the user
+	 	$ sudo dscl . -create /Users/ninja_admin UniqueID 401
+	 	$ sudo dscl . -create /Users/ninja_admin PrimaryGroupID 20
+	 	$ sudo dscl . -create /Users/ninja_admin NFSHomeDirectory /var/ninja_admin
+	 	$ sudo dscl . -create /Users/ninja_admin UserShell /bin/bash
+	 	$ sudo dscl . -create /Users/ninja_admin RealName "Ninja Admin"
+	 	$ sudo dscl . -passwd /Users/ninja_admin 123
+	# 	• Create the users home folder and own it to the new user
+	 	$ sudo mkdir /var/ninja_admin
+	 	$ sudo chown -R ninja_admin /var/ninja_admin
+	# 	• Add the user to local Admin Group
+	 	$ sudo dscl . append /Groups/admin GroupMembership ninja_admin
+	# 	• Enable the hidden function
+	 	$ sudo defaults write /Library/Preferences/com.apple.loginwindow Hide500Users -bool YES
+	# 	• Ensure that the others option will appear at the login window
+	 	$ sudo defaults write /Library/Preferences/com.apple.loginwindow SHOWOTHERUSERS_MANAGED -bool TRUE
+	# 	• Logout and login
+	# •• Unhide the acccount
+	# 	-options 1:
+	 	$ sudo defaults write /Library/Preferences/com.apple.loginwindow Hide500Users -bool NO
+	# 	-options 2:
+	# 	Change the user UID to the next available UID above 501 and then move and reset
+	# 	the permissions of the home folder
+	 	$ sudo dscl . -change /Users/ninja_admin UniqueID 401 502
+	 	$ sudo dscl . -change /Users/ninja_admin NFSHomeDirectory /var/ninja_admin /Users/ninja_admin
+	 	$ sudo mv /var/ninja_admin /Users/ninja_admin
+	 	$ sudo chown -R ninja_admin /Users/ninja_admin
+	# 	** To see all accounts with UID highter than 400
+	 	$ dscl /Local/Default -list /Users UnniqueID | awk '$2 > 400' {print $1 ;}
+
+#--------------------------------------------------------------------
+# ## Create an Hidden local Admin New Method (Yosemite)
+	# • log as an admin user
+	# 	• Use this command
+	 	$ sudo dscl . create /Users/hiddenuser IsHidden 1
+	# 	revert by ( if later you want to view the account)
+	 	$ sudo dscl . create /Users/hiddenuser IsHidden 0
+	# 	• Move home directory of hiddenuser to /var
+	 	$ sudo mv /Users/hiddenuser /var/hiddenuser
+	# 	• Update the user record of the hidden user with the new home directory
+	 	$ sudo dscl . -create /Users/hiddenuser NFSHomeDirectory /var/hiddenuser
+	# 	• Remove the public Folder share point for the user
+	 	$ sudo dscl . -delete "/SharePoints/Hidden User's Public Folder"
+
+#--------------------------------------------------------------------
+# Create a default User profile
+	# • Make a backup of the defaults profile you want use :
+	$ sudo cp -Rf  /System/Library/User\ Template/French.lproj  /System/Library/User\ Template/French.lproj.orig
+	# • Remove the current content of the default profile
+	$ sudo rm -Rf  /System/Library/User\ Template/French.lproj/*
+	# • Copy your profile to the Templateprofile
+	$ sudo rsync -av /Users/[profile]/* /System/Library/User\ Template/French.lproj/
+	# • Chown profile to root
+	$ chown -R root /System/Library/User\ Template/French.lproj/
+	# • Remove keychain
+	$ sudo rm -Rf /System/Library/User\ Template/French.lproj/Library/Keychains/*
+	# • Important
+	$ diskutil repairPermissions /
+ #--------------------------------------------------------------------
+ # Add the humans group. See man page for explanation of options.
+    $ sudo dseditgroup -o create -r "Group for Humans not tentacles" humans
+    # Get the current highest user ID so we can pick something higher
+    $ dscl . -list /Users UniqueID | awk '{print $3}' | sort -n | tail -1
+    # Create the user
+    $ sudo dscl . -create /Users/hoagie
+    $ sudo dscl . -create /Users/hoagie UniqueID <one more than current highest above>
+    $ sudo dscl . -create /Users/hoagie UserShell /bin/bash # /usr/bin/false if you don't want the user to have a shell
+    $ sudo dscl . -create /Users/hoagie RealName "Hoagie"
+    # Add user to group
+    $ sudo dseditgroup -o edit -a hoagie -t user humans
+
+#------------------------------------------------------------------
+#     			   |REPAIR USER PERMIDSIONS WITH ACL|
+#------------------------------------------------------------------
+
+# Repair Permissions and ACL  home folder
+# find ~ $TMPDIR.. \( -flags +sappnd,schg,uappnd,uchg -o ! -user $UID -o ! -perm -600 -o -acl \) 2>/dev/null | wc -l # result will be 41
+{ sudo chflags -R nouchg,nouappnd ~ $TMPDIR.. ; sudo chown -R $UID:staff ~ $_ ; sudo chmod -R u+rwX ~ $_ ; chmod -R -N ~ $_ ; } 2> /dev/null
+
+
+#------------------------------------------------------------------
+#     						   |GROUPS|
+#------------------------------------------------------------------
+$ groups
+#------------------------------------------------------------------
+#     						    |STAT|
+#------------------------------------------------------------------
+$ stat -t '%n %U:%G-%a' *  # Voir le propriétaire, le groupe et les
+							# permissions des composants du répertoire actif.
+#------------------------------------------------------------------
+#     						     |ID|
+#------------------------------------------------------------------
+$ id   # Donne l'UID, le GID  et le groupe de l'utilisateur.
+#------------------------------------------------------------------
+#     						     |PS|
+#------------------------------------------------------------------
+$ ps -eo user | sort -u  # Aficher les utilisateurs normaux et virtuel
+						  # du systeme.
+#------------------------------------------------------------------
+#     						   |SECURITY|
+#------------------------------------------------------------------
+$ security list-keychains   # Afficher la location des fichiers
+						     # de trousseaus.
+$ security lock/unlock-keychaikn [PATHTROUSSEAU]  # Vérouiller, Déverouiller un trousseau.
+#=========================================================================
+## END |||| OSX USER/GROUP COMMANDS ||||
+
+
+
+
+
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                  |||| OSX SYSTEM SERVICES COMMANDS ||||            |
+#                                        			                 |
+#                                                                    |
+# -------------------------------------------------------------------
+#--------------------------------------------------------------------
+#                             |LSREGISTER|
+#--------------------------------------------------------------------
+#### Old Versions
+## Old Versions PATH
+/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister
+## Show contents of launch services.
+$ /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump
+## Update launch services
+$ /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -domain local -domain system -domain user
+
+#### New Versions
+## New Versions PATH
+/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister
+## Show contents of launch services.
+$ /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump
+## Update launch services
+$ /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -domain local -domain system -domain user
+## clear recents from launch services databases
+$ /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/LSRecentTool -c
+## kill launch services database
+$ /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -kill
+
+#--------------------------------------------------------------------
+#     				     |LAUCHCTL|(Agents&Daemons)
+#--------------------------------------------------------------------
+
+# Show launchctl manager name
+$ launchctl managername
+
+# Show launchctl manager UID
+$ launchctl manageruid
+
+# show contents of launchctl cache
+$ launchctl print-cache
+
+# Avoir le status de tous les services.
+$ launchctl list
+
+# To view currently disabled services:
+$ find /var/db/com.apple.xpc.launchd/ -type f -print -exec defaults read {} \; 2>/dev/null
+
+# Démarrer/stopper un service.
+$   # stoppe et démarre le service
+	 # ou réinitialise le service sans
+	 # stopper les opérations en cours.
+
+# Find OnDemand LaunchAgents & LaunchDaemons
+$ sudo find /System/Library/LaunchAgents/ -name "*.plist" | xargs grep "OnDemand"
+$ sudo find /System/Library/LaunchDaemons/ -name "*.plist" | xargs grep "OnDemand"
+
+# Rebuild LaunchServices
+$ sudo /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -kill -r -domain local -domain -user
+
+### Setting environnement variable
+Create an environnement.plist in ~/Library/LaunchAgents/
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>label</key>
+	<string>Label</string>
+	<string>my.startup</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>sh</string>
+		<string>-c</string>
+		<string>
+		launchctl setenv PRODUCT_PATH /Users/Mortimer/Project/my_products
+		launchctl setenv ANDROID_NDK_HOME /Applications/android-ndk
+		launchctl setenv PATH $PATH:/Applications/gradle/bin
+	</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+</dict>
+</plist>
+and launchctl start environnement.plist
+if you have problem with PATH use :
+lauchctl setenv PATH $PATH:/Applications/gradle/bin
+
+#-------------------------------------------------------------------
+#     						   |LSREGISTER|
+#-------------------------------------------------------------------
+# Mise à jour des services.
+$ /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -domain local -domain system -domain user
+
+$ /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -domain local -domain system -domain user -v
+
+# Mise à jour des services avec diagnostic.
+$ /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -kill  # Tuer la dase de donnée LaunchServices.
+
+#=========================================================================
+## |||| OSX SYSTEM SERVICES COMMANDS ||||
+
+
+
+
+
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                ||| OSX KERNEL EXTENSIONS COMMANDS ||||             |
+#                                        			     			 |
+#                                                                    |
+# -------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     					        |KEXTSTAT|
+#--------------------------------------------------------------------
+$ kextstat  # Affiche le status de toutes les extensions de kernel dynamiquement démarrées.
+			# Liste toutes les extensions du système
+# list Apple kernel Extensions
+$ kextstat | grep -v com.apple
+## Diagnostic command
+kextstat iotop fs_usage vm_stat
+# list all third party kernel Extensions
+kextstat | grep -v com.apple
+# See all extensions
+kexstat
+#--------------------------------------------------------------------
+#     					        |KEXTFIND|
+#--------------------------------------------------------------------
+$ kextfind  # Affiche les extensions de kernel.
+
+ $ kextfind -case-insensitive -not -bundle-id -substring 'com.apple.' -print
+         # Print a list of all non-Apple kexts.
+
+ $ kextfind \( -nonloadable -or -warnings \) -print -print-diagnostics
+         # Print a list of all kexts that aren't loadable or that have any warnings, along
+         # with what's wrong with each.
+
+ $ kextfind -nonloadable -print-dependents | sort | uniq
+         # Print a list of all kexts that can't be loaded because of problems with their
+         # dependencies.
+
+ $ kextfind -defines-symbol __ZTV14IONetworkStack
+         # Print a list of all kexts that define the symbol __ZTV14IONetworkStack.
+
+ $ kextfind -relative-paths -arch-exact ppc,i386
+         # Print a list of all kexts kexts that contain only ppc and i386 code.
+
+ $ kextfind -debug -print -pp OSBundleDebugLevel -pm IOKitDebug
+         # Print a list of all kexts that have debug options set, along with the values of
+         # the debug options.
+
+ $ kextfind -m IOProviderClass IOMedia -print -exec pl -input {info-dictionary} ;
+         # Print a list of all kexts that match on IOMedia, along with their info dictionar-
+         # ies.
+
+ $ kextfind -no-paths -nl -report -print -v -a -d
+         # Print a report of kexts that can't be loaded, with hints as to the problems.
+#-------------------------------------------------------------------
+#     					        |KEXTLOAD|
+#-------------------------------------------------------------------
+
+#=========================================================================
+			   ## END |||| OSX KERNEL EXTENSIONS COMMANDS ||||
+
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                |||| DYLD SHARED CACHE   ||||                       |
+#                                        			                 |
+#                                                                    |
+# -------------------------------------------------------------------
+# Show region roots paths
+$ cat /var/db/dyld/shared_region_roots/*.paths
+
+# Show dyld shared cache map for x86_64
+$ cat /var/db/dyld/dyld_shared_cache_x86_64.map
+
+# Remove dyld shared caches
+$ sudo -S rm /private/var/db/dyld/dyld_shared_cache_*
+
+# Update DYLD shared cache
+$ sudo -S update_dyld_shared_cache -force
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                |||| OSX PLIST/PREFERENCE COMMANDS ||||             |
+#                                        			     |
+#                                                                    |
+# -------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     					      |DEFAULTS|
+#--------------------------------------------------------------------
+$ echo "" ; defaults read /System/Library/CoreServices/SystemVersion.plist | grep -v '}' | grep -v '{'
+$ echo 'System Version: ';defaults read loginwindow SystemVersionStampAsString;echo ' Build Version: ';defaults read loginwindow BuildVersionStampAsString
+# Montrer le numéro du systéme et du build.
+
+#--------------------------------------------------------------------
+#     					      |PLUTIL|
+#--------------------------------------------------------------------
+$ plutil -p [PLUTIL] # imprimer la liste de propriété de façon lisible.
+
+$ sudo -S find /Library/Preferences -name *.plist -exec plutil {} \;;find ~/Library/Preferences -name *.plist -exec plutil {} \;
+# Vérifier si les préférences du système sont corrompues .
+
+# • Convert .strings to xml :
+$ plutil -convert xml1 -o - /System/Library/PrivateFrameworks/AccessibilityBundles.framework/Versions/A/Resources/fr.lproj/InfoPlist.strings
+#--------------------------------------------------------------------
+#                            |CFPREFSD|
+#--------------------------------------------------------------------
+# cfprefsd
+#on Maverick and later are cached
+killall -u [yourlogin] cfprefsd
+#=========================================================================
+			    ## END |||| OSX PLIST/PREFERENCE COMMANDS ||||
+
+
+
+
+
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                		|||| PROCESS COMMANDS ||||                   |
+#                                        			                 |
+#                                                                    |
+# -------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     							  |IOTOP|
+#--------------------------------------------------------------------
+# Monitoring disk activity with iotop and fs_usage
+$ sudo iotop -C 5 10
+$ sudo iotop -P -C 5 10
+$ sudo iotop -Pm /
+$ sudo fs_usage -f filesys
+#--------------------------------------------------------------------
+#     							  |TOP|
+#--------------------------------------------------------------------
+$ G=$(stty -g);stty rows $((${LINES:-50}/2));top -n1; stty $G;unset G
+# TOP en couleur split 4 ways for x seconds.
+#--------------------------------------------------------------------
+#     							  |PS|
+#--------------------------------------------------------------------
+$ ps -ax | grep d$  # Montrer les daemons actifs.
+
+$ ps -ef | more  # Voir les processus en cours.
+
+$ ps -efH | more  # Voir les processus en cours, sous forme d'arbre
+				   # généalogique.
+
+$ cd /proc&&ps a -opid=|xargs -I+ sh -c '[[ $PPID -ne + ]]&&echo -e "\n[+]"&&tr -s "\000" " "<+/cmdline&&echo&&tr -s "\000\033" "\nE"<+/environ|sort'
+# Voir tous process de commande et leur environnements.
+
+$ ps -auxwww  # ps complet.
+#--------------------------------------------------------------------
+#     							  |KILL|
+#--------------------------------------------------------------------
+$ pkill -KILL -u [USERNAME] # Tuer tous mes processus, brute-force logout.
+
+$ killall Firefox # Tuer un processus par nom.
+#--------------------------------------------------------------------
+#     							  |PKILL|
+#--------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     							 |KILLALL|
+#--------------------------------------------------------------------
+#=========================================================================
+## END |||| PROCESS COMMANDS ||||
+
+
+
+
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                		 |||| MEMORY COMMANDS ||||                   |
+#                                        			                 |
+#                                                                    |
+# -------------------------------------------------------------------
+#--------------------------------------------------------------------
+#                                 |PURGE|
+#--------------------------------------------------------------------
+# Free up Inactive Memory
+sudo purge
+#--------------------------------------------------------------------
+#     						  	   |PS|
+#--------------------------------------------------------------------
+$ ps axo rss,comm | awk '{sum+=$1; print $1/1024, "MB - ", $2} END {print "\nTotal RAM Used: ", sum/1024, "MB\n"}'   # RAM usage.
+
+$ ps -eo size,pid,user,command --sort -size |awk '{hr[1024**2]="GB";hr[1024]="MB";for (x=1024**3; x>=1024; x/=1024){if ($1>=x){printf ("%-6.2f %s ", $1/x, hr[x]);break}}}{printf ("%-6s %-10s ", $2, $3)}{for (x=4;x<=NF;x++){printf ("%s ",$x)} print ("\n")}'  # Trouver les processus qui utilisent le plus de mémoire
+				# et afficher de façon lisible par un humain.
+
+$ TR=`free|grep Mem:|awk '{print $2}'`;ps axo rss,comm,pid|awk -v tr=$TR '{proc_list[$2]+=$1;} END {for (proc in proc_list) {proc_pct=(proc_list[proc]/tr)*100; printf("%d\t%-16s\t%0.2f%\n",proc_list[proc],proc,proc_pct);}}'|sort -n |tail -n 10
+# Les 10 processus qui utilisent le plus de mémoire.
+#--------------------------------------------------------------------
+#     						  	   |DD|
+#--------------------------------------------------------------------
+$ dd if=/dev/mem of=myRAM bs=1024 # Copy RAM memory to a file
+
+$ sudo dd if=/dev/mem | cat | strings # Montre tous les strings contenu
+				      # en RAM.
+#--------------------------------------------------------------------
+#     						  	|MEMINFO|
+#--------------------------------------------------------------------
+$ meminfo -h
+#--------------------------------------------------------------------
+#     						  	|MEMINFO|
+#--------------------------------------------------------------------
+$ sudo -S hexdump -Cv /dev/mem # Dump memory
+#--------------------------------------------------------------------
+#                               |SWAP_VM|
+#--------------------------------------------------------------------
+# Remove the sleep image file to save disk space
+sudo rm /private/var/vm/sleepimage
+# Create a zero-byte file instead…
+sudo touch /private/var/vm/sleepimage
+# …and make sure it can’t be rewritten
+sudo chflags uchg /private/var/vm/sleepimage
+#--------------------------------------------------------------------
+#     						  	|VMSTAT|
+#--------------------------------------------------------------------
+## show Mach virtual memory statistics
+$ vm_stat # Checking mac osx virtual memory usage
+$ watch vmstat -sSM  # Monitor memory usage.
+
+$ while [ 1 ]; do echo -n "`date +%F_%T`" ; vmstat 1 2 | tail -1 ; sleep 4; done
+
+$ vmstat 1 | awk '{now=strftime("%Y-%m-%d %T "); print now $0}'
+
+#--------------------------------------------------------------------
+#                               |VMMAP|
+#--------------------------------------------------------------------
+# show virtual memory regions allocated in a process
+$ vmmap Dock
+#--------------------------------------------------------------------
+#     					          |TOP|(MEMORY_PRESSURE)
+#--------------------------------------------------------------------
+# Vmstat/iostat avec timestamp.
+# Monitoring cpu usage on mac
+$ top -F -R -o cpu
+#--------------------------------------------------------------------
+#     					     |MEMORY_PRESSURE|
+#--------------------------------------------------------------------
+$ memory_pressure # Tool to apply real or simulate memory pressure on the system
+#--------------------------------------------------------------------
+#     						    |IOSTAT|
+#--------------------------------------------------------------------
+$ iostat  # Moniteur d'entrée/sortie.
+
+#--------------------------------------------------------------------
+#     					      |IOCLASSCOUNT|
+#--------------------------------------------------------------------
+$ ioclasscount
+
+$ ioclasscount IOPCIDevice
+#--------------------------------------------------------------------
+#     					     |IOALLOCCOUNT|
+#--------------------------------------------------------------------
+$ ioalloccount  # Affiche la mémoire utilisée par les IOKit.
+#--------------------------------------------------------------------
+#     							|IOREG|
+#--------------------------------------------------------------------
+$ ioreg -w0 -x  # Affiche le registre IOKit
+
+$ ioreg -s -w0 -x  # show IOKit registry with busy state and retain count.
+
+$ ioreg -l -s -w0 -x # dump IOKit registry (huge output)
+
+
+
+#--------------------------------------------------------------------
+#     							|DTRACE|
+#--------------------------------------------------------------------
+$ sudo iosnoop
+
+# Track with opensoop
+• Track an app
+sudo opensnoop -n Safari
+• Track a specified file
+sudo opensnoop -f /etc/hosts
+lsof /etc/hosts
+• Track a specific process
+sudo opensnoop -p [PID]
+
+$ sudo iotop
+
+$ sudo iopending
+
+#=========================================================================
+				          ## END |||| MEMORY COMMANDS ||||
+
+
+
+
+
+#================================================================
+#=================================================================
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                        |||| DEV COMMANDS |||| 	                 |
+#                                        		                     |
+#                                                                    |
+# -------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     					          |MAN|
+#--------------------------------------------------------------------
+# Man Debug show man debug information
+$ man -d
+
+# Show man debug trace information (man used as example)
+$ man -dw man
+
+#--------------------------------------------------------------------
+#     					         |WHATIS|
+#--------------------------------------------------------------------
+## Display short description of command.
+whatis command
+#--------------------------------------------------------------------
+#     					          |STTY|
+#--------------------------------------------------------------------
+# Show all options for terminal in BSD format (must be run from TTY)
+stty -e
+
+#--------------------------------------------------------------------
+#     					          |CODESIGN|
+#--------------------------------------------------------------------
+```
+$ codesign -dvv /Applications/Install\ macOS\ Sierra.app
+Executable=/Applications/Install macOS Sierra.app/Contents/MacOS/InstallAssistant
+Identifier=com.apple.InstallAssistant.Sierra
+Format=app bundle with Mach-O thin (x86_64)
+CodeDirectory v=20200 size=297 flags=0x200(kill) hashes=5+5 location=embedded
+Signature size=4167
+Authority=Apple Mac OS Application Signing
+Authority=Apple Worldwide Developer Relations Certification Authority
+Authority=Apple Root CA
+Info.plist entries=30
+TeamIdentifier=K36BKF7T3D
+Sealed Resources version=2 rules=7 files=137
+Internal requirements count=1 size=124
+```
+
+#--------------------------------------------------------------------
+#     					         |MACERROR|
+#--------------------------------------------------------------------
+# show 'explanation' of 'Mac' error code (-1851 used as example)
+cat /System/Library/Frameworks/CoreServices.framework/Versions/Current/Frameworks/CarbonCore.framework/Versions/Current/Headers/MacErrors.h | grep "\-1851"
+#--------------------------------------------------------------------
+#     					         |OTOOL|
+#--------------------------------------------------------------------
+# Show object file data
+$ otool -h -L -l /System/Library/CoreServices/Finder.app/Contents/MacOS/Finder
+
+# Disassemble object file (__TEXT section)
+$ otool -t -V -v /System/Library/CoreServices/Finder.app/Contents/MacOS/Finder
+#--------------------------------------------------------------------
+#     					         |LSBOM|
+#--------------------------------------------------------------------
+# show contents of BOMs in system
+$ find /Library/Receipts -name '*.bom' -exec lsbom {} \;
+#--------------------------------------------------------------------
+#     					         |MAKE|
+#--------------------------------------------------------------------
+$ make -j 4   # Utiliser tous les CPU pour compiler.
+#--------------------------------------------------------------------
+#     					         |XCODE|
+#--------------------------------------------------------------------
+### XCODE-SELECT
+
+### Install/uninstall commandline tools
+$ xcode-select --install
+## Delete the CommandLineTools
+$ rm -Rf /Library/Developer/CommandLineTools on your system.
+
+### I have multiple versions of Xcode installed on my machine. What version of Xcode does my command-line tools currently use
+## To find out what version of Xcode is being used by your tools, run the following command in Terminal:
+$ xcode-select --print-path
+## Printing the version of Xcode currently used by my tools
+$ xcode-select --print-path /Applications/Xcode5.1.1/Xcode.app/Contents/Developer
+
+### How do I select the default version of Xcode to use for my command-line tools?
+## To select a default Xcode for your command-line tools, run the following command in Terminal:
+$ sudo xcode-select -switch <path/to/>Xcode.app
+## Setting the default Xcode version
+$ sudo xcode-select -switch /Applications/Xcode5.1.1/Xcode.app
+
+### How do I build my projects from the command line?
+## To list all targets, build configurations, and schemes used in your project, run the following command in Terminal:
+xcodebuild -list -project <your_project_name>.xcodeproj
+## Listing all information about your project
+$ cd /Users/username/Desktop/MyApplication
+$ xcodebuild -list -project MyApplication.xcodeproj
+## To build a scheme in your project, run the following command in Terminal
+$ xcodebuild -scheme <your_scheme_name> build
+## Building the MyiOSApp scheme
+## xcodebuild supports various build actions such as build, analyze, and archive that can be performed on your target or scheme. However, build is performed by default when no action is specified
+$ xcodebuild -scheme MyiOSApp build
+## To build your target with a configuration file, run the following command in Terminal:
+$ xcodebuild -target <your_target_name> -xcconfig <your_configuration_file>.xcconfig
+## Building the MyiOSApp target with a configuration file
+$ xcodebuild -target MyiOSApp -xcconfig configuration.xcconfig
+## Setting up a location for MyiOSApp's debug version
+$ xcodebuild -scheme MyiOSApp SYMROOT="/Users/username/DebugLocation"
+## Setting up a location for MyiOSApp's archive
+$ xcodebuild -scheme MyiOSApp DSTROOT="/Users/username/ReleaseLocation" archive
+
+### My app has multiple build configurations. How do I set a default build configuration for xcodebuild?
+In Xcode, the Configuration section of your project Info pane provides a pop-up menu, which sets the default configuration to be used by xcodebuild when building a target. Use this pop-menu to select a default build configuration for xcodebuild
+
+### How do I run unit tests in OS X and iOS from the command line?
+### xcodebuild uses the test build action to run unit tests. This build action requires specifying a scheme and a destination. The -destination option allows you to specify a destination for your unit tests. It takes an argument -destinationspecifier, which describes the device, simulator, or Mac to use as a destination. It consists of a set of comma-separated key=value pairs, which are dependent upon the the device, simulator, or Mac being used.
+$ xcodebuild test -scheme <your_scheme_name> -destination destinationspecifier
+# For OS X apps, -destinationspecifier supports the platform and arch key :
+- platform _ The supported destination for your unit tests. _ value : OS X
+- arch _ The architecture to use to run your unit tests._ value :  i386 or x86_64
+
+# For iOS apps, -destinationspecifier supports the platform and arch key :
+
+- platform _ The supported destination for your unit tests. _ value : IOS
+- name  _ The full name of your device to be used for your unit tests. _ value : The name of your device as displayed in the Devices Organizer in Xcode.
+- id _ The identifier of your device to be used for your unit tests. _ value : See Locating Your Device’s Identifier for more information about getting your device identifier.
+
+### Testing the MyMacApp scheme for 64-bit in OS X
+$ xcodebuild test -scheme MyMacApp -destination 'platform=OS X, arch=x86_64'
+
+### Testing the MyiOSApp scheme on a device identified by a given id
+xcodebuild test -scheme MyiOSApp -destination 'platform=iOS,id=998058a1c30d845d0dcec81cd6b901650a0d701c'
+
+
+# Add iOS Simulator to Launchpad
+sudo ln -sf /Applications/Xcode.app/Contents/Applications/iPhone\ Simulator.app /Applications/iOS\ Simulator.app
+
+# Reset Launchpad
+find ~/Library/Application\ Support/Dock -name "*.db" -maxdepth 1 -delete
+
+#--------------------------------------------------------------------
+#     					          |GCC|
+#--------------------------------------------------------------------
+
+#=========================================================================
+					     ## END |||| DEV COMMANDS ||||
+
+
+
+
+
+#=================================================================
+#=================================================================
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                 |||| NETWORK SETUP/ADMIN COMMAND |||| 	         |
+#                                        		                     |
+#                                                                    |
+# -------------------------------------------------------------------
+#--------------------------------------------------------------------
+#                           |ServerInformation|
+#--------------------------------------------------------------------
+#### HIDDEN COMMAND
+/System/Library/PrivateFrameworks/ServerInformation.framework/Versions/A/Resources/serverinfo
+#--------------------------------------------------------------------
+#     						    |AIRPORT|
+#--------------------------------------------------------------------
+$ /System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -i
+
+# Wireless tool
+/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -I
+
+# Change channel
+/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -c [channel]
+
+# Disconnect
+/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -z
+
+# find scan wireless network
+/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -s
+#-------------------------------------------------------------------
+#     						 |NETWORKSETUP|
+#-------------------------------------------------------------------
+# List all network hardware connected to a mac
+networksetup -listallhardwareeports
+## Wifi
+# Turning wifi on/off
+networksetup -getportpower [devicename] [on/off]
+
+# Connect to a wireless network
+networksetup -setairportnetwork [interface] [routerSSID] [password]
+
+# Setting the airpotnetwork
+networksetup -getairportnetwork [devicename]
+networksetup -getairportnetwork [devicename] [network] [password]
+
+# Managing preferred wireless network
+networksetup -listpreferredwirelessnetworks [devicename]
+networksetup -addpreferredwirelessnetworkatindex [devicename] [network] [index] [securitytype] [password]
+networksetup -removepreferredwirelessnetwork [devicename] [network]
+networksetup -removeallpreferredwirelessnetworks [devicename]
+
+
+# Similar to remove Bluetooth PAN on the System Preferences Network control panel
+$ sudo networksetup -removenetworkservice "Bluetooth PAN"
+
+# Disable IPv6
+$ sudo networksetup -setv6off Ethernet
+$ sudo networksetup -setv6off Wi-Fi
+#-------------------------------------------------------------------
+#     						   |IFCONFIG|
+#-------------------------------------------------------------------
+$ ifconfig en0 | grep "ether" | awk '{ print $2 }' # Affiche adresse MAC.
+
+$ ifconfig -a  # Voir le status de toutes les interfaces.
+
+$ ifconfig eth0 up/down # Démarrer/Stopper une interface spécifique.
+
+$ ifconfig eth0 172.16.25.125 # Configurer adresse ip pour interface eth0.
+
+$ ifconfig eth0 netmask 255.255.255.0 # Configurer le masque de sous réseau.
+
+$ ifconfig eth0 192.168.1.5 netmask 255.255.255.0 up # Changer adresse IP.
+
+$ ifconfig eth0:0 172.16.25.127 # Ajouter un nouvel alias à l'interface eth0.
+
+$ ifconfig eth0:0 down # Supprimer un  alias à l'interface eth0.
+
+$ ifconfig eth0 hw ether AA:BB:CC:DD:EE:FF # Changer l'adresse MAC de eth0.
+
+## Spoof your mac address on mac
+• Retrieving your mac address
+ifconfig en1 | grep ether > aa:bb:cc:dd:ee:ff
+• Generate new Mac address
+openssl rand -hex 6 | sed 's/\(..\)/\1:/g; s/.$//'
+• Turning the wireless NIC off
+/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -z
+OR
+sudo ifconfig en0 down
+sudo ifconfig en0 up
+• Proceed to spoof the MAC address
+sudo ifconfig en0 Wi-Fi aa:bb:cc:dd:ee:ff
+• For some computer the command is :
+sudo ifconfig en0 ether aa:bb:cc:dd:ee:ff
+• Test the new config
+networksetup -detectnewhardware
+#-------------------------------------------------------------------
+#     							|IFSTAT|
+#-------------------------------------------------------------------
+$ ifstat  # Affiche les ratios de paquets echangés par interfaces.
+#-------------------------------------------------------------------
+#     							  |IP|
+#-------------------------------------------------------------------
+$ ip route | awk '/default/{print $3}'  # Default gateway
+$ ip li | grep ether | awk '{print $2}' # Show MAC adresse
+#-------------------------------------------------------------------
+#     							 |ROUTE|
+#-------------------------------------------------------------------
+$ route  # Affiche la table de routage
+#-------------------------------------------------------------------
+#     					   		 |LSOF|
+#-------------------------------------------------------------------
+$ lsof -P -i -n | egrep 'COMMAND|LISTEN|UDP' # Lister les ports ouverts
+
+$ lsof -r 2 -p PID -i -a
+lsof -P -i -n | cut -f 1 -d " "| uniq | tail -n +2
+# Voir les connections de toutes les appications et utilisateurs en temps réel.
+
+$ lsof -i tcp:80 # Quel programme est en écoute sur le port 80.
+
+$ lsof -c dhcpd  # Lister tous les fichiers ouverts par une applications.
+
+# Listing all open connections
+$ lsof -i
+# • listing only established connections
+$ lsof -i | grep -E "(LISTEN|ESTABLISHED)"
+
+alias oports="echo -e "User:\tCommand:\tPort:\n----------------------------" && lsof -i 4 -P -n | awk '/LISTEN/ {print $3, $1, $9}' | sed 's/ [a-z0-9\.\*]*:/ /' | sort -u -k 3 -n | xargs printf '%-10s %-10s %-10s\n'"
+# Fonction pour afficher les process, les port qu'ils ouvrent, et
+# le propiétaire du process.
+#-------------------------------------------------------------------
+#     						   |NETSTAT|
+#-------------------------------------------------------------------
+# Quickly get a router ip
+$ netstat -rn | grep default
+
+$ netstat -tulp # Lister les ports ouverts
+
+$ watch -n 1 "netstat -tpanl | grep ESTABLISHED" # Voir les connections TCP
+						 # ouvertes.
+$ netstat -ntu | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -n
+# Nombre de connections ouvertes par IP.
+
+$ watch "netstat -plan|grep :80|awk {'print \$5'} | cut -d: -f 1 | sort | uniq -c | sort -nk 1"
+# Monitor open connections for httpd including listen, count and sort it per IP
+
+$ netstat -lantp | grep ESTABLISHED |awk '{print $5}' | awk -F: '{print $1}' | sort -u
+#-------------------------------------------------------------------
+#     							|NMAP|
+#-------------------------------------------------------------------
+$ nmap -v -sT --system-dns localhost  # Lister les ports ouverts
+
+$ nmap -sP 192.168.1.0/24 # Lister les hotes connectés au sous-réseaux.
+
+$ nmap -sP 192.168.1.100-254 # Pinger un range d'IP.
+
+$ nmap -sS -P0 -sV -O <target> # Obtenir les infos de ports ouverts
+			       # et detection os sur hôte distant.
+
+$ nmap -sT -p 80 -oG - 192.168.1.* | grep open	 # Lister les serveurs avec
+					         # un port spécifique ouvert.
+$ nmap -sP 192.168.1.0/24; arp -n  | grep "192.168.1.[0-9]* *ether"
+# Trouver toutes les IP actives sur un réseau.
+
+$ nmap -T4 -sP 192.168.2.0/24 && egrep "00:00:00:00:00:00" /proc/net/arp
+# Trouver les IP inutilisées sur un sous-réseaux.
+#-------------------------------------------------------------------
+
+$ 2>|/dev/null dd if=/dev/urandom bs=1 count=6 | od -t x1 | awk {'print $2, $3, $4, $5, $6,$7'}
+# Génére une adresse MAC aléatoire.
+#=========================================================================
+			     ## END  |||| NETWORK SETUP/ADMIN COMMAND ||||
+
+
+
+
+
+
+#=================================================================
+#=================================================================
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                 |||| NETWORK SETUP/ADMIN COMMAND ||||              |
+#                                        			                 |
+#                                                                    |
+# -------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     						  |TELNET|
+#--------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     						   |FTP|
+#--------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     						   |SSH|
+#--------------------------------------------------------------------
+$ sshfs name@server:/path/to/folder /path/to/mount/point
+# Monter un dossier/systeme à travers ssh
+
+$ ssh -N -L2001:localhost:80 somemachine  # Démarrer un tunnel de [MACHINE1]:8O
+					  # à machine.
+$ ssh -t remote_host screen -r # Connecter un écran à travers ssh.
+
+$ dd if=/dev/dsp | ssh -c arcfour -C username@host dd of=/dev/ds
+# Brancher la sortie du microphone vers les enceintes d'un ordinateur distant.
+
+$ ssh user@host "tar -zcf - /path/to/dir" > dir.tar.gz
+# Créer une archive local d'un répertoire distant.
+
+$ ssh  -t remotebox "tail -f /var/log/remote.log" # tail fichier log à travers SSh.
+
+$ ssh-keygen; ssh-copy-id user@host; ssh user@host
+# Transférer une clés publique vers une autre machine.
+#--------------------------------------------------------------------
+#     						    |SCP|
+#--------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     						   |RSYNC|
+#--------------------------------------------------------------------
+$ rsync --progress --partial --rsh="ssh -p 8322" --bwlimit=100 --ipv4 user@domain.com:~/file.tgz .
+# Replace scp y rsync.
+
+$ rsync -rv <src> <dst> --progress  # Copier avec bar de progrès.
+#=========================================================================
+			      ## END |||| NETWORK SETUP/ADMIN COMMAND ||||
+
+#=============================================================================
+#==============================================================================
+# -----------------------------------------------------------------------------
+# \                                                                             \
+#  ------------------------------------------------------------------------------
+#  |                                                                             |
+#  |                 [-----[[OSX DAILY USE COMMANDS]]-----]                      |
+#  |                                       					 					 |
+# \|                                                                             |
+#   -----------------------------------------------------------------------------
+
+#---------------------------------------------------------------------
+#     					       |SCREENCAPTURE|
+#---------------------------------------------------------------------
+# Take  a screencaptureop
+screencapture -iW ~/Desktop/screen.jpg
+screencapture -S ~/Desktop/screen.jpg
+
+# Pbcopy & Pbpaste for manipulating clipboard
+screencapture -ic ~/Desktop/screen.jpg
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                 			 ||||FILE INFOS|||| 	          		 |
+#                                        			        	 	 |
+#                                                                    |
+# -------------------------------------------------------------------
+#---------------------------------------------------------------------
+#     					      	 |WHATIS|
+#---------------------------------------------------------------------
+# whatis [MODULE/BINARY] # Affiche les commandes liées et une description.
+#---------------------------------------------------------------------
+#     					      	  |FILE|
+#---------------------------------------------------------------------
+$ file [FILE]  # Afficher le type et les metadata du fichier.
+#---------------------------------------------------------------------
+#     					           |LS|
+#---------------------------------------------------------------------
+$ ls -lh [FILE] | awk {'print $5'} # Affiche la taille d'un fichier
+				   # de façon lisible.
+$ ls -d1 $PWD/*   # Affiche le path complet des fichiers.
+
+$ ls -aeilos /  # Affiche les ACL, ici sur /.
+
+$ ls ${PATH//:/ } # Afficher toutes les commandes présentent sur le $
+		 # système.
+
+$ ls -Sh **/*(.Lm+100) | tail -5  # Trouver les 5 plus gros fichier.
+#---------------------------------------------------------------------
+#     					         |FSACTL|
+#---------------------------------------------------------------------
+$ fsaclctl -p /  # Afficher les ACL sur /
+#---------------------------------------------------------------------
+#     					           |DU|
+#---------------------------------------------------------------------
+$ du [FILE] | awk {'print $1'} # Affiche la taille d'un fichier
+								# de façon lisible.
+$ du -hS / 2>/dev/null | perl -ne '(m/\d{3,}M\s+\S/ || m/G\s+\S/) && print'
+# Trouver tous les dossiers >99MO.
+
+$ while true; do du -s <file_or_directory>; sleep <time_interval>; done
+# Contrôler continuellement la taille d'un fichier/répertoire.
+
+#=========================================================================
+						## END  ||||FILE INFOS||||
+
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                 	  ||||FILE/STRING SEARCH|||| 	                 |
+#                                        		                     |
+#                                                                    |
+# -------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     					  MDFIND| (SPOTLIGHT)
+#--------------------------------------------------------------------
+# Find all compotements of apps
+mdfind -name "Applicationsname"
+
+# Change indexing order and disable some search results
+# Yosemite-specific search results (remove them if your are using OS X 10.9 or older):
+#   MENU_DEFINITION
+#   MENU_CONVERSION
+#   MENU_EXPRESSION
+#   MENU_SPOTLIGHT_SUGGESTIONS (send search queries to Apple)
+#   MENU_WEBSEARCH             (send search queries to Apple)
+#   MENU_OTHER
+defaults write com.apple.spotlight orderedItems -array \
+    '{"enabled" = 1;"name" = "APPLICATIONS";}' \
+    '{"enabled" = 1;"name" = "SYSTEM_PREFS";}' \
+    '{"enabled" = 1;"name" = "DIRECTORIES";}' \
+    '{"enabled" = 1;"name" = "PDF";}' \
+    '{"enabled" = 1;"name" = "FONTS";}' \
+    '{"enabled" = 0;"name" = "DOCUMENTS";}' \
+    '{"enabled" = 0;"name" = "MESSAGES";}' \
+    '{"enabled" = 0;"name" = "CONTACT";}' \
+    '{"enabled" = 0;"name" = "EVENT_TODO";}' \
+    '{"enabled" = 0;"name" = "IMAGES";}' \
+    '{"enabled" = 0;"name" = "BOOKMARKS";}' \
+    '{"enabled" = 0;"name" = "MUSIC";}' \
+    '{"enabled" = 0;"name" = "MOVIES";}' \
+    '{"enabled" = 0;"name" = "PRESENTATIONS";}' \
+    '{"enabled" = 0;"name" = "SPREADSHEETS";}' \
+    '{"enabled" = 0;"name" = "SOURCE";}' \
+    '{"enabled" = 0;"name" = "MENU_DEFINITION";}' \
+    '{"enabled" = 0;"name" = "MENU_OTHER";}' \
+    '{"enabled" = 0;"name" = "MENU_CONVERSION";}' \
+    '{"enabled" = 0;"name" = "MENU_EXPRESSION";}' \
+    '{"enabled" = 0;"name" = "MENU_WEBSEARCH";}' \
+    '{"enabled" = 0;"name" = "MENU_SPOTLIGHT_SUGGESTIONS";}'
+# Load new settings before rebuilding the index
+killall mds > /dev/null 2>&1
+# Make sure indexing is enabled for the main volume
+sudo mdutil -i on / > /dev/null
+# Rebuild the index from scratch
+sudo mdutil -E / > /dev/null
+#--------------------------------------------------------------------
+#     					      |GREP|
+#--------------------------------------------------------------------
+$ grep -i "fauve" [FILE]  # Chercher un mot dans un fichier.
+
+$ grep -RnisI <pattern> *  # Chercher un pattern dans tous les fichiers
+							# du répertoire.
+
+$ grep -A 3 -i "fauve" [FILE]  # Afficher la ligne qui contient le mot et
+							    # les 3 lignes suivantes.
+
+$ grep -r "fauve" *  # Chercher un mot dans tous les fichiers
+
+$ grep -rl oldstring . |xargs sed -i -e 's/oldstring/newstring/'
+# Chercher recursivement et remplacement oldstring vers newstring dans
+# un fichier de façon récursive.
+
+$ ff() { local IFS='|'; grep -rinE "$*" . ; } # Recherche de contenu.
+#--------------------------------------------------------------------
+#     					      |FIND|
+#--------------------------------------------------------------------
+$ find . -type l ! -exec test -e {} \; -print # Trouver
+ les liens cassés.
+
+$ find [PATH] -newermt "Jan 1" # Trouver les fichiers modifié depuis
+								# une date spécifique.
+$ find -iname "MyProgram.c"  # Trouver un fichier en utilisant son nom.
+
+$ find -iname "MyProgram.c -exec md5sum {} \;"
+# Exécuter une commande  à partir des fichiers  trouvés par find.
+
+$ find / -name *.jpg -type f -print | xargs tar -cvzf images.tar.gz
+# Trouver tous les fichiers jpg dans le système et les archiver.
+
+$ find . -type f | awk -F'.' '{print $NF}' | sort| uniq -c | sort -g
+# Lister toutes les extensions dans un répertoire.
+
+$ find . -type d -empty -delete
+$ find . -depth -type d -empty -exec rmdir -v {} \;
+# Trouver les répertoire vides et les éffacer.
+
+$ find . -not -empty -type f -printf "%s\n" | sort -rn | uniq -d | xargs -I{} -n1 find -type f -size {}c -print0 | xargs -0 md5sum | sort | uniq -w32 --all-repeated=separate
+# Trouver les doublons.
+
+$ find / \( -perm -4000 -o -perm -2000 \) –print
+# To find SUID and SGID  files on the system, use the following command:
+# SUID or SGID bits safely disabled (using chmod -s filename)
+# unless required for other program.
+
+$ find . -type f -delete  # Effacer tous les fichiers, pas les dossiers.
+
+$ find . -type d -delete  # Effacer tous les dossiers.
+
+$ find . -type d -not -name A -exec rm -rf {} \; # Effacer tous dossiers, sauf [A]
+
+$ find . -type f -not \( -name '*zip' -or -name '*iso' \) -delete
+# Effacer tous les fichiers hormis les zip et les iso.
+
+$ find ~/sources/ -type f -not -name '*.php' -delete
+$ find ~/sources/ -type f -not -name '*.php' -print0 | xargs -0 -I {} rm -v {}
+# Effacer tous les fichiers hormis les php.
+
+$ find . -type d -maxdepth 1 -not -name A -exec rm -ir {} \;
+# Effacer tous les sous répertoire sauf 1, ici [A].
+
+$ find -iname '*.htm' | while read f; do echo mv \"$f\" \"${f/.htm/.html}\"; done
+# Renommer les fichiers .htm en .html
+
+$ find -name *.\[c\|h\] | xargs wc -l # Afficher le nombre de ligne.
+
+$ find ./ $1 -name "* *" | while read a ; do mv "${a}" "${a//\ /_}" ; done
+# Rennomer tous les fichiers dans le répertoire actuel en effacant les
+# espaces.
+#-------------------------------------------------------------------
+#     					      |XARGS|
+#-------------------------------------------------------------------
+$ ls *.jpg | xargs -n1 -i cp {} [/external-hard-drive/directory]
+# Copy All jpg image to external drive.
+
+#=========================================================================
+					 ## END ||||FILE/STRING SEARCH||||
+
+
+
+
+
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                 	||||FILE/STRING MANIPULATION||||	             |
+#                                        			                 |
+#                                                                    |
+# -------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     					       |MDLS|
+#--------------------------------------------------------------------
+# macOS attaches metadata ([HFS+ extended attributes](https://en.wikipedia.org/wiki/
+Extended_file_attributes#OS_X)) to downloaded files, which can be viewed with the `mdls`
+$ mdls ~/Downloads/TorBrowser-6.0.8-osx64_en-US.dmg
+_kMDItemOwnerUserID            = 501
+kMDItemContentCreationDate     = 2016-12-01 12:00:00 +0000
+kMDItemContentModificationDate = 2016-12-01 12:00:00 +0000
+kMDItemContentType             = "com.apple.disk-image-udif"
+kMDItemContentTypeTree         = (
+    "public.archive",
+    "public.item",
+    "public.data",
+    "public.disk-image",
+    "com.apple.disk-image",
+    "com.apple.disk-image-udif"
+)
+kMDItemDateAdded               = 2016-12-01 12:00:00 +0000
+kMDItemDisplayName             = "TorBrowser-6.0.8-osx64_en-US.dmg"
+kMDItemFSContentChangeDate     = 2016-12-01 12:00:00 +0000
+kMDItemFSCreationDate          = 2016-12-01 12:00:00 +0000
+kMDItemFSCreatorCode           = ""
+kMDItemFSFinderFlags           = 0
+kMDItemFSHasCustomIcon         = (null)
+kMDItemFSInvisible             = 0
+kMDItemFSIsExtensionHidden     = 0
+kMDItemFSIsStationery          = (null)
+kMDItemFSLabel                 = 0
+kMDItemFSName                  = "TorBrowser-6.0.8-osx64_en-US.dmg"
+kMDItemFSNodeCount             = (null)
+kMDItemFSOwnerGroupID          = 5000
+kMDItemFSOwnerUserID           = 501
+kMDItemFSSize                  = 60273898
+kMDItemFSTypeCode              = ""
+kMDItemKind                    = "Disk Image"
+kMDItemLogicalSize             = 60273898
+kMDItemPhysicalSize            = 60276736
+kMDItemWhereFroms              = (
+    "https://dist.torproject.org/torbrowser/6.0.8/TorBrowser-6.0.8-osx64_en-US.dmg",
+    "https://www.torproject.org/projects/torbrowser.html.en"
+)
+
+#--------------------------------------------------------------------
+#     					       |XATTR|
+#--------------------------------------------------------------------
+$ xattr -l TorBrowser-6.0.8-osx64_en-US.dmg
+com.apple.metadata:kMDItemWhereFroms:
+00000000  62 70 6C 69 73 74 30 30 A2 01 02 5F 10 4D 68 74  |bplist00..._.Mht|
+00000010  74 70 73 3A 2F 2F 64 69 73 74 2E 74 6F 72 70 72  |tps://dist.torpr|
+00000020  6F 6A 65 63 74 2E 6F 72 67 2F 74 6F 72 62 72 6F  |oject.org/torbro|
+00000030  77 73 65 72 2F 36 2E 30 2E 38 2F 54 6F 72 42 72  |wser/6.0.8/TorBr|
+00000040  6F 77 73 65 72 2D 36 2E 30 2E 38 2D 6F 73 78 36  |owser-6.0.8-osx6|
+00000050  34 5F 65 6E 2D 55 53 2E 64 6D 67 5F 10 36 68 74  |4_en-US.dmg_.6ht|
+00000060  74 70 73 3A 2F 2F 77 77 77 2E 74 6F 72 70 72 6F  |tps://www.torpro|
+00000070  6A 65 63 74 2E 6F 72 67 2F 70 72 6F 6A 65 63 74  |ject.org/project|
+00000080  73 2F 74 6F 72 62 72 6F 77 73 65 72 2E 68 74 6D  |s/torbrowser.htm|
+00000090  6C 2E 65 6E 08 0B 5B 00 00 00 00 00 00 01 01 00  |l.en..[.........|
+000000A0  00 00 00 00 00 00 03 00 00 00 00 00 00 00 00 00  |................|
+000000B0  00 00 00 00 00 00 94                             |.......|
+000000b7
+com.apple.quarantine: 0081;58519ffa;Google Chrome.app;1F032CAB-F5A1-4D92-84EB-CBECA971B7BC
+```
+Metadata attributes can also be removed with the `-d` flag:
+```
+$ xattr -d com.apple.metadata:kMDItemWhereFroms ~/Downloads/TorBrowser-6.0.5-osx64_en-US.dmg
+$ xattr -d com.apple.quarantine ~/Downloads/TorBrowser-6.0.5-osx64_en-US.dmg
+$ xattr -l ~/Downloads/TorBrowser-6.0.5-osx64_en-US.dmg
+[No output after removal.]
+```
+Other metadata and artifacts may be found in the directories including, but not limited to, `~/Library/Preferences/`, `~/Library/Containers/<APP>/Data/Library/Preferences`, `/Library/Preferences`, some of which is detailed below.
+`~/Library/Preferences/com.apple.sidebarlists.plist` contains historical list of volumes attached. To clear it, use the command `/usr/libexec/PlistBuddy -c "delete :systemitems:VolumesList" ~/Library/Preferences/com.apple.sidebarlists.plist`
+`/Library/Preferences/com.apple.Bluetooth.plist` contains Bluetooth metadata, including device history. If Bluetooth is not used, the metadata can be cleared with:
+
+````
+sudo defaults delete /Library/Preferences/com.apple.Bluetooth.plist DeviceCache
+sudo defaults delete /Library/Preferences/com.apple.Bluetooth.plist IDSPairedDevices
+sudo defaults delete /Library/Preferences/com.apple.Bluetooth.plist PANDevices
+sudo defaults delete /Library/Preferences/com.apple.Bluetooth.plist PANInterfaces
+sudo defaults delete /Library/Preferences/com.apple.Bluetooth.plist SCOAudioDevices
+
+
+#--------------------------------------------------------------------
+#     					       |OPEN|
+#--------------------------------------------------------------------
+$ open /Applications/Chess.app  # Lance Chess.app
+
+$ open -a [FILE]  #  Ouvre [file] visuellement avec l'application par défaut d'OSX.
+
+$ open [DIRECTORY]  # Ouvre le répertoire dans Finder.
+#--------------------------------------------------------------------
+#     						   |ECHO|
+#--------------------------------------------------------------------
+$ var=:foobar:; echo ${var:1:-1}  # Retirer le premier et dernier caratére
+								   # d'une phrase.
+#--------------------------------------------------------------------
+#     						  |TOUCH|
+#--------------------------------------------------------------------
+$ touch {1..10}.text # Créer plusieurs fichiers d'un coup.
+#--------------------------------------------------------------------
+#     						   |CP|
+#--------------------------------------------------------------------
+$ cp foo{,bak} # Copie rapide.
+#--------------------------------------------------------------------
+#     						  |DITTO|
+#--------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     						   |ASR|
+#--------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     						   |RM|
+#--------------------------------------------------------------------
+$ rm -r.??*   # Effacer tous les fichiers cachés dans un répertoire.
+
+$ rm -R `ls | egrep -v 'dir1|dir2|file1'` # Effacer tous les fichiers et répertoires
+										   # hormis les répertoires [dir1] [dir2]
+										   # [dir3]
+#--------------------------------------------------------------------
+#     						   |MV|
+#--------------------------------------------------------------------
+$ mv [FILE/DIRECTORY_NAME] [FICHIER/REPETOIRE_NOM]  # Déplacer et changer de nom un fichier
+													 # ou un répertoire.
+#-------------------------------------------------------------------------
+#     						 |BASENAME|
+#-------------------------------------------------------------------------
+$ mv macports_fisrt.disabled $(basename macports_fisrt.disabled .disabled)
+# Remove extensions of a file  eg:  .disabled on macports_fisrt.disabled
+#-------------------------------------------------------------------------
+#     						  |RENAME|
+#-------------------------------------------------------------------------
+$ rename 's/^/prefix/' * # Renommer en ajoutant un préfix.
+#-------------------------------------------------------------------------
+#     						  |CHMOD|
+#-------------------------------------------------------------------------
+$ chmod =a# 0 'group:everyone deny delete' ~/Documents # Protéger contre n'importequi,
+														# le fichier d'être éffacé.
+#-------------------------------------------------------------------------
+#     						  |HEAD|
+#-------------------------------------------------------------------------
+#-------------------------------------------------------------------------
+#     						  |TAIL|
+#-------------------------------------------------------------------------
+$ cat /dev/null > [FILE]  # Vider un fichier.
+
+$ tail [FILE]  # Afficher les 10 dernieres lignes.
+
+$ tail -n N [FILE] # Afficher N lignes du fichier.
+
+$ tail -f [LOGFILE] # Afficher un fichier en temps réel.
+#-------------------------------------------------------------------------
+#     						  |TR|
+#-------------------------------------------------------------------------
+$ tr '[:lower:]' '[:upper:]' <[TEXT] >[TEXTUPPER]
+# Convertir tout le texte en majuscule.
+$ tr '[:upper:]' '[:lower:]' <[TEXT] >[TEXTUPPERLOWER]
+# Convertir tout le texte en minfuscule.
+$ tr ':' '\n'.
+# Remplacer : pâr un retour chariot
+#-------------------------------------------------------------------------
+#     						 |DIFF|
+#-------------------------------------------------------------------------
+$ diff -w [FILE1] [FILE2]  # Différence entre deux fichiers, en ignorant
+							# les blancs.
+$ diff <(tail -10 file1) <(tail -10 file2)  # Différence entre 2 résultats
+					    # de commande.
+$ diff <(sort file1) <(sort file2) #  diff two unsorted files without creating
+				   #  temporary files
+$ diff <(lsof -p 1234) <(sleep 10; lsof -p 1234)
+# Différence entre le résultat de deux commandes.
+
+$ diff <(echo "$a") <(echo "$b")  # Différence entre deux variables
+#-------------------------------------------------------------------------
+#     						   |SED|
+#-------------------------------------------------------------------------
+$ s="124890";for i in $(seq 0 1 $((${#s}-1))); do arr[$i]=${s:$i:1}; done
+# Transforme une phrase en un tableau.
+
+$ sed -i 's/ /-/g' * # Remplacer les espaces par des tirets dans un fichier.
+
+$ sed -n 5p <file>  # Afficher une ligne sécifique d'une ligne.
+
+$ sed -n '10,20p' <filename> # Afficher toutes les lignes entes la 10em
+							  # et la 20em ligne du fichier
+$ sed -n 's/.*<title>\(.*\)<\/title>.*/\1/ip;T;q' file.html
+# Extraire les titres d'une page web.
+##########
+#
+$ MOT=ABCD
+$ echo ABCD | sed s'/.$//' # Supprimer le dernier caractére d'un mot.
+
+$ echo ABCD | sed s'/[a-zA-Z]$//'  # Supprimer le dernier caractère
+									# d'un mot si il est dans l'alphabet.
+
+$ echo $MOT | sed 's/^.//' # Supprimer le premier caractère d'un mot.
+						 # sed 's/trouve/remplace/' fichier
+## Meme chose avec la subtitution de variable :
+$ echo ${MOT/%?/} ou ${MOT%?}  # Supprimer le dernier caractére d'un mot.
+$ echo ${MOT/#?/} ou ${MOT#?}  # Supprimer le premier caractère d'un mot.
+#
+#
+$ cat fichier
+
+$ sed 's/a//' fichier  # Supprime le caractère a dans fichier.
+
+$ sed 's/^.//' fichier # Supprime premier caractère sur toutes les lignes.
+
+$ sed 's/.$//' fichier  # Supprime dernier caractère sur toutes les lignes
+
+$ sed 's/.//;s/.$//' fichier # Supprime premier et dernier caractère sur
+							  # toutes les lignes.
+$ sed 's/^F//' fichier       # Supprime le premier caractére sur les lignes
+ 							  # uniquement si un caractère spécifique est
+		 					  # trouvé, ici F.
+$ sed 's/x$//' fichier       # Supprime le dernier caractére sur les lignes
+							  # uniquement si un caractère spécifique est
+							  # trouvé, ici x.
+
+$ sed 's/...//' fichier  # Retire les 3 premiers caractères de toutes
+						  # les lignes.
+
+$ sed -r 's/.{4}//' fichier # Supprime les n premiers caractères de toutes
+						     # les lignes, ici n=4.
+
+$ sed -r 's/(.{3}).*/\1/' fichier # Supprime les n derniers caractéres dev 										   # toutes les lignes, ici n=3.
+
+$ sed -r 's/(.{3}).*/\1/' fichier # Supprime tout, mis-à-part un nombre
+								   # n de premiers caractères sur toutes
+	 							   # les lignes, ici n=3.
+$ sed -r 's/.*(.{3})/\1/' fichier # Supprime tout, mis-à-part un nombre
+		 						   # n de derniers caractères sur toutes
+								   # les lignes, ici n=3.
+
+$ sed 's/[aoe]//g' fichier  # Supprime plusieur caractéres définit,
+				     		 # ici aoe,sur toutes les lignes.
+
+$ sed 's/lari//g' fichier   # Supprime un pattern prééfinit, ici lari.
+
+$ sed 's/u//2' fichier	 # Supprime un nombre définit d'occurences du patterns prédéfinit, ici 2u, sur
+			 # toutes les lignes.
+
+$ sed 's/a.*//'  # Supprime sur toutes les lignes, ce qui suit un caractère, ici a.
+
+$ sed sed 's/[a-z]//g' fichier # Supprime toutes les minuscules sur toutes les lignes du fichier.
+
+$ sed 's/[^a-z]//g' fichier  # Supprime toutes les majuscules sur toutes les lignes du fichier.
+
+$ sed 's/[uU]//g' fichier  # Supprime toutes les occurences majuscules, minuscules; ici u et U
+  			    # sur toutes les lignes.
+#
+$ sed 's/[0-9]//g' fichier # Supprime sur toutes les lignes,  tous les points.
+
+$ sed 's/[a-zA-Z0-9]//g' fichier  # Supprime tous les caractères alphanumériques, sur toutes les lignes
+			           # d'un fichier.
+
+$ sed '/./=' fichier 'N; s/\n/ /' # Ajoute un nombre à toutes les lignes non vides.
+
+$ sed 's/ //g'  	           # Effacer les espaces blancs dans une sortie.
+#-------------------------------------------------------------------
+#     						   |AWK|
+#-------------------------------------------------------------------
+$ awk -F ':' '$3==$4' passwd.txt # Afficher toutes les lignes contenant le meme UID et GID.
+$ awk '/[STARTPATTERN]/,/[STOPPATTERN]/' [FILE] # montre une partie de texte
+
+$ awk '!/[PATTERN1]|[PATTERN1]/' [FILE] # Supprime toutes les lignes qui
+										 # Contienne l'un ou l'autre des
+								         # [PATTERN].
+$ awk '!x[$0]++' [FILE]  # Supprime les entrées similaires.
+
+$ awk '{$1=$3=""}1' [FILE] # Exclure plusieurs colonnes.
+#=========================================================================
+				   ## END ||||FILE/STRING MANIPULATION||||
+
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                 	|||| COMPRESSION/ARCHIVE ||||	                 |
+#                                        			                 |
+#                                                                    |
+# -------------------------------------------------------------------
+#---------------------------------------------------------------------
+#     					   |CREATEINSTALLMEDIA|
+#---------------------------------------------------------------------
+macOS installers can be made with the `createinstallmedia` utility included in `Install macOS Sierra.app/Contents/Resources/`. See [Create a bootable installer for macOS](https://support.apple.com/en-us/HT201372), or run the utility without arguments to see how it works.
+**Note** Apple's installer [does not appear to work](https://github.com/drduh/OS-X-Security-and-Privacy-Guide/issues/120) across OS versions. If you want to build a 10.12 image, for example, the following steps must be run on a 10.12 machine!
+To create a **bootable USB installer**, mount a USB drive, and erase and partition it, then use the `createinstallmedia` utility:
+```$ diskutil list
+[Find disk matching correct size, usually "disk2"]
+$ diskutil unmountDisk /dev/disk2
+$ diskutil partitionDisk /dev/disk2 1 JHFS+ Installer 100%
+$ cd /Applications/Install\ macOS\ Sierra.app
+$ sudo ./Contents/Resources/createinstallmedia --volume /Volumes/Installer --applicationpath /Applications/Install\ macOS\ Sierra.app --nointeraction
+Erasing Disk: 0%... 10%... 20%... 30%... 100%...
+Copying installer files to disk...
+Copy complete.
+Making disk bootable...
+Copying boot files...
+Copy complete.
+Done.
+```
+
+########
+To create a **custom installable image** which can be [restored](https://en.wikipedia.org/wiki/Apple_Software_Restore) to a Mac, you will need to find the file `InstallESD.dmg`, which is also inside `Install macOS Sierra.app`.
+With Finder, right click on the app, select **Show Package Contents** and navigate to **Contents** > **SharedSupport** to find the file `InstallESD.dmg`.
+You can [verify](https://support.apple.com/en-us/HT201259) the following cryptographic hashes to ensure you have the same copy with `openssl sha1 InstallESD.dmg` or `shasum -a 1 InstallESD.dmg` or `shasum -a 256 InstallESD.dmg` (in Finder, you can drag the file into a Terminal window to provide the full path).
+To determine which macOS versions and builds originally shipped with or are available for your Mac, see [HT204319](https://support.apple.com/en-us/HT204319).
+See [InstallESD_Hashes.csv](https://github.com/drduh/OS-X-Security-and-Privacy-Guide/blob/master/InstallESD_Hashes.csv) in this repository for a list of current and previous file hashes. You can also Google the cryptographic hashes to ensure the file is genuine and has not been tampered with.
+To create the image, use [MagerValp/AutoDMG](https://github.com/MagerValp/AutoDMG), or to create it manually, mount and install the operating system to a temporary image:
+    $ hdiutil attach -mountpoint /tmp/install_esd ./InstallESD.dmg
+    $ hdiutil create -size 32g -type SPARSE -fs HFS+J -volname "macOS" -uid 0 -gid 80 -mode 1775 /tmp/output.sparseimage
+    $ hdiutil attach -mountpoint /tmp/os -owners on /tmp/output.sparseimage
+    $ sudo installer -pkg /tmp/install_esd/Packages/OSInstall.mpkg -tgt /tmp/os -verbose
+
+This part will take a while, so be patient. You can `tail -F /var/log/install.log` in another Terminal window to check progress.
+**(Optional)** Install additional software, for example [Wireshark](https://www.wireshark.org/download.html):
+    $ hdiutil attach Wireshark\ 2.2.0\ Intel\ 64.dmg
+    $ sudo installer -pkg /Volumes/Wireshark/Wireshark\ 2.2.0\ Intel\ 64.pkg -tgt /tmp/os
+    $ hdiutil unmount /Volumes/Wireshark
+When you're done, detach, convert and verify the image:
+    $ hdiutil detach /tmp/os
+    $ hdiutil detach /tmp/install_esd
+    $ hdiutil convert -format UDZO /tmp/output.sparseimage -o ~/sierra.dmg
+    $ asr imagescan --source ~/sierra.dmg
+
+Now `sierra.dmg` is ready to be applied to one or many Macs. One could futher customize the image to include premade users, applications, preferences, etc.
+ $ sudo asr restore --source ~/sierra.dmg --target /Volumes/macOS --erase --buffersize 4m
+
+#--------------------------------------------------------------------
+#     						    |HDUTIL|
+#--------------------------------------------------------------------
+$ hdiutil verify [PATHTODMG]  # Vérifier une image DMG.
+
+$ hdiutil segment -segmentSize 10m -o /tmp/aseg 30m.dmg  # Ségmenter image de 30MO en
+						         # trois segments se 10 MO.
+
+$ hdiutil convert master.dmg -format UDTO -o master      # Convertir un DMG en image gravable.
+
+$ hdiutil create -srcfolder [DIRPATH] [DIRNAME].dmg  #  Créer une archive à partir d'un 														  #  dossier.
+
+$ hdiutil create -srcfolder mydir -format UDSB mydir.sparsebundle
+$ hdiutil convert mydir.sparsebundle -format UDZO -o mydir.dmg
+#  Créer une archive à partir d'un dossier, en utilisant une SparseImage intermédiare.
+
+$ hdiutil attach [PATHTODMG] [OPTIONS] # Monter une DMG avec osx.
+
+$ hdiutil detach [PATHTODMG]  # Démonter une image DMG image avec osx.
+
+$ hdiutil attach myimage.dmg
+$ ...
+$ /dev/disk1s2            Apple_HFS         /Volumes/myVolume
+$ diskutil unmount disk1s2
+$ mkdir /Volumes/myVolume
+$ sudo mount -r -t hfs -o owners /dev/disk1s2 /Volumes/myVolume  # -o owners is the default for manual mounts
+# Pour changer manuellement les permissions d'une image en lecture seule.
+#-------------------------------------------------------------------
+#     						   |TAR|
+#-------------------------------------------------------------------
+$ tar -cvf [DIR/FILNENAME].tar.gz [DIR/FILNENAME]  # Compress
+
+$ tar -cvf /path/dir.tar /path/dir* --exclude "/path/dir/name" --exclude "/path/dir/opt"  # Compresser en excluant des répertoires.
+
+$ tar -cavvf [DIR/FILNENAME].xz [DIR/FILNENAME	# Avec options: -a,
+# possibilité de choisir l'extension.
+$ tar -xvf [DIR/FILNENAME].tar.gz  # Decompress [file/directory.
+
+$ tar -tvf archive.tar # Lister le contenu d'une archive tar.
+
+######
+# Always encrypt files locally before backing them up to external media or online services.
+# One way is to use a symmetric cipher with GPG and a password of your choosing.
+To encrypt a directory:
+    $ tar zcvf - ~/Downloads | gpg -c > ~/Desktop/backup-$(date +%F-%H%M).tar.gz.gpg
+To decrypt an archive:
+    $ gpg -o ~/Desktop/decrypted-backup.tar.gz -d ~/Desktop/backup-2015-01-01-0000.tar.gz.gpg && tar zxvf ~/Desktop/decrypted-backup.tar.gz
+#--------------------------------------------------------------------
+#     						   |GZIP|
+#--------------------------------------------------------------------
+$ gzip [FILE]  # Compress.
+
+$ gzip -9 [FILE] # Etablir le ratio de compressions.
+				  # 1 the lowest,but fastest.
+				  # 9 is the best but slowest.
+$ gzip -d [FILE].gz  # Decompresse
+$ gunzip [FILE].gz
+
+$ gzip -l [FILE].gz  # Montre le ratio de compression.
+
+$ zcat [FILE].gz # Voir le contenu d'un gzip.
+#-------------------------------------------------------------------
+#     						   |BZIP2|
+#-------------------------------------------------------------------
+$ bzip2 [FILE]  # Compresse
+
+$ bzip2 -d [FILE]  # Decompresse
+#-------------------------------------------------------------------
+#     						    |ZIP|
+#-------------------------------------------------------------------
+$ zip [FILE].zip [FILE] # Compresse
+
+$ zip -r [ARHIVE].zip [FOLDER1] [FILE2] # Compresse directory
+
+$ zip [ARHIVE].zip -u newfile  # Ajouter à l'archive.
+
+$ zip -d arc.zip file.txt # Supprimer un fichier de l'archive.
+
+$ unzip [FILE] # Decompresse
+
+$ unzip -l [FILE].zip  # Voir le contenu d'un zip
+
+#=========================================================================
+## END |||| COMPRESSION/ARCHIVE ||||
+
+
+
+
+
+
+# ----------------------------------------------------------------
+#                                                                  \
+# -------------------------------------------------------------------
+#                                                                    |
+#                 	|||| NETWORK COMMANDS ||||	             		 |
+#                                        			     			 |
+#                                                                    |
+# -------------------------------------------------------------------
+#--------------------------------------------------------------------
+#     						   |DNS|
+#--------------------------------------------------------------------
+# Flush dns cache
+dscacheutil -flushcache
+
+#--------------------------------------------------------------------
+#     						 |IPCONFIG|
+#--------------------------------------------------------------------
+
+# Get DHCP info quickly
+# • Wifi
+$ ipconfig getpacket en1
+# • Ethernet
+$ ipconfig getpacket en0
+
+#--------------------------------------------------------------------
+#     						   |CURL|
+#--------------------------------------------------------------------
+$ echo $(curl '[URL]')
+$ printf "%s" $(curl 'file:/home/bz13/Bureau/android.html') # View page source.
+
+$ curl _O '[FILEURL]'  # Download file.
+
+$ curl -L -O -C - [URL] # Résumé un téléchargement.
+
+$ curl -sm1 [URL] | grep -o 'http://[^"]*jpg' | sort -u | wget -qT1 -i-
+# Télécharger tous les jpg d'une page.
+
+$ curl -u username --silent "https://mail.google.com/mail/feed/atom" | perl -ne 'print "\t" if /<name>/; print "$2\n" if /<(title|name)>(.*)<\/\1>/;'
+# Signaler les messages gmail non lus.
+
+## Verify privoxy conf
+Visit <http://p.p/> in a browser, or with Curl:
+```
+$ ALL_PROXY=127.0.0.1:8118 curl -I http://p.p/
+HTTP/1.1 200 OK
+Content-Length: 2401
+Content-Type: text/html
+Cache-Control: no-cache
+```
+
+#--------------------------------------------------------------------
+#     						   |WGET|
+#--------------------------------------------------------------------
+$ wget -m '[URL]'  # Faire un mirroir entier d'un site.
+
+$ wget -O - [URL] | grep -o '<a href=['"'"'"][^"'"'"']*['"'"'"]' | sed -e 's/^<a href=["'"'"']//' -e 's/["'"'"']$//'
+# Extract All URL in html file
+
+$ cat url-list.txt | xargs wget –c # Télécharger toutes les sites mentionnés # dans un fichier txt
+$ wget -c -r -l1 -R wav,iso,dmg [URL] # résumable, récursif, 1er niveau, # fichiers wav,iso,dmg exclus.
+
+$ wget -r -l1 -H -nd -A mp3 -e robots=off http://example/url
+# Copier tous les mp3 d'un site.
+
+
+$ wget -r -l1 -H -t1 -nd -N -np -A "*.mp3" -erobots=off -i mp3_sites.txt
+# Télécharge de façon récursive tous les mp3, renvoyés par la liste d'url
+# contenu dans le fichier mp3_sites.txt,qui sont nouveaux vis-à-vis de
+# ceux déjà téléchargés.
+
+$ wget -q -O - `youtube-dl -b -g $url`| ffmpeg -i - -f mp3 -vn -acodec libmp3lame -| mpg123  -
+# Jouer un mp3 depuis youtube sans le télécharger.
+
+# Google Translate
+translate(){ wget -qO- "http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&q=$1&langpair=$2|${3:-en}" | sed 's/.*"translatedText":"\([^"]*\)".*}/\1\n/'; }
+#-------------------------------------------------------------------
+#     						   |LYNX|
+#-------------------------------------------------------------------
+$ lynx -dump http://www.domain.com | awk '/http/{print $2}'
+$ lynx -dump -listonly [URL]  # Extraire les liens d'une page web.
+
+$ mp3=$(lynx -dump [URL] | grep 'http://' | awk '/mp3/{print $2}')
+&& for i in $mp3;do wget $i; done # Download all mp3.
+
+$ lynx -dump -head http://www.example.com/  # Dump html header.
+
+$ lynx -accept_all_cookies -cmd_script=/your/keystroke-file  # automatiser le surf.
+#=========================================================================
+## END |||| NETWORK COMMANDS ||||

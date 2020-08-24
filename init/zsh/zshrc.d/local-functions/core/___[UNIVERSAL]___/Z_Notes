@@ -1,0 +1,541 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# notes :
+# Author: Zucchelli Bryan
+# nov 07 2016
+
+# -----------------------------------------------------------------------------
+# Tool for searching and manipulating "notes" stored in markdown-formatted
+# text files. See the USAGE section below for details on running this script.
+#
+# I recommend adding the following to your `.zshrc` (or equivalent):
+#
+#     export NOTEDIR=$HOME/Dropbox/Notes
+#     export NOTEDEST=$HOME/Sites/Notes
+#
+#     alias notes-find="notes -a find"
+#     alias notes-view="notes -a view"
+#     alias notes-list="notes -a list"
+#     alias notes-show="notes -a find -f"
+#     alias notes-export="notes -a export"
+#
+# These alias make tab-completion a wee bit easier.
+# -----------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 22/07/17 :
+# • Make options : view export show html-view match !
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 22/07/17 :
+# • Create this one.
+# 18/08/19 :
+# • Change presentation and structure of script.
+# • Move notes notes-problems notes-tag-helper from bin folder to
+#   functions core folder with this name : Z_notes Z_notes-problems Z_notes-tag-helper    
+# • Update 033_functions.core && update symlinks
+# • Make options : view list find match !
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local VERSION FCT_NAME BOLD OFFBOLD FORMAT EXTENSION_MATCHER OPENMETA MARKDOWN CONFIGDIR NOTEDIR NOTEDEST
+BOLD=`tput bold`
+OFFBOLD=`tput init`
+#FORMAT=r # This can be r for "raw", s for "simple", and f for "full"
+#FORMAT=s  # This can be r for "raw", s for "simple", and f for "full"
+FORMAT=f # This can be r for "raw", s for "simple", and f for "full"
+EXTENSION_MATCHER='\.[^\.]*$'
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+# Change these variables to suite yer fancy pants:
+#export OPENMETA=${OPENMETA:-openmeta}
+OPENMETA=${OPENMETA:-openmeta}
+MARKDOWN=`type -p multimarkdown || type -p markdown`
+#export CONFIGDIR=${CONFIGDIR:-$HOME/.notes}clear
+CONFIGDIR=${CONFIGDIR:-$HOME/.zsh/.notes}
+#export NOTEDIR=${NOTEDIR:-$ZDOT$HOME/Dropbox/Notes}
+NOTEDIR=${NOTEDIR:-$ZDOT/zshrc.d/local-functions/etc/notes/NotesDone}
+#export NOTEDEST=${NOTEDEST:-$HOME/Sites/Notes}
+NOTEDEST=${NOTEDEST:-$ZDOT/zshrc.d/local-functions/etc/notes/NotesWeb}
+
+
+## Change these variables to suite yer fancy pants:
+##export OPENMETA=${OPENMETA:-openmeta}
+export OPENMETA=${OPENMETA:-openmeta}
+export MARKDOWN=`type -p multimarkdown || type -p markdown`
+##export CONFIGDIR=${CONFIGDIR:-$HOME/.notes}clear
+export CONFIGDIR=${CONFIGDIR:-$HOME/.zsh/.notes}
+##export NOTEDIR=${NOTEDIR:-$ZDOT$HOME/Dropbox/Notes}
+export NOTEDIR=${NOTEDIR:-$ZDOT/zshrc.d/local-functions/etc/notes/NotesDone}
+##export NOTEDEST=${NOTEDEST:-$HOME/Sites/Notes}
+export NOTEDEST=${NOTEDEST:-$ZDOT/zshrc.d/local-functions/etc/notes/NotesOnair}
+
+#####
+#/!\#
+#####
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+ banner () {
+      clear
+      echo " ##############################################################################"
+      echo " #                                                                            #"
+      echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+      echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+      echo " #                                                                            #"
+      echo " #  Unless required by applicable law or agreed to in writing, software       #"
+      echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+      echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+      echo " #  See the License for the specific language governing permissions and       #"
+      echo " #  limitations under the License.                                            #"
+      echo " #                                                                            #"
+      echo " ##############################################################################"
+      echo ""
+ }
+
+help(){
+  echo "${RED}"
+  cat<<__EOF__
+
+This script searches through text files in the folder/directory:
+    $NOTEDIRZs if they were *notes*. This script can help you search and manipulate them.
+
+The first argument is an *action* that tells the script what to do:
+
+  * list      - Lists all of the note filenames. Useful with -t option.
+  * find      - Searches the notes that contain a particular string
+  * html-view - Converts a markdown formatted note into HTML. Opens in browser.
+  * view      - View note.
+  * all-tags  - List all of the tags used in all notes.
+  * export    - Export some notes as HTML into the directory:
+                   $NOTEDEST
+
+The command actions accept the following parameters:
+
+   -a <action> for specifying the action or command to do.
+   -n <name>   for working with files whose names match this argument
+   -t <tags>   for working with files that have all the tags given
+   -d <dir>    for specifying the export destination (overrides $NOTEDEST)
+   -r          for raw output format (full note names and whatnot)
+   -p          for print-printing the output (trimmed filenames)
+   -f          for displaying the entire note
+
+__EOF__
+echo ${NC}
+}
+#####
+#/!\#
+#####
+
+
+# -----------------------------------------------------------------------------
+# Helpful functions. Skip to the end to see us call these functions.
+# -----------------------------------------------------------------------------
+# Passing in a filename, this will return the tags associated with it.
+# Basically a simplified wrapper around the openmeta program.
+# Call it with backticks: `getTags "$FILENAME"`
+function getTags() {
+    ${OPENMETA:-openmeta} -t -p "$*" | sed 's/\/.*$//'
+}
+
+# This function will search the notes directory for files that match particular
+# name patterns and return this list. This makes all of the programs behave the
+# same way.
+function getAllNotes() {
+    local STAR='*'
+    if [ -n "$NAMES" ]; then
+        STAR="*$NAMES*"
+    fi
+# Uncomment for debugging.
+##############
+#set -x
+###############
+#
+    #echo $STAR
+    # clear
+    echo "${GREEN}All your notes :${NC}"
+    echo "${YEL}"
+     find "$NOTEDIR"  \( -iname "$STAR.txt"  -or -iname "$STAR.markdown"  -or -iname "$STAR.md"  \) -and \! -iname "*conflicted copy*"  -and \! -iname "Interim Note-Changes*"  -and \! -iname 'journal*' 
+#   find "$NOTEDIR"  \( -iname "$STAR.txt"  -or -iname "$STAR.markdown"  -or -iname "$STAR.md"  \)  | sed 's/.*_[0-9]*//' | sed 's/^[ \t]*//;s/[ \t]*$//'
+    #find "$NOTEDIR"  \( -iname "$STAR.txt"  -or -iname "$STAR.markdown"  -or -iname "$STAR.md"  \)  | sed 's/.*_[0-9]*//'
+
+    echo "${NC}"
+   echo $LIST
+     for fif in $LIST; do
+    #     # if [[ ${fif#??} == "" ]]; then
+             echo "${fif}" 
+         # fi
+     done
+}
+
+# Similar to getAllNotes, but limits the the full names returned to those files
+# that contain all the tags specified on the command line "-t" option.
+function getNotes() {
+    if [ -z "$TAGS" -a -z "$NAMES" ]   # Optimization
+    then
+        getAllNotes
+    else
+        getAllNotes | while read FILE
+        do
+            local GOT_TAGS=0
+            local GOT_NAMES=0
+            if [ -n "$TAGS" ]; then
+                if getTags "$FILE" | grep "$TAGS" >/dev/null
+                then
+                    GOT_TAGS=1
+                fi
+            else
+                GOT_TAGS=1
+            fi
+            if [ -n "$NAMES" ]; then
+                if echo "$FILE" | grep "$NAMES"; then
+                    GOT_NAMES=1
+                fi
+            else
+                GOT_NAMES=1
+            fi
+            if [ "$GOT_TAGS" = "1" -a "$GOT_NAMES" = "1" ]
+            then
+                echo "$FILE"
+            fi
+        done
+    fi
+}
+
+# Trims a filename to just the basename regardless of the extension that
+# may be associated with it.
+function baseName() {
+    basename "$*" | sed "s/$EXTENSION_MATCHER//"
+}
+
+# -----------------------------------------------------------------------------
+
+# List the filenames in the notes directory. This can be limited by
+# tags. Otherwise, we either print the full filename (in raw mode),
+# or just the names of the files (without extensions) in pretty mode.
+function listFiles() {
+    case "$FORMAT" in
+        q)  getNotes;;
+        *)  getNotes | while read FILE
+            do
+                basename "$FILE"
+            done
+    esac
+}
+
+# Uses egrep to look through either all files or only the files that
+# match a particular tag. In pretty mode, we display some of the
+# context.
+function findFiles() {
+    export SEARCH="$*"
+    # echo "SEARCH= $SEARCH"
+    # echo ""
+    case "$FORMAT" in
+        q)
+            echo "search q"
+            # clear
+#####
+#/!\# 21/07/2019
+#####
+            # GREP="/usr/bin/egrep --files-with-matches --ignore-case"
+            #GREP="command grep -H -i"
+            GREP="grep"
+            getNotes | while read FILE
+            do
+                # echo "FILE= $FILE"
+                #"$GREP" "$SEARCH" "$FILE"
+                egrep -H -i "$SEARCH" "$FILE"
+                # egrep  --files-with-matches --ignore-case "$SEARCH" "$FILE"
+            done
+            ;;
+        s)
+            echo "search s"
+            # clear
+            # GREP="egrep --context=1 --color=always --ignore-case --max-count=1"
+            getNotes | while read FILE; do
+                # echo "GREP= $GREP"
+                # echo "SEARCH= $SEARCH"
+                #RESULTS=`$GREP $SEARCH $FILE`
+                # local RESULTS=`egrep --context=1 --color=always --ignore-case --max-count=1 "$SEARCH" "$FILE" 2>/dev/null | sed 's/^/  /'`
+
+                # echo $?
+                if [[ $? -eq 0 ]]; then
+                    if  [[ $(egrep --context=1 --color=always --ignore-case --max-count=1 "$SEARCH" "$FILE" 2>/dev/null) ]] ; then
+#                   if [[ $? -eq 0 ]]; then
+                        echo "------------------------------------------------------------------------------------------------------------"
+                        echo $BOLD`basename "$FILE"` $OFFBOLD
+                        echo "------------------------------------------------------------------------------------------------------------"
+                        # echo "$RESULTS" | sed 's/^/  /'
+                        egrep --context=1 --color=always --ignore-case --max-count=1 "$SEARCH" "$FILE" 2>/dev/null | sed 's/^/  /' 
+                        echo ""
+                        # echo "--ZBOOB1"
+                        echo "------------------------------------------------------------------------------------------------------------"
+                        echo ""
+                    fi
+                elif 
+                    echo "$FILE" | grep --ignore-case "$SEARCH" >/dev/null
+                    #echo "--ZBOOB2"
+
+                then
+                    echo $BOLD`basename "$FILE"` "$OFFBOLD"
+                    # echo "--ZBOOB3"
+                fi
+#            done | ${PAGER:-less -r}
+            unset RESULTS
+            done 
+            ;;
+        f)
+            echo "search f"
+            # clear
+            GREP="egrep --ignore-case --files-with-matches"
+            PAGER_OPTS="-r"
+            if [ -n "$SEARCH" ]; then
+                PAGER_OPTS="-r --pattern='$SEARCH'"
+            fi
+            local RESULTATS=`egrep --context=1 --color=always --ignore-case "$SEARCH" "$FILE" 2>/dev/null | sed 's/^/  /'`
+            # clear
+            getNotes | while read FILE; do
+                #if [ $(egrep --context=1 --color=always --ignore-case "$SEARCH" "$FILE") ] ; then
+                 # if  [ "$RESULTATS" ] ; then
+                # if [[ $(egrep --ignore-case --files-with-matches "$SEARCH" "$FILE") ]] || [[ $(echo "$FILE" | grep --ignore-case "$SEARCH" ) ]]; then
+                 if [[ $(egrep --files-with-matches "$SEARCH" "$FILE" 2>/dev/null) ]]; then
+                    echo "------------------------------------------------------------------------------------------------------------"
+                    echo $BOLD`basename "$FILE"`$OFFBOLD
+                    echo "------------------------------------------------------------------------------------------------------------"
+                    # cat "$FILE"
+                    egrep --context=1 --color=always  "$SEARCH" "$FILE" 2>/dev/null | sed 's/^/  /' 
+                    grep -riw  "$SEARCH" "$FILE" 2>/dev/null | sed 's/^/  /' 
+                    #egrep --ignore-case --files-with-matches "$SEARCH" "$FILE"
+                    # echo "------------------------------------------------------------------------------------------------------------"
+                    echo ""
+                fi
+#            done | ${PAGER:-less} "$PAGER_OPTS"
+             done #| less
+             unset RESULTS
+            ;;
+    esac
+}
+
+# Loop over all of the matching files offering to convert and
+# display each one. Useful only if -t and -n options. ;-)
+function viewFilesHtml() {
+    SAVEIFS=$IFS
+    IFS=$(echo -en "\n\b")
+    IDX=0
+    for FILE in `getNotes`
+    do
+        BASE=`basename "$*"`
+        echo ""
+        echo -ne "${WG}Found '$BASE'. Use it? [y/n]${NC}"
+        read answer
+        if [ "$answer" = "y" ]
+        then
+            OUT="/tmp/exported-note-$IDX.html"
+            $MARKDOWN --output "$OUT" "$FILE"
+            open -F "$OUT"
+            IDX=`expr $IDX + 1`
+        fi
+    done
+    IFS=$SAVEIFS
+}
+
+#####
+#/!\#
+#####
+# Loop over all of the matching files offering to convert and
+# display each one. Useful only if -t and -n options. ;-)
+function viewFiles() {
+    SAVEIFS=$IFS
+    IFS=$(echo -en "\n\b")
+    IDX=0
+     local BASE=''
+     local ARG=''
+    for FILE in $(getAllNotes)
+    do
+            ARG="$*"
+#####
+#/!\#. 21/07/2019 Funckin'g patch
+#####
+            #BASE=$(baseName "$FILE")
+            #local BASE=$(basename "$FILE")
+            BASE=$(basename "$FILE")
+            #BASE="$FILE"
+#####
+#/!\#
+#####
+           #######################
+           # echo $FILE
+           # echo ""
+           # echo "----------------"
+           # echo "ARG= $ARG"
+           # echo "----------------"
+           # echo "BASE= $BASE"
+           # echo "----------------"
+           # echo ""
+           #######################
+           if [[ $BASE == $ARG ]]; then
+                echo -ne "${WG} Found '$BASE'${NC}. Use it? [y/n] "
+                read answer
+                if [ "$answer" = "y" ] 
+                then
+                    $EDITOR ${FILE}
+                    IDX=`expr $IDX + 1`
+                    Z_notes
+                 fi
+           fi  
+    done
+    IFS=$SAVEIFS
+}
+#####
+#/!\#
+#####
+
+# Loops through all specified files and converts them into HTML
+# using markdown. It writes them into the $DIRDEST directory.
+function exportFiles() {
+    TEMPLATE=$(cat $CONFIGDIR/template.html)
+    getNotes | while read FILE
+    do
+        TITLE=$(baseName $FILE)
+        NEW=$(baseName "$FILE" | sed 's/ /-/g')
+        OUT="$NOTEDEST/$NEW.html"
+        BODY=$($MARKDOWN "$FILE")
+
+        export STYLES=""
+        export SCRIPTS=""
+        for T in $(getTags "$FILE")
+        do
+            if [ -f "$NOTEDEST/css/$T.css" ]
+            then
+                STYLES="$STYLES<link type='text/css' href='css/$T.css' rel='stylesheet'/>"
+            fi
+            if [ -f "$NOTEDEST/js/$T.js" ]
+            then
+                SCRIPTS="$SCRIPTS<script type='text/javascript' href='js/$T.js'></script>"
+            fi
+        done
+
+        echo "Creating $OUT"
+
+        # Why sure we could use a fancy templating language, but that wouldn't
+        # be necessary for such a simple task as this. We'll just use perl.
+        echo $TEMPLATE \
+            | perl -p -e "s|\{\{TITLE\}\}|$TITLE|g; s|\{\{STYLES\}\}|$STYLES|g; s|\{\{SCRIPTS\}\}|$SCRIPTS|g; s|\{\{BODY\}\}|${BODY}|g"       > "$OUT"
+    done
+}
+
+function listTags() {
+    echo "TODO: List all the tags used."
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+#if [[ "-z" '<' "$1" ]]    # The first argument could be the action
+if [[ -z < "$1" ]]    # The first argument could be the action
+then                    # unless the first argument is a dash option
+    ACTION=$1;
+    shift 1
+# else
+#     echo DEBUG
+fi
+
+# Let's part the command-line arguments looking for options:
+#   -a <action> for specifying the action or command to do.
+#   -n <name>   for working with files that match a filename
+#   -t <tag>    for specifying a tag
+#   -d <dest>   for overriding the NOTEDEST variable
+#   -r          for raw output format (full note names and whatnot)
+#   -p          for print-printing the output (trimmed filenames)
+
+while getopts "a:t:n:d:rpf" o
+do  case "$o" in
+        a)  ACTION="$OPTARG";;
+        t)  TAGS="$OPTARG";;
+        n)  NAMES="$OPTARG";;
+        d)  NOTEDEST="$OPTARG";;
+        q)  FORMAT=q;;
+        p)  FORMAT=p;;
+        f)  FORMAT=f;;
+      #?)  echo >&2 "Usage: $0 [-a] <action> [-r|-p] [-t <tags>] ..."
+      *)  echo >&2 "Usage: $0 [-a] <action> [-r|-p] [-t <tags>] ..."
+            echo >&2 "$USAGE"
+            return 1;;
+    esac
+done
+
+shift `expr $OPTIND - 1` 2>/dev/null
+##shift ${expr $OPTIND - 1}
+
+# if [[ -z "$ACTION" ]]     # If we still whaven't been given an action,
+# then                    # we assume the first string after the options
+#     ACTION=$1           # is the action.
+#     shift 1 2>/dev/null
+# fi
+
+# Call the function based on a command action given to us:
+case "$ACTION" in
+    find|grep)          # Searches the notes that contain a particular string
+        findFiles "$*"
+        return 1
+        ;;
+    list)               # Lists all of the notes.
+        listFiles
+        return 1
+        ;;
+    html-view)               # Converts a markdown formatted note into HTML.
+        viewFilesHtml $*;;
+
+    view)               # Converts a markdown formatted note into HTML.
+        viewFiles $*
+        return 1
+        ;;
+    export)           # Export some notes as HTML into a directory.
+        exportFiles
+        ;;
+    all-tags)           # List all of the tags used in all notes.
+        listTags
+        ;;
+    *)
+        echo >&2 " ${WB}No action specified.${NC}"
+        echo >&2 "   Usage: $0 [-a] <action> [-r|-p] [-t <tags>] ..."
+        echo >&2 "$USAGE"
+        return 0
+        ;;
+esac

@@ -1,0 +1,145 @@
+#compdef lwp-request
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _lwp-request  :
+# Completion for lwp-request. Simple command line user agent.
+# XXX probably can do excludes on various incompatible or overlapping options
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 02/08/2020 :
+#  • Create this one.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local curcontext="$curcontext" state line
+typeset -A opt_args
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                     COMPLETION
+#----------------------------------------------------------------------------------------#
+# could use '-s -w', but that makes lwp-request -H harder to complete
+_arguments -C -s \
+  '-C[username and password for basic auth]:userpass:->userpass' \
+  '-E[print response status chain with full headers]' \
+  '*-H[send a custom HTTP header]:header:->header' \
+  '-P[do not load env proxy settings]' \
+  '-S[print response status chain]' \
+  '(-u)-U[print request headers, method, and abs URL]' \
+  '-a[set ASCII mode for I/O]' \
+  '-b[base URI for relative URIs]:baseuri:_urls' \
+  '-c[set Content-Type for the request]:content-type:' \
+  '-d[do not print response content]' \
+  '-e[print response headers]' \
+  '-f[force request through]' \
+  '(- *)-h[display help]' \
+  '-i[set If-Modified-Since from file as literal date]:file-or-date:_files' \
+  '-m[HTTP method]:method:(GET HEAD POST PUT DELETE TRACE OPTIONS)' \
+  '-o[output format]:format:(dump html links ps text)' \
+  '-p[proxy-url]:proxy-url:_urls' \
+  '-s[print response status code]' \
+  '-t[timeout]:timeout:' \
+  '-u[print request method and abs URL]' \
+  '(- *)-v[print version]' \
+  '(-)1:url:_urls' \
+  && return 0
+
+case "$state" in
+  # shamelessly stolen from Mikachu-enhanced patch to _wget completion
+  header)
+    local -a headers
+    headers=(
+             Accept{,-{Charset,Encoding,Language,Datetime}}
+             Authorization
+             Cache-Control
+             Connection
+             Cookie
+             Content-{Length,MD5,Type}
+             Date
+             Expect
+             From
+             Host
+             If-Match
+             If-Modified-Since
+             If-None-Match
+             If-Range
+             If-Unmodified-Since
+             Max-Forwards
+             Pragma
+             Proxy-Authorization
+             Range
+             Referer
+             TE
+             Upgrade
+             User-Agent
+             Via
+             Warning
+             X-Requested-With
+             X-Do-Not-Track
+             DNT
+             X-Forwarded-For
+             X-ATT-DeviceId
+             X-Wap-Profile
+             )
+    # XXX this can emit two spaces, only the first of which is
+    # escaped, forcing the user to rubout one. Ideally would only
+    # generate one space.
+    headers=($^headers\\:\ )
+    _describe -t header 'HTTP header' headers
+  ;;
+
+  # and this I cargo culted mostly from _chown
+  userpass)
+    if compset -P '*[:]'; then
+      _message -e password password
+    else
+      if compset -S '[:]*'; then
+        suf=()
+      else
+        suf=( -qS ':' )
+      fi
+      _users "$suf[@]" && return 0
+    fi
+  ;;
+
+esac
+
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:
+### }}}

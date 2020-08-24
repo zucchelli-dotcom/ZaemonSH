@@ -1,0 +1,48 @@
+### python / zeesh! plugin
+
+fpath=( $plugin_dir/func $plugin_dir/comp $fpath )
+autoload -U $plugin_dir/func/*(:t) $plugin_dir/comp/*(:t)
+
+## exports
+if [ -e ~/.pythonrc ]; then
+    export PYTHONSTARTUP=~/.pythonrc
+fi
+
+## aliases
+alias py=python
+alias ipy=ipython
+alias pyinstall='python setup.py install'
+alias pipi='pip install'
+alias pipu='pip install -U'
+pipr(){
+    if [ $1 ]; then
+        pip install -r $@
+    else
+        pip install -r requirements.txt
+    fi
+}
+alias smtpconsole='python -m smtpd -n -c DebuggingServer localhost:1025'
+alias serve-this='python -m SimpleHTTPServer'
+
+## functions
+pjson() {
+    python -mjson.tool
+}
+
+ipy-pdb() {
+    ipython -pdb -c "%run $1"
+}
+
+noipy() {
+    export NOIPYTHON=1
+    python
+    unset NOIPYTHON
+}
+
+py-upgrade() {
+    pip freeze --local | cut -d = -f 1 | xargs echo pip install -U
+}
+
+pye(){ echo 'exec compile(''"'$@[1,-1]'"'', "<cmdline>", "single")' | python - }
+
+# vim: ft=zsh

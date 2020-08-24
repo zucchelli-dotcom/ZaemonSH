@@ -1,0 +1,101 @@
+#compdef chflags
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# 13/01/2017 :
+# Modified from that distributed for zsh BSD completions
+
+
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 08/01/2018 :
+#  • Modify completion presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local flags own='-g *(-u$EUID)'
+
+flags=(
+  '(noopaque)opaque[set the opaque flag]'
+  '(opaque)noopaque[unset the opaque flag]'
+  '(dump)nodump[set the nodump flag]'
+  '(nodump)dump[unset the nodump flag]'
+  '(nouappnd)uappnd[set the user append-only flag]'
+  '(uappnd)nouappnd[unset the user append-only flag]'
+  '(nouchg)uchg[set the user immutable flag]'
+  '(uchg)nouchg[unset the user immutable flag]'
+)
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------------------#
+#                                             COMPLETION
+#----------------------------------------------------------------------------------------------------#
+if (( ! EUID )); then
+  flags=( $flags[@]
+    '(noarch)arch[set the archived flag]'
+    '(arch)noarch[unset the archived flag]'
+    '(nosappnd)sappnd[set the system append-only flag]'
+    '(sappnd)nosappnd[unset the system append-only flag]'
+    '(noschg)schg[set the system immutable flag]'
+    '(schg)noschg[unset the system immutable flag]'
+  )
+  unset own
+fi
+
+if [[ $OSTYPE = (freebsd|dragonfly|darwin)* ]]; then
+  flags=( $flags[@]
+    '(nouunlnk)uunlnk[set the user undeletable flag]'
+    '(uunlnk)nouunlnk[unset the user undeletable flag]'
+    '(nohidden)hidden[set the hidden flag]'
+    '(hidden)nohidden[unset the hidden flag]'
+  )
+  (( EUID )) || flags=( $flags[@]
+    '(nosunlnk)sunlnk[set the system undeletable flag]'
+    '(sunlnk)nosunlnk[unset the system undeletable flag]'
+  )
+fi
+
+_arguments -s -A "-*" \
+  '(-L -P)-H[follow symlinks on the command line (specify with -R)]' \
+  '(-H -P)-L[follow all symlinks (specify with -R)]' \
+  '(-L -H)-P[do not follow symlinks (specify with -R)]' \
+  '-R[recurse directories]' \
+  ':file flag:_values -s , "file flags" $flags[@]' \
+  '*:file:_files "$own"'

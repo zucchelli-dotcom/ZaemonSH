@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Disabled</key>
+	<false/>
+	<key>Label</key>
+	<string>zsh.refresh.completion</string>
+	<key>OnDemand</key>
+	<true/>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/bin/touch</string>
+		<string>~/.zrefresh</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>ServiceDescription</key>
+	<string>Create the empty file ~/.zrefresh</string>
+	<key>WorkingDirectory</key>
+	<string></string>
+</dict>
+</plist>

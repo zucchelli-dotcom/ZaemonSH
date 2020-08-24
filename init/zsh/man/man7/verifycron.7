@@ -1,0 +1,16 @@
+.\" Manpage for verifycron.
+.\" Contact bryan.zucchellik@gmail.com to correct errors or typos.
+.TH verifycron 7 "06 Feb 2020" "ZaemonSH Universal" "universal ZaemonSH customization"
+.SH NAME
+verifycron \- Script checks a crontab file to ensure that it's formatted properly.
+.SH SYNOPSIS
+verifycron <usercrontabfile>
+.SH DESCRIPTION
+verifycron \- Script checks a crontab file to ensure that it's formatted properly.  Expects standard cron notation of min hr dom mon dow CMD where min is 0-59, hr 0-23, dom is 1-31, mon is 1-12 (or names) and dow is 0-7 (or names). Fields can have ranges (a-e), lists separated by commas (a,c,z), or an asterisk. Note that the step value notation of Vixie cron is not supported (e.g., 2-6/2).
+.SH OPTIONS
+The verifycron does not take any options.
+However, you can supply one to the God of man.
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)

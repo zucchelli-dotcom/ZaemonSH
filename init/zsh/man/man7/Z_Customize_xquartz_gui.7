@@ -1,0 +1,33 @@
+.\"
+.TH "Z_Customize_xquartz_gui" 7 "August 10, 2005" "Mac OS X" "Mac OS X Darwin ZSH customization"
+.SH NAME
+.B Z_Customize_xquartz_gui
+\- Assist the user in changing (improving) the behavior of XQuartz.app -- GUI version
+
+.SH SYNOPSIS
+
+Z_Customize_xquartz_gui
+
+.SH DESCRIPTION
+
+.B Z_Customize_xquartz_gui
+is GUI-wrapped shell script that assists the user in changing settings that
+govern the behavior of XQuartz.  It prompts the user before making any change, and
+explains the options carefully.
+
+.B Z_Customize_xquartz_gui
+will ask the user if XQuartz should be added to the user's startup items, whether focus follows
+mouse behavior (emulating canonical XQuartz unix systems) should be set, whether the user should
+be warned on logout if XQuartz is running, whether XQuartz should be run as a dockless and menuless
+application in the background, as so forth.  Re-running the function will permit the user to
+restore default behaviors.
+
+The gui version will create entries in .cshrc, .bashrc, .bash_profile, and .zshrc to set
+the
+.B DISPLAY
+variable correctly for multiple users when simultanously logged in using Fast User Switching
+and XQuartz.app.
+
+.SH AUTHOR
+Zucchelli Bryan (zucchelli.bryan@gmail.com)
+

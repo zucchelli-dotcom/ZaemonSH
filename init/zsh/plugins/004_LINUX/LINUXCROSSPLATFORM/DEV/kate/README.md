@@ -1,0 +1,1 @@
+# Kate / KDE developement IDE

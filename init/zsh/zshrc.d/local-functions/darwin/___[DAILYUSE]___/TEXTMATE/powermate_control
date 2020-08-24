@@ -1,0 +1,134 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# powermate_control :
+# Ben Holt
+# http://www.macosxhints.com/article.php?story=2007122622572152
+# Modified for most recent powermate version.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+
+
+function find_version {
+	if [[ -f  /Library/PreferencePanes/PowerMate.prefPane/Contents/Info.plist ]];then 
+        version_num=$(grep "PowerMate version" /Library/PreferencePanes/PowerMate.prefPane/Contents/Info.plist | awk '{print $3}' | perl -p -e 's|,||g')
+		
+		autoload -U is-at-least
+		if   is-at-least 2 $version_num   ;then
+			PM_app=PowerMateDaemon
+		else
+		    PM_app=PowerMateDriver
+		fi
+	else
+	    PM_app=PowerMateDriver
+	fi
+}
+
+function showMenu {
+	echo "${RED}"
+	echo "-----------------"
+	echo "PowerMate Control"
+	echo "-----------------"
+	echo "pulse x	= Pulse at x rate, from 0-100."
+	echo "on x	= Device stays on with brightness x, from 0-100."
+	echo
+	echo "These two settings are mutually exclusive."
+	echo ${NC)
+}
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+
+
+if [[ $# = 0 ]]; then
+    showMenu;
+fi
+
+arg=$1
+
+if [[ "$arg" = "pulse" ]]; then
+	num=$2
+	realnum=$(echo "scale=0; ($num * 20) / 100" | bc)	
+	find_version
+	osascript -e "tell application \"$PM_app\" to set pulse always to true"
+	osascript -e "tell application \"$PM_app\" to set pulse rate to $realnum"
+fi
+
+if [[ "$arg" = "on" ]]; then
+	num=$2
+	realnum=$(echo "scale=0; ($num * 255) / 100" | bc)
+	find_version
+	osascript -e "tell application \"$PM_app\" to set pulse always to false"
+	osascript -e "tell application \"$PM_app\" to set brightness to $realnum"
+fi
+
+

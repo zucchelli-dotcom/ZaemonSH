@@ -1,0 +1,1306 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-06-29 15:00+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../../kwcryptsetup:69
+msgid ""
+"Das Modul loop konnte nicht geladen werden. Wahrscheinlich besitzt Ihr "
+"Kernel kein loopback Device Support. Das Script beendet sich jetzt."
+msgstr ""
+
+#: ../../kwcryptsetup:106
+msgid "Container"
+msgstr ""
+
+#: ../../kwcryptsetup:107
+msgid "Laufwerke"
+msgstr ""
+
+#: ../../kwcryptsetup:108
+msgid "Schluessel"
+msgstr ""
+
+#: ../../kwcryptsetup:109
+msgid "LUKS"
+msgstr ""
+
+#: ../../kwcryptsetup:110
+msgid "TCRYPT"
+msgstr ""
+
+#: ../../kwcryptsetup:111
+msgid "Partition"
+msgstr ""
+
+#: ../../kwcryptsetup:112
+msgid "Swap"
+msgstr ""
+
+#: ../../kwcryptsetup:113
+msgid "start"
+msgstr ""
+
+#: ../../kwcryptsetup:114
+msgid "Status"
+msgstr ""
+
+#: ../../kwcryptsetup:115
+msgid "stop"
+msgstr ""
+
+#: ../../kwcryptsetup:116
+msgid "Management"
+msgstr ""
+
+#: ../../kwcryptsetup:117
+msgid "Datei"
+msgstr ""
+
+#: ../../kwcryptsetup:118
+msgid "Schluessel Script"
+msgstr ""
+
+#: ../../kwcryptsetup:119
+msgid "Geben Sie das Passwort fuer die Schluesseldatei ein."
+msgstr ""
+
+#: ../../kwcryptsetup:120
+msgid "Waehlen Sie ein Laufwerk aus."
+msgstr ""
+
+#: ../../kwcryptsetup:121
+msgid "Waehlen Sie ein oder mehrere Laufwerke aus."
+msgstr ""
+
+#: ../../kwcryptsetup:136
+#, sh-format
+msgid "$dst ist kein block Geraet."
+msgstr ""
+
+#: ../../kwcryptsetup:178
+#, sh-format
+msgid ""
+"Die Ueberpruefung von ${MAPPER}/${dst} ist fehlgeschlagen. Vielleicht ist "
+"das Passwort falsch oder falsche Argumente an das Checkscript ($CHECK) "
+"uebergeben.\n"
+"\n"
+"Das verschluesselte Geraet $dst wird entfernt."
+msgstr ""
+
+#: ../../kwcryptsetup:248
+#, sh-format
+msgid "$DST: Es ist kein Wert fuer die Option \"cipher\" vorhanden."
+msgstr ""
+
+#: ../../kwcryptsetup:256
+#, sh-format
+msgid "$DST: Dieser Wert ($VALUE) fuer \"size\" ist inkorrekt."
+msgstr ""
+
+#: ../../kwcryptsetup:265
+#, sh-format
+msgid "$DST: Es ist kein Wert fuer die Option \"hash\" vorhanden."
+msgstr ""
+
+#: ../../kwcryptsetup:273
+#, sh-format
+msgid "$DST: Es ist kein Wert fuer die Option \"offset\" vorhanden."
+msgstr ""
+
+#: ../../kwcryptsetup:281
+#, sh-format
+msgid "$DST: Es ist kein Wert fuer die Option \"skip\" vorhanden."
+msgstr ""
+
+#: ../../kwcryptsetup:299
+#, sh-format
+msgid "check $CHECK ist kein ausfuehrbares Script."
+msgstr ""
+
+#: ../../kwcryptsetup:318
+#, sh-format
+msgid "precheck $PRECHECK ist kein ausfuehrbares Script."
+msgstr ""
+
+#: ../../kwcryptsetup:325
+#, sh-format
+msgid "$DST: Die Option tries ist falsch gesetzt - wird auf $TRIES gesetzt."
+msgstr ""
+
+#: ../../kwcryptsetup:350
+#, sh-format
+msgid "$DST: Kein Wert fuer luksheader vorhanden."
+msgstr ""
+
+#: ../../kwcryptsetup:382
+#, sh-format
+msgid ""
+"$DST: Mehrere Optionen fuer die Entschluesselung von Schluesseln sind nicht "
+"zusammen erlaubt."
+msgstr ""
+
+#: ../../kwcryptsetup:386
+#, sh-format
+msgid "$DST: Es ist kein Wert fuer die Option \"keyscript\" vorhanden."
+msgstr ""
+
+#: ../../kwcryptsetup:396
+#, sh-format
+msgid "$DST: Das Script $VALUE ist nicht ausfuehrbar."
+msgstr ""
+
+#: ../../kwcryptsetup:403
+#, sh-format
+msgid "$DST: Kein Wert fuer keyslot vorhanden."
+msgstr ""
+
+#: ../../kwcryptsetup:449
+#, sh-format
+msgid "$dst: Das Laufwerk wurde schon gestoppt."
+msgstr ""
+
+#: ../../kwcryptsetup:456
+#, sh-format
+msgid "$dst: Es gab einen Fehler (?)."
+msgstr ""
+
+#: ../../kwcryptsetup:473
+#, sh-format
+msgid "$dst: Die Major oder Minor Nummer des Laufwerks wurde nicht erkannt!."
+msgstr ""
+
+#: ../../kwcryptsetup:479
+#, sh-format
+msgid "$dst: Das verschluesselte Laufwerk konnte nicht ausgebunden werden."
+msgstr ""
+
+#: ../../kwcryptsetup:518
+#, sh-format
+msgid "$dst: Vermisse Parameter."
+msgstr ""
+
+#: ../../kwcryptsetup:545
+#, sh-format
+msgid "$dst: Das Quell Laufwerk $src ist nicht vorhanden."
+msgstr ""
+
+#: ../../kwcryptsetup:552
+#, sh-format
+msgid "$dst: Das Laufwerk laeuft bereits."
+msgstr ""
+
+#: ../../kwcryptsetup:571
+#, sh-format
+msgid "$dst: Die Aktivierung ist fehlgeschlagen."
+msgstr ""
+
+#: ../../kwcryptsetup:609
+msgid "Es ist kein verschluesseltes Laufwerk vorhanden."
+msgstr ""
+
+#: ../../kwcryptsetup:632
+#, sh-format
+msgid "$dst: Es wurde keine Schluesseldatei gefunden."
+msgstr ""
+
+#: ../../kwcryptsetup:639
+#, sh-format
+msgid "$dst: LUKS arbeitet nicht mit zufaelligen Daten als Schluessel."
+msgstr ""
+
+#: ../../kwcryptsetup:646
+#, sh-format
+msgid "$dst: TCRYPT arbeitet nicht mit zufaelligen Daten als Schluessel."
+msgstr ""
+
+#: ../../kwcryptsetup:654
+#, sh-format
+msgid "$dst: UNSICHERER EIGENTUEMER fuer den Schluessel $key."
+msgstr ""
+
+#: ../../kwcryptsetup:668
+#, sh-format
+msgid "$dst: UNSICHERER EIGENTUEMER GRUPPE fuer den Schluessel $key."
+msgstr ""
+
+#: ../../kwcryptsetup:680
+#, sh-format
+msgid "$dst: UNSICHERER MODUS fuer den Schluessel $key."
+msgstr ""
+
+#: ../../kwcryptsetup:712
+msgid "$dst: ${LUKSHEADER:-$src} ist keine LUKS Partition."
+msgstr ""
+
+#: ../../kwcryptsetup:731 ../../kwcryptsetup:855
+#, sh-format
+msgid "Geben Sie einen vorhandenen Schluessel fuer das Laufwerk \"$dst\" ein."
+msgstr ""
+
+#: ../../kwcryptsetup:771 ../../kwcryptsetup:836
+#, sh-format
+msgid "Die Vorueberpruefung von $src ist fehlgeschlagen: $pre_out."
+msgstr ""
+
+#: ../../kwcryptsetup:800
+#, sh-format
+msgid "Geben Sie einen Schluessel fuer das Laufwerk \"$dst\" ein."
+msgstr ""
+
+#: ../../kwcryptsetup:1030
+msgid ""
+"Es ist kein Status Eintrag vorhanden. Ueberpruefen Sie ihre Konfiguration (/"
+"etc/crypttab)!"
+msgstr ""
+
+#: ../../kwcryptsetup:1075
+msgid "Waehlen Sie ein oder mehrere Laufwerke aus, die Sie starten wollen."
+msgstr ""
+
+#: ../../kwcryptsetup:1091
+msgid "Es sind alle verschluesselten Laufwerke aktiv."
+msgstr ""
+
+#: ../../kwcryptsetup:1108
+msgid ""
+"Waehlen Sie ein oder mehrere Laufwerke aus, die Sie stoppen wollen. Diese "
+"werden dann aus dem Dateisystem ausgebunden und gestoppt."
+msgstr ""
+
+#: ../../kwcryptsetup:1124
+msgid "Es sind keine aktiven verschluesselten Laufwerke vorhanden."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:16
+msgid "Ausrichtung"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:17
+msgid "Pruefung"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:18
+msgid "Pruefungsargumente"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:19
+#: ../../functions/kwcryptsetup/manage_keys:23
+msgid "Verschluesselung"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:20
+msgid "Discard"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:21
+msgid "Hash"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:22
+msgid "LUKS-Header"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:23
+msgid "Passwort-Zeit"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:24
+#: ../../functions/kwcryptsetup/luks_extension:24
+msgid "Schluesseldatei"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:27
+msgid "Schluesselgroesse"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:28
+msgid "Schluessel Slot"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:29
+msgid "Mountverz."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:30
+msgid "Noauto"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:31
+msgid "Verzoegerung"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:32
+msgid "Offset"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:33
+msgid "Vorpruefung"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:34
+msgid "still"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:35
+msgid "nur lesen"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:36
+msgid "Groesse"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:37
+msgid "Skip"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:42
+msgid "TCRYPT verstecken"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:44
+msgid "Timeout"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:45
+msgid "Tmpfs"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:46
+msgid "Wiederholungen"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:47
+msgid "Passwort ueberpruefen"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:48
+msgid "gespraechig"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:134
+msgid "Geben Sie ein vielfaches von 512 Byte Sektoren ein (8 = 4096 Byte)."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:159
+msgid "Geben Sie die Argumente fuer das Pruefscript ein."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:171
+msgid "Geben Sie einen Algorithmus fuer die Verschluesselung ein."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:183
+msgid ""
+"Soll die Benutzung von Discard bei Anforderung an ein Device erlaubt werden "
+"(ja/nein)?"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:197
+msgid "Sie muessen schon eine Groesse von mehr als 2 MByte auswaehlen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:202
+msgid "Geben Sie die Groesse des Containers ein (>2MByte)."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:220
+msgid ""
+"Waehlen Sie einen Hashwert fuer die Passphrase aus (Standard ist sha512)."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:271
+msgid "Geben Sie bitte einen Namen fuer die Datei ein."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:327
+msgid "Soll die Erweiterung LUKS verwendet werden (ja/nein)?"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:341
+msgid "Soll die Erweiterung TCRYPT verwendet werden (ja/nein)?"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:368
+msgid ""
+"Soll das verschluesselte Laufwerk beim Start des Rechners ignoriert werden "
+"(ja/nein)?"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:380
+msgid ""
+"Geben Sie eine Zahl ein um wieviele Sektoren der 1. Sektor verschoben werden "
+"soll. Also ab welchem Sektor das original Laufwerk auf das verschluesselte "
+"Laufwerk abgebildet werden soll."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:392
+msgid "Soll das Laufwerk im Nur Lesemodus erstellt werden (ja/nein)?"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:404
+msgid "Soll die Passphrase nochmal ueberprueft werden (ja/nein)?"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:416
+msgid ""
+"Geben Sie die Zeit in Sekunden fuer den Passwort Prozess ein (Standard ist "
+"1)."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:441
+msgid "Waehlen Sie bitte die Schluesselgroesse aus (Standard ist 256)."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:475
+msgid ""
+"Soll beim starten des Laufwerks eine Warnung ausgegeben werden, wenn dieses "
+"nicht existiert (ja/nein)?"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:501
+msgid ""
+"Soll beim starten des Laufwerks eine Warnung unterdrueckt werden, wenn "
+"dieses nicht existiert (ja/nein)?"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:513
+msgid ""
+"Geben Sie die Zahl der Sektoren ein die uebersprungen werden sollen zur "
+"Berechnung des Initialisierungsvektors. Siehe Hilfe."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:525
+msgid "Soll ein verschluesseltes Swap-Laufwerk erstellt werden (ja/nein)?"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:540
+msgid ""
+"Waehlen Sie ein Dateisytem fuer das zu erzeugende verschluesselte Laufwerk "
+"aus."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:568
+msgid ""
+"Geben Sie den Timeout, in Sekunden, fuer die Passwort-Abfrage ein (Standard "
+"ist 5)."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:582
+msgid ""
+"Soll das verschluesselte Laufwerk beim Start des Rechners verzoegert "
+"erstellt werden, zum Beispiel nach dem erstellen von RAID Arrays (ja/nein)?"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:594
+msgid ""
+"Geben Sie ein, wie oft die Passphrasenabfrage versucht werden soll zu "
+"wiederholen (Standard ist 3)."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/kwcryptsetup_conf:606
+msgid "Waehlen Sie einen Standard Schluessel Slot aus."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:4
+msgid "Geben Sie eine ihrer Passphrasen ein die geloescht werden soll."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:5
+#, sh-format
+msgid "Geben Sie eine vorhandene Passphrase fuer das Laufwerk \"$DEVICE\" ein."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:6
+#, sh-format
+msgid "Geben Sie eine neue Passphrase fuer das Laufwerk \"$DEVICE\" ein."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:7
+#, sh-format
+msgid ""
+"Geben Sie eine vorhandene Passphrase fuer das Laufwerk \"$DEVICE\" ein, dann "
+"eine neue und wiederholen diese neue Passphrase im Feld darunter. Mit den "
+"Pfeiltasten koennen Sie zwischen den Eingabefeldern springen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:8
+msgid "LUKSinfo"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:9
+msgid "Schluessel addieren"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:10
+msgid "Schluessel aendern"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:11
+msgid "Schluessel loeschen"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:12
+msgid "Sicherung erstellen"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:13
+msgid "Sicherung zurueck"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:14
+msgid "schlafen"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:15
+msgid "aufwachen"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:16
+msgid "SLot loeschen"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:17
+msgid "SLots ausloeschen"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:19
+msgid "Verzeichnis"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:20
+msgid "Laufwerk"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:21
+msgid "Slots"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:22
+msgid "neue Schluesseldatei"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:23
+msgid "alte Schluesseldatei"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:30
+msgid "Sie muessen erst alle Menuepunkte mit Werten belegen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:38
+#, sh-format
+msgid "${Dev}: Sicherung ist fehlgeschlagen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:46
+#, sh-format
+msgid "Sie muessen erst ein $lv_Device auswaehlen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:54
+#, sh-format
+msgid "${Dev}: Das ausloeschen aller Schluessel Slots ist fehlgeschlagen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:61
+msgid "Es gibt keine freien Schluessel Slots mehr."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:67
+msgid ""
+"Der Schluessel Slot konnte nicht geloescht werden. Falsche Passphrase? Es "
+"wird abgebrochen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:73
+msgid "Das Restaurieren des LUKS Headers ist fehlgeschlagen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:81
+#, sh-format
+msgid "${Dev}: Das Schlafen legen des Laufwerks ist fehlgeschlagen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:204
+msgid ""
+"Es sind keine Luksinformationen vorhanden. Ueberpruefen Sie ihre "
+"Konfiguration (/etc/crypttab)!"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:262
+msgid "Waehlen Sie einen Schluessel Slot aus."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:399
+msgid "Das hinzufuegen einer neuen Passphrase ist fehlgeschlagen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:467
+msgid "Waehlen Sie einen Slot aus."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:484
+msgid "Es gibt keinen Schluessel Slot zum aendern."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:568
+#, sh-format
+msgid ""
+"Sie muessen mindestens neben dem Menuepunkt \"$lv_Keyscript\" auch den Punkt "
+"\"$lv_OldKeyFile\" mit einem Wert belegen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:623
+msgid "Das aendern der Passphrase ist fehlgeschlagen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:742
+msgid "Das Loeschen der Passphrase ist fehlgeschlagen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:949
+msgid "Es ist kein Laufwerk zum schlafen legen vorhanden."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:1024
+msgid "Es ist kein Laufwerk zum aufwecken vorhanden."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:1064
+msgid "Das Aufwachen des Laufwerks ist fehlgeschlagen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:1125
+msgid "Waehlen Sie ein oder mehrere Slots aus."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:1130
+msgid "VORSICHT! Es gibt nur noch 1 Schluessel Slot."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/luks_extension:1146
+msgid "Es gibt keinen Schluessel Slot zum loeschen mehr."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_cryptdisk:7
+msgid "Laufwerke_managen"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_cryptdisk:23
+msgid "vergroessern/verkleinern"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_cryptdisk:59
+#, sh-format
+msgid ""
+"Geben Sie bitte hier die Groesse ein, um die ihr LV vergroessert werden soll "
+"(1GiB = 1 GigaByte = 1024 MegaByte). Es sind noch \"$VG_FREE_SIZE_ME\" frei."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_cryptdisk:110
+#, sh-format
+msgid ""
+"Geben Sie die Groesse ein, um die das LV verkleinert werden soll (1GiB = 1 "
+"GigaByte = 1024 MegaByte). Diese LV besitzt insgesamt \"$LV_SIZE_ME\"."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_cryptdisk:198
+#, sh-format
+msgid ""
+"Geben Sie die Passphrase fuer das Laufwerk ${CRYPT_PREFIX}-${CRYPT_FILE} ein "
+"und wiederholen es im Feld darunter. Mit den Pfeiltasten koennen Sie "
+"zwischen den Eingabefeldern springen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_cryptdisk:246
+#, sh-format
+msgid "Status beim ueberschreiben von Laufwerk ${CRYPT_PATH}/${CRYPT_FILE}."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_cryptdisk:247
+#, sh-format
+msgid ""
+"Soll das Laufwerk ${CRYPT_PATH}/${CRYPT_FILE} mittels zufaelliger Werte "
+"uebershrieben werden (ja/nein)?\n"
+"\n"
+"Bei der Erstellung eines verschluesselten Containers muss das Laufwerk "
+"ueberschrieben/erstellt werden, falls es nicht existiert beziehungsweise die "
+"Groesse nicht stimmt."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_cryptdisk:277
+msgid ""
+"Die Groesse der vorhandenen Container Datei stimmt nicht mit der geforderten "
+"Groesse ueberein. Es wird jetzt abgebrochen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_cryptdisk:285
+#, sh-format
+msgid ""
+"Das Laufwerk ${CRYPT_PREFIX}-${CRYPT_FILE} konnte nicht erstellt werden."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_cryptdisk:301
+#, sh-format
+msgid ""
+"Sie koennen jetzt in die Datei /etc/fstab folgendes eintragen:\n"
+"${MAPPER}/${CRYPT_PREFIX}-${CRYPT_FILE}\tswap\tswap\tOPTIONEN\t0\t0"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_cryptdisk:309
+#, sh-format
+msgid ""
+"Sie koennen jetzt in die Datei /etc/fstab folgendes eintragen:\n"
+"${MAPPER}/${CRYPT_PREFIX}-${CRYPT_FILE}\tMOUNTPUNKT\t$TMPFS\tOPTIONEN\t0\t2"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_cryptdisk:323
+#, sh-format
+msgid ""
+"Sie koennen jetzt in die Datei /etc/fstab folgendes eintragen:\n"
+"${MAPPER}/${CRYPT_PREFIX}-${CRYPT_FILE}\tMOUNTPUNKT\t$FS\tOPTIONEN\t0\t2"
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_cryptdisk:360
+#, sh-format
+msgid ""
+"Das Laufwerk $CRYPT_FILE existiert schon. Soll es ueberschrieben werden (ja/"
+"nein)?\n"
+"\n"
+"Bei \\\"nein\\\" wird abgebrochen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_cryptdisk:385
+msgid "Geben Sie bitte einen Namen fuer den Container ein."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_cryptdisk:513
+msgid "Waehlen Sie ein Laufwerk/Container zum veraendern aus."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_cryptdisk:589
+msgid "Waehlen Sie ein oder mehrere Laufwerke/Container zum loeschen aus."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_keys:43
+msgid ""
+"Geben Sie den Dateinamen fuer die Schluesseldatei ein. Bedenken Sie das bei "
+"\"gpg\" Verschluesselung die Dateiendung .gpg mit angegeben werden muss."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/manage_keys:97
+#, sh-format
+msgid ""
+"Geben Sie eine $KEY_CRYPT Passphrase zum verschluesseln der Schluesseldatei "
+"ein und wiederholen es im Feld darunter. Mit den Pfeiltasten koennen Sie "
+"zwischen den Eingabefeldern springen."
+msgstr ""
+
+#: ../../functions/kwcryptsetup/no_luks_cryptdev_msg:3
+msgid "Es ist kein verschluesseltes Laufwerk, mit LUKS Erweiterung, vorhanden."
+msgstr ""
+
+#: ../../help/kwcryptsetup/change_help:3
+msgid ""
+"Veraendern von einem verschluesselten Laufwerk. Dabei werden die\n"
+"Eintraege der Konfigurationsdatei /etc/crypttab benutzt.\n"
+msgstr ""
+
+#: ../../help/kwcryptsetup/conf_help:3
+msgid ""
+"In diesem Konfigurationsmenue koennen Sie Standard Einstellungen\n"
+"taetigen.\n"
+"\n"
+"Ausrichtung: Geben Sie ein vielfaches von 512 Byte Sektoren ein\n"
+"\\t(8 = 4096 Byte). Das dient fuer die \"stripe\" Option auf\n"
+"\\tRAID Laufwerken oder Logischen Volumes (LVM). Lesen Sie\n"
+"\\tdazu man 8 mkfs.xfs.\n"
+"\n"
+"Groesse: Geben Sie die Groesse des Containers ein. Standard Block-\n"
+"\\tgroesse ist 1 KiloByte. Die Groesse der zu\n"
+"\\terstellenden verschluesselten Datei (Container) muss \n"
+"\\tgroesser als 2 MByte sein (LUKS-Header). Sie koennen als\n"
+"\\tMasseinheit folgende Zeichen benutzen, k|K-KiloByte,\n"
+"\\tm|M-MegaByte,g|G-GigaByte, t|T-TerraByte oder p|P-Petabyte.\n"
+"\n"
+"Verschluesselung: Eingabe des Algorithmus fuer die Verschluesselung.\n"
+"\\tSiehe cryptsetup --help und /proc/crypto.\n"
+"\n"
+"Hash: Auswahl des Hashwertes der fuer die Passphrase verwendet\n"
+"\\twerden soll (Standard ist sha512)?\n"
+"\n"
+"LUKS: Soll standardmaessig die Luks Erweiterung, zur\n"
+"\\tVerschluesselung des Laufwerks, benutzt werden (ja/nein)?\n"
+"\n"
+"LUKS-Header: Wenn der Luksheader auf ein extra Laufwerk oder eine\n"
+"\\tDatei geschrieben werden soll kann man dies hier auswaehlen.\n"
+"\n"
+"TCRYPT: Soll standardmaessig die Tcrypt Erweiterung, zur\n"
+"\\tVerschluesselung des Laufwerks, benutzt werden (ja/nein)?\n"
+"\n"
+"Mountverz.: Mountverzeichnis auswaehlen. Dieses Verzeichnis muss\n"
+"\\tschon verher existieren und sollte in der Datei /etc/fstab\n"
+"\\tkonfiguriert sein. Dieses dient zum einbinden von externen\n"
+"\\tLaufwerken, die die externe Schluesseldatei enthalten.\n"
+"\n"
+"Offset: Geben Sie eine Zahl ein um wieviele Sektoren der 1. Sektor\n"
+"\\tverschoben werden soll. Ab diesem Sektor wird das Laufwerk auf das\n"
+"\\tverschluesselte Laufwerk abgebildet. Hat das original Laufwerk 10000\n"
+"\\tSektoren und \\\"Offset\\\" ist 300 wird das original Laufwerk ab Sektor\n"
+"\\t300 bis zum Ende auf das verschluesselte Laufwerk abgebildet. Siehe\n"
+"\\tauch die Option \\\"Skip\\\".\n"
+"\n"
+"nur lesen: Soll das Laufwerk im Nur Lesemodus erstellt werden\n"
+"\\t(ja/nein)? Kann man z.B. nutzen um eine verschluesselte\n"
+"\\tCD/DVD zu erstellen.\n"
+"\n"
+"Discard: Soll die Benutzung von Discard bei Anforderung an ein\n"
+"\\tDevice erlaubt werden (ja/nein)? Siehe man 8 cryptsetup.\n"
+"\n"
+"NOTIZ: Das Anschalten dieser Option sollte sorgfaeltig ueberlegt\n"
+"\\tsein, da es ein Sicherheitsrisiko sein kann.\n"
+"\n"
+"Passwort ueberpruefen: Soll die Passwort-Eingabe nochmal ueberprueft\n"
+"\\twerden (ja/nein)?\n"
+"\n"
+"Passwort-Zeit: Geben Sie die Zeit, in Mikrosekunden, fuer den\n"
+"\\tPasswort Prozess, ein (Standard ist 1).\n"
+"\n"
+"Schluesseldatei: Waehlen Sie hier die Datei aus, die den Schluessel\n"
+"\\tenthaelt. Wenn Sie keine Datei auswaehlen wird \\\"none\\\"\n"
+"\\tgenommen und Sie muessen die Passphrase interactiv uebergeben.\n"
+"\n"
+"NOTIZ: Bei Verwendung der LUKS Erweiterung koennen Sie bis zu 8 \n"
+"\\tPassphrasen in der Schluesseldatei verwenden. Soll beim Login\n"
+"\\tdas Laufwerk automatisch aktiviert werden, muss die\n"
+"\\tPassphrase gleich dem Login Passwort des Benutzers sein, und\n"
+"\\tSie benoetigen dazu pam-mount. Schauen Sie nach dem\n"
+"\\trichtigen Paketnamen in Ihrer Distribution nach.\n"
+"\\tWenn Sie bei diesem Szenario das Login Passwort aendern\n"
+"\\tmuessen Sie auch die Passphrase des Laufwerks aendern.\n"
+"\n"
+"Schluesselgroesse: Waehlen Sie bitte die Schluesselgroesse aus\n"
+"\\t(Standard ist 256 Bit)!\n"
+"\n"
+"Vorpruefung: Auswahl eines Script das den Inhalt des Quell-\n"
+"\\tLaufwerks ueberprueft. Ergibt die Pruefung Fehler wird das\n"
+"\\tLaufwerk nicht erstellt. Wird das Script ohne Pfad angegeben,\n"
+"\\twird es unter /lib/cryptsetup/checks gesucht. Unter Debian\n"
+"\\tist dies das Script \"un_blkid\".\n"
+"\n"
+"Pruefung: Auswahl eines Script das den Inhalt des Ziel-Laufwerks\n"
+"\\tueberprueft. Ergibt die Pruefung Fehler wird das Laufwerk\n"
+"\\tentfernt. Wird das Script ohne Pfad angegeben, wird es unter\n"
+"\\t/lib/cryptsetup/checks gesucht. Unter Debian ist dies das Script\n"
+"\\t\"blkid\".\n"
+"\n"
+"Pruefungsargumente: Eingabe der Argumente fuer das Script der\n"
+"\\tPruefung. Siehe auch man 5 crypttab.\n"
+"\n"
+"Schluessel Script: Auswahl eines Script das die Schluesseldatei als\n"
+"\\tArgument benutzt und dessen Ausgabe der Schluessel fuer das\n"
+"\\tLaufwerk ist. Folgende Variablen koennen vom Script benutzt werden:\n"
+"\\tCRYPTTAB_NAME - Name des Ziel-Laufwerks\n"
+"\\tCRYPTTAB_SOURCE - Name des Quell-Laufwerks\n"
+"\\tCRYPTTAB_KEY - Schluesseldatei\n"
+"\\tCRYPTTAB_TRIED - Anzahl der Wiederholungen seit dem starten des\n"
+"\\t\\tLaufwerks.\n"
+"\\tCRYPTTAB_OPTIONS - eine Liste der exportierten crypttab Variablen.\n"
+"\\tCRYPTTAB_OPTION_<option> - Der Wert der von der Datei \"crypttab\"\n"
+"\\t\\tbereitgestellten Option wird auf \"yes\" gesetzt, falls die\n"
+"\\t\\tOption nur ein Flag ist.\n"
+"\n"
+"Skip: Geben Sie eine Zahl ein wieviele Sektoren am Anfang des\n"
+"\\tverschluesselten Laufwerks zur Berechnung des\n"
+"\\tInitialisierungsvektor (IV) uebersprungen werden sollen. Die\n"
+"\\tBerechnung des IV behandelt Sektor 0 des verschluesselten\n"
+"\\tLaufwerks als waere es Sektor Skip=n. Dadurch kann man aus der\n"
+"\\tMitte eines verschluesselten Laufwerks ein Stueck rausschneiden\n"
+"\\tund es mit dem Schluessel des original Laufwerks immer noch korrekt\n"
+"\\tver- und vor allem entschluesseln, so dass dasselbe rauskommt, als\n"
+"\\thaette man Sektor n+Skip vom original Laufwerk ver- bzw.\n"
+"\\tentschluesselt.\n"
+"\n"
+"Swap: Soll ein verschluesseltes Swap-laufwerk erstellt werden\n"
+"\\t(ja/nein)?\n"
+"\n"
+"NOTIZ: Suspend-to-RAM und Suspend-to-Disk funtionieren mit einer\n"
+"\\tverschluesselten SWAP-Partition noch nicht. Die Community\n"
+"\\tarbeitet jedoch an diesem Problem.\n"
+"\n"
+"Tmpfs: Waehlen Sie ein Dateisytem fuer das zu erzeugende\n"
+"\\tverschluesselte Laufwerk aus. Dies kann zum Beispiel zum testen\n"
+"\\tgenutzt werden.\n"
+"\n"
+"Timeout: Geben Sie den Timeout, in Sekunden, fuer die Passwort-\n"
+"\\tAbfrage ein (Standard ist 5).\n"
+"\n"
+"Verzoegerung: Soll das verschluesselte Laufwerk beim Start des\n"
+"\\tRechners verzoegert erstellt werden, zum Beispiel nach dem\n"
+"\\terstellen von RAID Arrays (ja/nein)?\n"
+"\n"
+"Noauto: Soll das verschluesselte Laufwerk beim Start des Rechners\n"
+"\\tmanuell erstellt werden (ja/nein)? Also nicht automatisch.\n"
+"\n"
+"NOTIZ: Bei Benutzung von pam-mount sollten Sie immer \\\"nein\\\"\n"
+"\\tbenutzen, da es sonst zu Fehlern beim mounten des Laufwerks kommt.\n"
+"\\tDas verschluesselte Laufwerk darf noch nicht gestartet sein.\n"
+"\n"
+"gespaechig: Soll beim starten des Laufwerks eine Warnung ausgegeben\n"
+"\\twerden, wenn dieses nicht existiert (ja/nein)? Uberschreibt die\n"
+"\\tOption \"still\".\n"
+"\n"
+"still: Soll beim starten des Laufwerks keine Warnung ausgegeben\n"
+"\\twerden, wenn dieses nicht existiert (ja/nein)? Uberschreibt die\n"
+"\\tOption \"gespaechig\".\n"
+"\n"
+"Wiederholungen: Geben Sie ein, wie oft die Passphrasenabfrage\n"
+"\\tversucht werden soll zu wiederholen (Standard ist 3).\n"
+"\n"
+"Schluessel Slot: Auswahl eines Slots dessen Schluessel benutzt\n"
+"\\twerden soll.\n"
+msgstr ""
+
+#: ../../help/kwcryptsetup/create_help:3
+msgid ""
+"Erstellen von verschluesselten Laufwerken. Dabei wird die\n"
+"Konfiguration in die Datei /etc/crypttab eingetragen, damit diese\n"
+"auch automatisch (Boot) aktiviert werden koennte.\n"
+"\n"
+"Container: Ein verschluesseltes Datei-Image erstellen.\n"
+"\n"
+"Achtung: Erstellen Sie kein Journaling Dateisystem auf dem\n"
+"\\tContainer, wenn der Container auf einem Journaling Datei-\n"
+"\\tsystem liegt.\n"
+"\n"
+"Partition: Eine verschluesselte Partition, Logisches Volume (LV) oder\n"
+"\\tRAID Laufwerk erstellen.\n"
+"\n"
+"NOTIZ: Wenn das Laufwerk schon vorhanden ist, wird nachgefragt ob es\n"
+"\\tueberschrieben werden soll. Fuer das Einlesen der Optionen des\n"
+"\\tLaufwerks wird die Datei \"/etc/crypttab\" hergenommen.\n"
+msgstr ""
+
+#: ../../help/kwcryptsetup/del_help:3
+msgid ""
+"Loeschen von ein oder mehreren verschluesselten Laufwerken. Dabei\n"
+"werden auch die Eintraege der Konfigurationsdatei /etc/crypttab\n"
+"geloescht."
+msgstr ""
+
+#: ../../help/kwcryptsetup/help:3
+msgid ""
+"Mit kwcryptsetup koennen Sie Dateien oder Block Devices\n"
+"(Bsp. Partitionen) verschluesseln. Dafuer werden die Programme\n"
+"cryptsetup, dmsetup und losetup benutzt.\n"
+"\n"
+"NOTIZ: Um mehr als 8 Loop Devices benutzen zu koennen muessen Sie\n"
+"\\tdem Kernel den Parameter max_loop=Anzahl (<=255) uebergeben.\n"
+"\\tDas taetigen Sie am besten in der Konfiguration Ihres\n"
+"\\tBootloaders.\n"
+"\n"
+"Konfiguration: Konfiguration von kwcryptsetup. Standard Parameter\n"
+"\\tzum erstellen von verschluesselten Laufwerken.\n"
+"\n"
+"Status: Status der verschluesselten Laufwerken anzeigen. Es werden\n"
+"\\tdie Daten der /etc/crypttab benutzt, um das Laufwerk heraus\n"
+"\\tzubekommen.\n"
+"\n"
+"LUKS: Hier koennen Sie Schluessel addieren, aendern, loeschen,\n"
+"\\terstellen von Backups und wieder herstellen dieser, Laufwerke\n"
+"\\tschlafen legen und wieder aufwecken und natuerlich sich den\n"
+"\\tDump von verschluesselten Laufwerken mit LUKS Erweiterung\n"
+"\\tanschauen.\n"
+"\n"
+"Laufwerke: Hier koennen Sie verschluesselten Laufwerke anlegen,\n"
+"\\tveraendern oder loeschen.\n"
+"\n"
+"Schluessel: Hier koennen Sie einen Schluessel erstellen. Sie\n"
+"\\tkoennen diesen auch gleichzeitig mit gnupg oder openssl ver-\n"
+"\\tschluesseln, falls installiert.\n"
+"\n"
+"start: Starten von ein oder mehreren verschluesselten Laufwerke. Es\n"
+"\\twerden die Daten der /etc/crypttab benutzt, um das Laufwerk\n"
+"\\theraus zu bekommen.\n"
+"\n"
+"stop: Stoppen von ein oder mehreren verschluesselten Laufwerke. Es\n"
+"\\twerden die Daten der /etc/crypttab benutzt, um das Laufwerk\n"
+"\\theraus zu bekommen."
+msgstr ""
+
+#: ../../help/kwcryptsetup/key_size_help:3
+msgid ""
+"Hier koennen Sie eine Schluesselgroesse auswaehlen. Zur Verfuegung\n"
+"stehen 128, 192 und 256 Bit (kwcryptsetup Standard, siehe man 8 cryptsetup)."
+msgstr ""
+
+#: ../../help/kwcryptsetup/luks_addkey_help:3
+msgid ""
+"Hier koennen Sie eine Passphrase zu einem LUKS Laufwerk\n"
+"hinzufuegen.\n"
+"\n"
+"Laufwerk: Laufwerk das eine neue Passphrase bekommen soll. \n"
+"\n"
+"Slots: Auswahl eines nicht aktiven Slot dem die Passphrase\n"
+"\\thinzugefuegt werden sollen.\n"
+"\n"
+"NOTIZ: Sie muessen immer erst das Laufwerk auswaehlen, da nur von\n"
+"\\tdiesem die Slots ermittelt werden koennen.\n"
+"\n"
+"neue Schluesseldatei: Auswahl einer Schluesseldatei die die neue\n"
+"\\tPassphrase enthaelt. Falls Sie bisher ein Schluesselscript\n"
+"\\t(/etc/crypttab) benutzt hatten muss diese Datei in dem Format\n"
+"\\tvorliegen die das Schluesselscript auch bearbeiten kann.\n"
+"\n"
+"NOTIZ: Auswahl der Menuepunkte \"Slots\" und \"neue Schluesseldatei\"\n"
+"\\tsind optional. Bei keiner Auswahl des Slots wird der naechst\n"
+"\\tfreie Slot benutzt.\n"
+msgstr ""
+
+#: ../../help/kwcryptsetup/luks_bak_help:3
+msgid ""
+"Hier koennen Sie ein Backup des LUKS Header und dessen Schluessel\n"
+"Slots erstellen.\n"
+"\n"
+"Laufwerk: Laufwerke die gesichert werden sollen. \n"
+"\n"
+"Verzeichnis: Verzeichnis in dem die Backups gespeichert werden\n"
+"\\tsollen. Standard ist /lib/cryptsetup/backup. Die Backup Dateien\n"
+"\\tbesitzen die Namenskonvention Laufwerksname_Datum\n"
+"\\t(Bsp.: sda6_15.02.2014).\n"
+msgstr ""
+
+#: ../../help/kwcryptsetup/luks_changekey_help:3
+msgid ""
+"Hier koennen Sie eine Passphrase von einem LUKS Laufwerk\n"
+"aendern.\n"
+"\n"
+"Laufwerk: Laufwerk dessen Passphrase geaendert werden soll. \n"
+"\n"
+"Slots: Auswahl eines aktiven Slot von dem die Passphrase geaendert\n"
+"\\twerden soll.\n"
+"\n"
+"NOTIZ: Sie muessen immer erst das Laufwerk auswaehlen, da nur von\n"
+"\\tdiesem die Slots ermittelt werden koennen.\n"
+"\n"
+"Schluessel Script: Auswahl eines Script das die alte Schluesseldatei\n"
+"\\tals Argument benutzt und dessen Ausgabe der Schluessel fuer das\n"
+"\\tLaufwerk ist. Mit diesem Script wird auch die neue Schluesseldatei\n"
+"\\tbearbeitet.\n"
+"\n"
+"alte Schluesseldatei: Auswahl einer alten Schluesseldatei.\n"
+"\n"
+"NOTIZ: Auswahl des Menuepunktes \"alte Schluesseldatei\" kann\n"
+"\\toptional sein, z.B. wenn Sie kein Schluesselscript benutzen.\n"
+"\n"
+"neue Schluesseldatei: Auswahl einer Schluesseldatei die den neuen\n"
+"\\tSchluessel enthaelt. Ist optional.\n"
+msgstr ""
+
+#: ../../help/kwcryptsetup/luks_erase_help:3
+msgid ""
+"Hier koennen Sie LUKS Laufwerke so loeschen das man nie wieder\n"
+"Zugriff darauf hat.\n"
+"\n"
+"Laufwerk: Auswahl der Laufwerke bei denen unwiederufbar alle\n"
+"\\tSchluessel Slots geloescht werden sollen.\n"
+msgstr ""
+
+#: ../../help/kwcryptsetup/luks_help:3
+msgid ""
+"Achten Sie auf ihre Schluessel Slots und deren Passphrasen!\n"
+"\n"
+"LUKSinfo: Hier wird ein Dump fuer jedes verschluesselte Laufwerk\n"
+"\\tmit LUKS Erweiterung angezeigt. So kann man z.B. herraus-\n"
+"\\tfinden wieviele und welche Slots im Luks Header schon\n"
+"\\tvergeben sind.\n"
+"\n"
+"Schluessel addieren: Solange noch freie Schluessel Slots vorhanden\n"
+"\\tsind kann man Passphrasen hinzufuegen.\n"
+"\n"
+"Schluessel aendern: Hier koennen Sie die Passphrase von einem\n"
+"\\tSchluessel Slot aendern.\n"
+"\n"
+"Schluessel loeschen: Hier koennen Sie eine Passphrase loeschen.\n"
+"\\tDiese muessen Sie genau wissen oder Sie haben ein Schluesseldatei.\n"
+"\n"
+"NOTIZ: Achten Sie darauf das Sie nicht die Passphrase loeschen die\n"
+"\\tSie fuer den Zugriff aufs Laufwerk benoetigen. Merken Sie\n"
+"\\tsich diese! Bedenken Sie die Schluesseldatei!\n"
+"\n"
+"Sicherung erstellen: Erstellt ein Backup vom LUKS Header und\n"
+"\\tSchluessel Slot in eine spezifizierte Datei.\n"
+"\n"
+"Sicherung zurueck: Spielt ein Backup vom LUKS Header und der\n"
+"\\tSchluessel Slots, von einer spezifizierten Datei zurueck.\n"
+"\n"
+"NOTIZ: Achtung, Header und Schluessel Slots werden getauscht, nur\n"
+"\\tdie Passphrase vom Backup funktioniert nachtraeglich.\n"
+"\n"
+"schlafen: Laesst ein Laufwerk einschlafen. Der Schluessel wird aus\n"
+"\\tdem Kernel Speicher geloescht. IO Prozesse werden geblockt und\n"
+"\\tZugriffe auf das Device muessen (unendlich) warten.\n"
+"\n"
+"NOTIZ: Lassen Sie nie das Laufwerk einschlafen auf welchem das\n"
+"\\t\"cryptsetup\" Binary liegt.\n"
+"\n"
+"aufwachen: Weckt das schlafende Laufwerk wieder auf. Gibt es keine\n"
+"\\tSchluesseldatei muss man die dementsprechende Passphrase eingeben.\n"
+"\n"
+"Slot loeschen: Wenn der LUKS Header mehr als eine Passphrase\n"
+"\\tbesitzt werden hier die benutzten Schluessel Slots (Zahlen)\n"
+"\\tangeboten, um deren Passphrase zu loeschen. Dabei wird eine\n"
+"\\tvorhandene Passphrase abgefragt oder eine Schluesseldatei.\n"
+"\\tVORSICHT vor dem loeschen des letzten Schluessel Slots.\n"
+"\n"
+"Slots ausloeschen: Loescht unwiederrufbar alle Slots eines\n"
+"\\tLaufwerks.\n"
+msgstr ""
+
+#: ../../help/kwcryptsetup/luks_killslot_help:3
+msgid ""
+"Hier koennen Sie ein oder mehrere Slots eines LUKS Laufwerks\n"
+"loeschen.\n"
+"\n"
+"NOTIZ: Loeschen Sie nicht den letzten aktiven Slot und dessen\n"
+"\\tPassphrase, danach haben Sie keinen Zugriff mehr auf das\n"
+"\\tLaufwerk. Siehe auch man 8 cryptsetup.\n"
+"\n"
+"Laufwerk: Laufwerk von dem die Slots geloescht werden sollen. \n"
+"\n"
+"Slots: Auswahl der aktiven Slots die geloescht werden sollen. Es\n"
+"\\tkoennen nur aktive Slots geloescht werden, bzw. werden nur zur\n"
+"\\tAuswahl angeboten.\n"
+"\n"
+"NOTIZ: Sie muessen immer erst das Laufwerk auswaehlen, da nur von\n"
+"\\tdiesem die Slots ermittelt werden koennen.\n"
+msgstr ""
+
+#: ../../help/kwcryptsetup/luks_removekey_help:3
+msgid ""
+"Hier koennen Sie eine Passphrase von einem LUKS Laufwerk\n"
+"loeschen.\n"
+"\n"
+"Laufwerk: Laufwerk von dem eine Passphrase geloescht werden soll. \n"
+"\n"
+"Schluessel Script: Auswahl eines Script das die Schluesseldatei\n"
+"\\tbearbeitet, z. B. entschluesselt.\n"
+"\n"
+"Schluesseldatei: Schluesseldatei die den schluessel enthaelt der\n"
+"\\tgeloescht werden soll. Wird diese nicht angegeben muessen Sie\n"
+"\\tden genauen Schluessel eingeben.\n"
+msgstr ""
+
+#: ../../help/kwcryptsetup/luks_restore_help:3
+msgid ""
+"Hier koennen Sie ein Backup des LUKS Header und dessen Schluessel\n"
+"Slots wieder zurueck sichern.\n"
+"\n"
+"Laufwerk: Laufwerk das wieder hergestellt werden soll. \n"
+"\n"
+"Datei: Auswahl der Datei die das Backup enthaelt. Standardmaessig\n"
+"\\tliegen die Backups im Verzeichnis /lib/cryptsetup/backup. Die\n"
+"\\tBackup Dateien besitzen die Namenskonvention Laufwerksname_Datum\n"
+"\\t(Bsp.: sda6_15.02.2014).\n"
+msgstr ""
+
+#: ../../help/kwcryptsetup/luks_resume_help:3
+msgid ""
+"Hier koennen Sie LUKS Laufwerke aufwachen lassen.\n"
+"\n"
+"Laufwerk: Ein Laufwerk das aufgeweckt werden soll. Es werden nur\n"
+"\\tschlafende Laufwerke zur Auswahl angeboten. Dabei wird die\n"
+"\\t/etc/crypttab ausgewertet um Schluessel und Schluessel Script\n"
+"\\tzu erfahren. Gibt es diese nicht muessen Sie die Passphrase\n"
+"\\tmanuell eingeben.\n"
+msgstr ""
+
+#: ../../help/kwcryptsetup/luks_suspend_help:3
+msgid ""
+"Hier koennen Sie LUKS Laufwerke einschlafen lassen.\n"
+"\n"
+"Laufwerk: Laufwerke die schlafen gelegt werden sollen. Es werden nur\n"
+"\\tnicht schlafende Laufwerke zur Auswahl angeboten. \n"
+msgstr ""
+
+#: ../../help/kwcryptsetup/manage_help:3
+msgid ""
+"NOTIZ: Sie koennen keine verschluesselten Laufwerke auf bestimmten\n"
+"\\tBlockgeraeten erstellem. Dazu zaehlt z.B. das \"loop\" Device.\n"
+"\n"
+"Ansicht: Zeigt den Inhalt von der Konfigurations Datei /etc/crypttab.\n"
+"\n"
+"anlegen: Verschluesseltes Laufwerk oder Container erstellen. Dabei\n"
+"\\twird auch gleich ein Eintrag in der Datei /etc/crypttab\n"
+"\\tvorgenommen.\n"
+"\n"
+"aendern: Optionen von verschluesselten Laufwerken oder Containern\n"
+"\\tveraendern.\n"
+"\n"
+"vergroessern: Vergroesserung von verschluesselten Laufwerken oder\n"
+"\\tContainern.\n"
+"\n"
+"verkleinern: Verkleinerung von verschluesselten Laufwerken oder\n"
+"\\tContainern.\n"
+"\n"
+"loeschen: Loeschen von Containern bzw. Partitionen. Heisst, ver-\n"
+"\\tschluesselte Laufwerke werden gestoppt und vorhandene\n"
+"\\tContainer (Dateien) geloescht. In der Datei /etc/crypttab\n"
+"\\twerden die dementsprechenden Eintraege geloescht."
+msgstr ""
+
+#: ../../help/kwcryptsetup/manage_key_help:3
+msgid ""
+"Hier koennen Sie eine Schlusseldatei erstellen, entweder\n"
+"verschluesselt (gnupg, openssl) oder nicht.\n"
+"\n"
+"Dateiname: Geben Sie hier den Dateinamen, fuer die Schlusseldatei ein.\n"
+"\n"
+"Verschluesselung: Waehlen Sie hier die Verschluesselung aus. Zur\n"
+"\\tVerfuegung stehen gpg, ssl oder keine. Bei der Auswahl von\n"
+"\\t\"keine\" wird die Schlusseldatei nicht verschluesselt.\n"
+msgstr ""
+
+#: ../../help/kwcryptsetup/resize_help:3
+msgid ""
+"Vergroessern oder Verkleinern von ein oder mehreren verschluesselten\n"
+"Laufwerken, mit LUKS Erweiterung. Dabei werden die Eintraege der\n"
+"Konfigurationsdatei /etc/crypttab benutzt, um die Laufwerke heraus\n"
+"zubekommen.\n"
+"\n"
+"NOTIZ: Zur Zeit geht nur die Veraenderung der Groesse von\n"
+"\\tverschluesselten Laufwerken mit LUKS Erweiterung."
+msgstr ""
+
+#: ../../help/kwcryptsetup/start_help:3
+msgid ""
+"Starten von ein oder mehreren verschluesselten Laufwerken. Dabei\n"
+"werden die Eintraege der Konfigurationsdatei /etc/crypttab beruecksichtigt."
+msgstr ""
+
+#: ../../help/kwcryptsetup/state_help:3
+msgid ""
+"Status von ein oder mehreren verschluesselten Laufwerke. Dabei\n"
+"werden die Eintraege der Konfigurationsdatei /etc/crypttab benutzt."
+msgstr ""
+
+#: ../../help/kwcryptsetup/stop_help:3
+msgid ""
+"Stoppen von ein oder mehreren verschluesselten Laufwerken. Dabei\n"
+"werden die Eintraege der Konfigurationsdatei /etc/crypttab nicht geloescht."
+msgstr ""

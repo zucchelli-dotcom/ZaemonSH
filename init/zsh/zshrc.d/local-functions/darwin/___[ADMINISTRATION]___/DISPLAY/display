@@ -1,0 +1,190 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# display :
+# Show display information.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 13/01/2018 :
+#  • Finish res option. 
+# 2020-07-31 :
+# • To finish.
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 16/10/2017 :
+#  • Modify script presentation.
+#  • Add banner and setting some local variables.
+# 13/01/2018 :
+#  • Merge res function with this one.  
+
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local VERSION FCT_NAME CLEAR ECHO CAT SYSTEM_PROFILER help display_status reso
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+CLEAR="$(whereis clear)"
+ECHO="$(whereis echo)"
+CAT="$(whereis cat)"
+SYSTEM_PROFILER="$(whereis system_profiler)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+    $CAT<<__EOF__
+    ${RED}
+    usage: display [ status | resolution | help ]
+
+    Example:
+      display status             # Status of displays.
+      display resolution         # A small command line script to change screen resolutions.
+      display help               # Show usage.
+    ${NC}
+__EOF__
+}
+
+display_status(){
+    echo "${YEL}"
+    $SYSTEM_PROFILER SPDisplaysDataType
+    echo "${NC}"
+}
+
+reso(){
+  # Set screen resolution.
+  #!/usr/bin/osascript
+  #
+  # A small command line script to change screen resolutions on Mountain Lion.
+  #
+  # Primarily I switch between two resolutions on my Retina MacBook Pro: Retina,
+  # and the full resolution setting. This means for particular apps I use, I can
+  # quickly jump between seeing more pixels and less.
+  #
+  # There doesn't appear to be an easy way to do this without just using
+  # AppleScript to automate clicking buttons, so that's what this does.
+  #
+  # Most of this script is adapted from this helpful answer:
+  #
+  #   http://apple.stackexchange.com/a/91590
+  #
+  # Make sure "Enable access for assistive devices" is checked in the
+  # Accessibility section of System Properties.
+
+  osascript -e "
+
+  local index1, index2
+
+  set index1 to 3 -- 1440 x 900 (Best for Retina)
+  set index2 to 5 -- 1920 x 1200 (More Space)
+
+  tell application "System Preferences"
+   activate
+        set the current pane to pane id "com.apple.preference.displays"
+         reveal anchor "displaysDisplayTab" of pane id "com.apple.preference.displays"
+  end tell
+
+  local indexToUse
+
+  tell application "System Events"
+    tell window "Built-in Retina Display" of application process "System Preferences" of application "System Events"
+      -- Click the "Scaled" radio button
+      click radio button "Scaled" of radio group 1 of tab group 1
+
+      tell tab group 1
+        tell radio group 1 of group 1
+          -- Depending on what scale option/index is current selected, set the appropriate new option/index to use
+          if (value of radio button index1) is true then
+                    set indexToUse to index2
+          else if (value of radio button index2) is true then
+               set indexToUse to index1
+          end if
+
+          -- Click the radio button for the new scale option/index
+          click radio button indexToUse
+        end tell
+      end tell
+
+      -- If option/index 1 is selected a warning prompt is displayed, click the OK button to dismiss the prompt
+      if indexToUse = 1 then
+        click button "OK" of sheet 1
+      end if
+    end tell
+  end tell
+
+  tell application "System Preferences"
+    quit
+  end tell
+  "
+}
+
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+case $1 in
+    help)
+        help
+        ;;
+    status)
+        display_status
+        ;;
+    resolution)
+        reso
+        ;;
+    *)
+        help
+        ;;
+esac
+

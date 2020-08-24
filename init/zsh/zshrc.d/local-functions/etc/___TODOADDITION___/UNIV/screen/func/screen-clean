@@ -1,0 +1,10 @@
+screen-clean() {
+    local -a screens
+    screens=( ${(f)"$(screen -ls | grep '(Detached)' | grep -o '[0-9]*.tty[0-9]*')"} )
+    for screen in $screens
+    do
+        screen -X -S $screen kill
+    done
+}
+
+# vim: ft=zsh

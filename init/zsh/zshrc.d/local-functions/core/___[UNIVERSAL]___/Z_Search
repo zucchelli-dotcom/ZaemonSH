@@ -1,0 +1,162 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# Z_Search :
+# Search for patterns on $ZDOT, $P_NATFCTDIR or on $P_ZDOTCONFDIR folder.    
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 18/10/2017 :
+# • Create this one
+# 18/08/2019 :
+# • Unify script presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 20/02/2020 :
+# • Add Native onnatf zsh search ( $P_NATFCTDIR  ))
+# 2020-03-14 :
+# • Correct ack command checking for linux
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  echo "${RED}"
+  cat<<__EOF__
+    usage:  $FCT_NAME [ onconfig | onzdot | help ]
+
+    	$FCT_NAME onconfig [PATTERN]          # Search pattern on config files.
+    	$FCT_NAME onzdot [PATTERN]            # Search pattern on $ZDOT.
+    	$FCT_NAME onnatf [PATTERN]            # Search pattern on native directory function.
+
+__EOF__
+echo "${NC}"
+}
+
+onconfigf(){
+	# Search pattern on ZAEMONSH config ($ZDOT/zshrc.d) case insensitive.
+     # if [[ $(which ack) ]]; then
+     #    cd $ZDOT
+     #     # ack --exclude-dir="___TODOADDITION___" --exclude="html.zip" $@ $ZDOT
+     #     ack -i $@
+     # else
+		find $ZDOT/zshrc.d -maxdepth 1 -type f -exec grep -rwHin --color=auto ${@} {} 2>/dev/null \;
+	 # fi
+}
+
+onzdotf(){
+	# echo $#
+    if [[ $(whence ack) ]]; then
+       cd $ZDOT 
+        # ack --exclude-dir="___TODOADDITION___" --exclude="html.zip" $@ $ZDOT	
+        ack -i $@ 
+    else
+		# Search pattern on $ZDOT directory.with grep
+		# grep -rwin --color=auto --exclude-dir="___TODOADDITION___" $@ $ZDOT  2>/dev/null 
+		[[ $IS_LINUX ]] && grep -rwin --color=auto $@ $ZDOT
+        [[ $IS_DARWIN ]] && grep -rwin --color=auto --exclude-dir="___TODOADDITION___" --exclude="html.zip" $@ $ZDOT 2>/dev/null
+
+    fi
+}
+onnatf(){
+	# echo $#
+    if [[ $(whence ack) ]]; then
+       cd $P_NATFCTDIR 
+        # ack --exclude-dir="___TODOADDITION___" --exclude="html.zip" $@ $ZDOT	
+        ack -i $@ 
+    else
+		# Search pattern on $ZDOT directory.with grep
+		# grep -rwin --color=auto --exclude-dir="___TODOADDITION___" $@ $ZDOT  2>/dev/null 
+		#grep -rwin --color=auto $@ $ZDOT
+        grep -rwin --color=auto --exclude-dir="___TODOADDITION___" --exclude="html.zip" $@ $P_NATFCTDIR 2>/dev/null
+
+    fi
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+
+(( $# != 2 )) && help && return 0
+
+banner
+case $1 in
+	help)
+		help
+	;;
+	onconfig)
+		shift
+		onconfigf "$@"
+        return 1
+	;;
+     onzdot)
+         shift
+         onzdotf "$@"
+         return 1
+     ;;
+
+	onnatf)
+		shift
+		onnatf "$@"
+        return 1
+	;;
+	*)
+		help
+	;;	
+esac

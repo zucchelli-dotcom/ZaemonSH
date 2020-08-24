@@ -1,0 +1,285 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# network :
+# Give some netork informations
+
+#-------------------------------------------------------------------------------------------#
+#                                               NOTES
+#-------------------------------------------------------------------------------------------#
+#!/bin/sh
+
+#--------------------------------------------------------------------
+# Network Utilities
+#--------------------------------------------------------------------
+
+# case "$fn" in
+
+#     # Internet connection speed test
+#     "speedtest")
+
+#         if [ ! -f /usr/local/lib/node_modules/fast-cli/cli.js ]; then
+#             read -r -p "Do you want to install the Speed Test utility? (https://github.com/sindresorhus/fast-cli) (Yes / No)" response
+#             case $response in
+#                 [yY][eE][sS]|[yY])
+#                     npm install --global fast-cli
+#                     ;;
+#                 *)
+#                     exit
+#                     ;;
+#             esac
+#         else
+#             echo "Testing internet connection speed..."
+#             fast
+#         fi
+#     ;;
+
+
+#     # Run internet connection Speed Test each 5 minutes
+#     "speedtest:infinite")
+
+#         if [ ! -f /usr/local/lib/node_modules/speed-test/cli.js ]; then
+#             read -r -p "Do you want to install the Speed Test utility? (https://github.com/sindresorhus/fast-cli) (Yes / No)" response
+#             case $response in
+#                 [yY][eE][sS]|[yY])
+#                     npm install --global fast-cli
+#                     ;;
+#                 *)
+#                     exit
+#                     ;;
+#             esac
+#         else
+#             while true
+#             do
+#                 title="\nTesting internet connection speed - "
+#                 title+=`date '+%Y-%m-%d %H:%M:%S'`
+#                 echo $title
+#                 fast
+#                 sleep 300
+#             done
+#         fi
+#     ;;
+
+
+#     # List of used ports
+#     "ports")
+
+#         echo "Getting list of used ports..."
+#         if [ "$echocommand" == "true" ]; then
+#             echo "${GREEN}sudo lsof -iTCP -sTCP:LISTEN -P\n\n${NC}"
+#         fi
+#         sudo lsof -iTCP -sTCP:LISTEN -P
+#     ;;
+
+
+#     # Get local IP address
+#     "ip:local")
+
+#         local_ip=$(ipconfig getifaddr en0)
+#         if [ $? == 0 ]; then
+#             if [ "$echocommand" == "true" ]; then
+#                 echo "${GREEN}ipconfig getifaddr en0\n\n${NC}"
+#             fi
+#         else
+#             if [ "$echocommand" == "true" ]; then
+#                 echo "${GREEN}ipconfig getifaddr en1\n\n${NC}"
+#             fi
+#             local_ip=$(ipconfig getifaddr en1)
+#         fi
+#         echo "Your IP address is:\n${local_ip}"
+#     ;;
+
+
+#     # Get public IP address
+#     "ip:public")
+
+#         if [ "$echocommand" == "true" ]; then
+#             echo "${GREEN}wget http://ipinfo.io/ip -qO -\n\n${NC}"
+#         fi
+#         wget http://ipinfo.io/ip -qO -
+#     ;;
+
+#     # Renew DHCP Lease
+#     "dhcp:renew")
+
+#         if [ "$echocommand" == "true" ]; then
+#             echo "${GREEN}sudo ipconfig set en0 DHCP -\n\n${NC}"
+#         fi
+#         sudo ipconfig set en0 DHCP
+#     ;;
+
+#     # Clear DNS Cache
+#     "dns:clear")
+
+#         if [ "$echocommand" == "true" ]; then
+#             echo "${GREEN}sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder -\n\n${NC}"
+#         fi
+#         sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder
+#     ;;
+
+
+# esac
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 2020-07-31 :
+# Finish script.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 18/10/2017 :
+#  • Modify script presentation.
+#  • Define some command variables.
+#  • Add banner.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+local CLEAR ECHO DEFAULTS NETWORKSETUP GREP PRINTF CAT CUT READ
+
+# Define some local command
+CLEAR="$(whereis clear)"
+ECHO="$(whereis echo)"
+DEFAULTS="$(whereis defaults)"
+NETWORKSETUP="$(whereis networksetup)"
+GREP="$(whereis grep)"
+PRINTF="$(whereis printf)"
+CAT="$(whereis cat)"
+CUT="$(whereis cut)"
+READ="$(whereis read)"
+
+
+local VERSION FCT_NANME
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+    $CAT<<__EOF__
+    ${RED}
+    usage:   network [ ls | list | location | help ]
+
+    Exaples:
+       network ls                          # list network interfaces
+       network location                    # get current location
+       network location ls                 # list locations
+       network location create XYZ         # create a location
+       network location delete XYZ         # delete a location
+       network location switch XYZ         # switch location
+    ${NC}
+__EOF__
+
+}
+
+list_netservices(){
+    $NETWORKSETUP -listallhardwareports | while IFS= read -r line; do
+        # if it is a device we will print the ip in the next line
+        if $ECHO ${line} | $GREP -i "Device" >/dev/null 2>&1; then
+            $PRINTF "${line}\nIP:$(ipconfig getifaddr $($ECHO ${line} | $CUT -d: -f2 2>/dev/null))\n"
+        else
+            $PRINTF "${line}\n"
+        fi
+    done
+}
+
+list_netservices_plist(){
+     DEFAULTS read /Library/Preferences/SystemConfiguration/NetworkInterfaces
+}
+
+
+location(){
+    case $1 in
+        create)
+            [ -z "$2" ] && help && exit 1;
+            $NETWORKSETUP -createlocation $2
+            ;;
+        delete)
+            [ -z "$2" ] && help && exit 1;
+            $NETWORKSETUP -deletelocation $2
+            ;;
+        switch)
+            [ -z "$2" ] && help && exit 1;
+            $NETWORKSETUP -switchtolocation $2
+            ;;
+        ls)
+            $ECHO "Locations: "
+            $NETWORKSETUP -listlocations
+            ;;
+        *)
+            $ECHO "Current location: $($NETWORKSETUP -getcurrentlocation)"
+            ;;
+    esac
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+case $1 in
+    help)
+        help
+        ;;
+    ls)
+        list_netservices
+        ;;
+    ls_plist)
+        list_netservices_plist
+        ;;
+    location)
+        shift
+        location $@
+        ;;
+    *)
+        help
+        ;;
+esac
+

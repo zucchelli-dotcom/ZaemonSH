@@ -1,0 +1,185 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# googeimages :
+# To download the first 10 images, simply invoke is as previously:
+# ./getimages 10 rocky%20mountains
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+# function to create all dirs til file can be made
+mkdirs() {
+    file="$1"
+    dir="/"
+
+    # convert to full path
+    if [ "${file##/*}" ]; then
+        file="${PWD}/${file}"
+    fi
+
+    # dir name of following dir
+    next="${file#/}"
+
+    # while not filename
+    while [ "${next//[^\/]/}" ]; do
+        # create dir if doesn't exist
+        [ -d "${dir}" ] || mkdir "${dir}"
+        dir="${dir}/${next%%/*}"
+        next="${next#*/}"
+    done
+
+    # last directory to make
+    [ -d "${dir}" ] || mkdir "${dir}"
+}
+
+getMyImages() {
+    }
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+# get optional 'o' flag, this will open the image after download
+    getopts 'o' option
+    [[ $option = 'o' ]] && shift
+
+    # parse arguments
+    count=${1}
+    shift
+    query="$@"
+    [ -z "$query" ] && return 1  # insufficient arguments
+
+    # set user agent, customize this by visiting http://whatsmyuseragent.com/
+    useragent='Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0'
+
+    # construct google link
+    link="www.google.com/search?q=${query}\&tbm=isch"
+
+    # fetch link for download
+    imagelink=$(wget -e robots=off --user-agent "$useragent" -qO - "$link" | sed 's/</\n</g' | grep '<a href.*\(png\|jpg\|jpeg\)' | sed 's/.*imgurl=\([^&]*\)\&.*/\1/' | head -n $count | tail -n1)
+    imagelink="${imagelink%\%*}"
+
+    # get file extention (.png, .jpg, .jpeg)
+    ext=$(echo $imagelink | sed "s/.*\(\.[^\.]*\)$/\1/")
+
+    # set default save location and file name change this!!
+    dir="$PWD"
+    file="$1_$count"
+
+    # get optional second argument, which defines the file name or dir
+    if [[ $# -eq 2 ]]; then
+        if [ -d "$2" ]; then
+        dir="$2"
+        else
+        file="${2}"
+        mkdirs "${dir}"
+        dir=""
+        fi
+    fi   
+
+    # construct image link: add 'echo "${google_image}"'
+    # after this line for debug output
+    google_image="${dir}/${file}"
+
+    # construct name, append number if file exists
+    if [[ -e "${google_image}${ext}" ]] ; then
+        i=0
+        while [[ -e "${google_image}(${i})${ext}" ]] ; do
+        ((i++))
+        done
+        google_image="${google_image}(${i})${ext}"
+    else
+        google_image="${google_image}${ext}"
+    fi
+
+    # get actual picture and store in google_image.$ext
+    wget --max-redirect 0 -qO "${google_image}" "${imagelink}"
+
+    # if 'o' flag supplied: open image
+    [[ $option = "o" ]] && gnome-open "${google_image}"
+
+    # successful execution, exit code 0
+    return 0
+
+
+

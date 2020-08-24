@@ -1,0 +1,207 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# service :
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 13/01/2018 :
+#  • Make a completion.
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 05/01/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME LAUNCHCTLPATHS
+
+LAUNCHCTLPATHS=( \
+    $HOME/Library/LaunchAgents \
+    /Library/LaunchAgents \
+    /Library/LaunchDaemons \
+    /System/Library/LaunchAgents \
+    /System/Library/LaunchDaemons \
+    )
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+    cat<<__EOF__
+    ${RED}
+    usage: service  status-all | list |  ls | start | stop | load | unload | help ]
+    Examples:
+      service status-all                        # list all services
+
+      service list                              # list all services
+      service ls                                # list all services
+      service ls com.apple.sessionlogoutd       # show information about a specific service
+
+      servie view com.apple.sessionlogoutd      # View service file content
+      service start com.apple.sessionlogoutd    # start a service
+      service stop com.apple.sessionlogoutd     # stop a service
+
+      service load com.apple.sessionlogoutd     # load a service
+      service unload com.apple.sessionlogoutd   # unload a service
+    ${RED}
+__EOF__
+}
+
+find_service(){
+    [ -z "$1" ] && >&2 echo "Please enter servicename" && return 1
+
+    for p in "${LAUNCHCTLPATHS[@]}"; do
+        if [ -f "${p}/${1}" ]; then
+            echo "${p}/${1}"
+        elif [ -f "${p}/${1}.plist" ]; then
+            echo "${p}/${1}.plist"
+        fi
+    done
+}
+
+service_list(){
+    if [ -z "$@" ]; then
+        sudo launchctl list
+    else
+        sudo launchctl list $@
+    fi
+}
+
+service_load(){
+    [ -z "${1}" ] && >&2 echo "Please enter servicename" && return 1
+
+
+
+    echo "Loading < ${1} >"
+    sudo launchctl load -w ${1} 2>/dev/null
+}
+
+service_unload(){
+    [ -z "${1}" ] && >&2 echo "Please enter servicename" && return 1
+
+    SERVICE_PATH=$(find_service $1)
+
+    echo "Unloading < ${1} >"
+    sudo launchctl unload -w ${1} 2>/dev/null
+}
+
+service_view () {
+    [ -z "${1}" ] && >&2 echo "Please enter servicename" && return 1
+
+    echo "Viewing < ${1} >"
+    Plistbuddy -c Print "${1}"
+}
+service_start(){
+    [ -z "${1}" ] && >&2 echo "Please enter servicename" && return 1
+
+    echo "Starting < ${1} >"
+    sudo launchctl start "${1}"
+}
+
+service_stop(){
+    [ -z "${1}" ] && >&2 echo "Please enter servicename" && return 1
+
+    echo "Stoping < ${1} >"
+    sudo launchctl stop "${1}"
+}
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+case $1 in
+    help)
+        help
+        ;;
+    status-all)
+        service_list
+        ;;
+    ls)
+        shift
+        service_list $@
+        ;;
+    list)
+        shift
+        service_list $@
+        ;;
+    load)
+        shift
+        service_load $@
+        ;;
+    view)
+        shift
+        service_view $@
+        ;;
+    unload)
+        shift
+        service_unload $@
+        ;;
+    start)
+        shift
+        service_start $@
+        ;;
+    stop)
+        shift
+        service_stop $@
+        ;;
+    *)
+        help
+        ;;
+esac
+
+# vim: ts=4 sw=4 softtabstop=4 expandtab

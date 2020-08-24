@@ -1,0 +1,158 @@
+#compdef darwinup 
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _darwinup  :
+# Completion for darwinup Install, uninstall, and manage roots
+# Copyright (c) 2016 Tetsuo Kiso All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Installation
+#
+#   fpath=(/path/to/darwinup-zsh-completion $fpath)
+#   rm -f ~/.zcompdump; compinit
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 30/07/2020 :
+#  • Create this one.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+_darwinup() {
+  local -a commands
+  commands=(
+    "files:List the files and directories in the archive"
+    "install:Install the root at path"
+    "list:List installed archives"
+    "rename:Rename an archive"
+    "uninstall:Uninstall the specified archive"
+    "forget:Forget the specified archive"
+    "upgrade:Find the last archive that was installed with the same basename, and replace it with the root at path"
+    "verify:List the information about the archive"
+  )
+
+  _arguments \
+    "-h[Show help]" \
+    "-d[Disable helpful automation]" \
+    "-f[Force operation to succeed at all costs]" \
+    "-n[Dry run]" \
+    "-p+[Operate on roots under DIR (default: /)]:directories:_directories" \
+    "-r[Gracefully restart when finished]" \
+    "-v[Verbose (use -vv for extra verbosity)]" \
+    "1: :{_describe 'command' commands}" \
+    "*:: :->args"
+
+  case $state in
+    args)
+      __get_archives() {
+        darwinup list | tail -n +3 | sed -e 's/ /:/' | tr -s ' ' | sed -e 's/ //'
+      }
+
+      __archives() {
+        local -a archives
+        archives=(
+          "newest:The newest (last) root installed"
+          "oldedst:The oldest root installed"
+          "superseded:all roots that have been fully replaced by newer roots"
+          "all:all installed roots"
+        )
+        archives+=(${(fo)"$(__get_archives)"})
+        _describe 'archives' archives
+      }
+
+      case $words[1] in
+        files)
+          _arguments \
+            "*:archives:__archives"
+          ;;
+        install)
+          _arguments \
+            "*:files:_files"
+          ;;
+        list)
+          _arguments \
+            "*:archives:__archives"
+          ;;
+        rename)
+          _arguments \
+            "*:archives:__archives"
+          ;;
+        uninstall)
+          _arguments \
+            "*:archives:__archives"
+          ;;
+        forget)
+          _arguments \
+            "*:archives:__archives"
+          ;;
+        upgrade)
+          _arguments \
+            "*:files:_files"
+          ;;
+        verify)
+          _arguments \
+            "*:archives:__archives"
+          ;;
+      esac
+      ;;
+  esac
+}
+#----------------------------------------------------------------------------------------#
+#                                     COMPLETION
+#----------------------------------------------------------------------------------------#
+_darwinup
+
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:
+### }}}
+

@@ -1,0 +1,301 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2019. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# firewallapp :
+# firewallapp is used to control Application Firewall socket filter.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Add more functionalities.
+
+
+# ABOUT THIS PROGRAM
+#
+# NAME
+#   enableFilewall.sh -- Enables or Disables the firewall on Mac OS X Clients.
+#
+# SYNOPSIS
+#   sudo enableFirewall.sh
+#   sudo enableFirewall.sh <mountPoint> <computerName> <currentUsername> <enableFirewall>
+#
+#   If there is a hardcoded value specified for <enableFirewall> in the script, 
+#   or if the parameter is not passed by The Casper Suite, the hardcoded value in the script will 
+#   be used.
+#
+#   The data that is specified for the <enableFirewall> parameter should be specified in one of
+#   the following formats:
+#
+#       "TRUE"
+#       "FALSE"
+#       "YES"
+#       "NO"
+#
+# DESCRIPTION
+#   This script enables or disables the firewall on Mac OS X 10.3 or later.
+#   It can be used with a hardcoded value in the script, or read in as a parameter.
+#   Since the Casper Suite defines the first three parameters as (1) Mount Point, (2) Computer
+#   Name and (3) username, we are using the fourth parameter ($4) as the passable parameter to
+#   acquire the status of <enableFirewall>.  In addition, the fourth parameter is utilized to set 
+#   the enableFirewall parameter.
+# # HARDCODED VALUE FOR "enableFirewall" IS SET HERE
+# enableFirewall=""
+
+
+# # CHECK TO SEE IF A VALUE WAS PASSED IN PARAMETER 4 AND, IF SO, ASSIGN TO "enableFirewall"
+# if [ "$4" != "" ] && [ "$enableFirewall" == "" ]; then
+#     enableFirewall=$4
+# fi
+
+
+# ####################################################################################################
+# # 
+# # SCRIPT CONTENTS - DO NOT MODIFY BELOW THIS LINE
+# #
+# ####################################################################################################
+
+# if [ "$enableFirewall" == "" ]; then
+#     echo "Error:  The parameter 'enableFirewall' is blank.  Please specify a value."
+#     exit 1
+# fi
+
+# OS=`/usr/bin/defaults read /System/Library/CoreServices/SystemVersion ProductVersion | awk '{print substr($1,1,4)}'`
+
+# if [[ "$OS" == "10.4" ]]
+# then
+#     case $enableFirewall in "true" | "TRUE" | "yes" | "YES")
+#             echo "Enabling Firewall for OS $OS ..."
+#             /usr/bin/defaults write /Library/Preferences/com.apple.sharing.firewall state -bool YES
+#             /usr/libexec/FirewallTool;;
+#     "false" | "FALSE" | "no" | "NO")
+#             echo "Disabling Firewall for OS $OS ..."
+#             /usr/bin/defaults write /Library/Preferences/com.apple.sharing.firewall state -bool NO
+#             /usr/libexec/FirewallTool;;
+#     esac
+# fi
+
+# if [[ "$OS" > "10.4" ]]
+# then
+#     case $enableFirewall in "true" | "TRUE" | "yes" | "YES")
+#             echo "Enabling Firewall for OS $OS ..."
+#             /usr/bin/defaults write /Library/Preferences/com.apple.alf globalstate -int 1
+#             /bin/launchctl unload /System/Library/LaunchDaemons/com.apple.alf.agent.plist
+#             /bin/launchctl unload /System/Library/LaunchAgents/com.apple.alf.useragent.plist
+#             /bin/launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist
+#             /bin/launchctl load /System/Library/LaunchAgents/com.apple.alf.useragent.plist;;
+#     "false" | "FALSE" | "no" | "NO")
+#             echo "Disabling Firewall for OS $OS ..."
+#             /usr/bin/defaults write /Library/Preferences/com.apple.alf globalstate -int 0
+#             /bin/launchctl unload /System/Library/LaunchDaemons/com.apple.alf.agent.plist
+#             /bin/launchctl unload /System/Library/LaunchAgents/com.apple.alf.useragent.plist
+#             /bin/launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist
+#             /bin/launchctl load /System/Library/LaunchAgents/com.apple.alf.useragent.plist;;
+#     esac
+# fi
+
+# exit 0;
+
+
+
+##### show ALF settings
+# defaults read /Library/Preferences/com.apple.alf
+
+# #### show ALF (Factory) settings
+# defaults read /usr/libexec/ApplicationFirewall/com.apple.alf
+
+
+# AlffactorySettings(){
+#   # show firewall aka ALF (Factory) settings. plist style bop!
+#   $DEFAULTS read /usr/libexec/ApplicationFirewall/com.apple.alf
+# }
+
+# AlfSettings(){
+#   $DEFAULT read /Library/Preferences/com.apple.alf
+# }
+
+# ALFGlobalStateEssential(){
+#   # Turn on global state of application level firewall for 'essential' services.
+#   command sudo -S $DEFAULT write /Library/Preferences/com.apple.alf globalstate 2
+# }
+
+# ALFGlobalStateOff(){
+#   # Turn off global state of application level firewall
+#   command sudo -S $DEFAULT write /Library/Preferences/com.apple.alf globalstate 0
+# }
+
+# ALFGlobalStateRead(){
+#   # Show global state of application level firewall
+#   # alias command defaults read /Library/Preferences/com.apple.alf globalstate'
+# }
+
+# ALFGlobalStateSpecific(){
+#   # turn on global state of application level firewall for 'specific' services
+#   command sudo -S $DEFAULT write /Library/Preferences/com.apple.alf globalstate 1
+# }
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 04/01/2018 :
+#  • Modify function presentation.
+# 10/01/2018 :
+# • Merge all past functions related to alf (ALFFactorySettings ALFSettings) with firewallapp one.
+# • Move all past Alf related alias from 022_aliases.darwin-specific.additional.zsh to a firewallapp 
+#   function.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME ECHO STATUS
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+ECHO=$(whereis echo)
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+     clear
+     echo " ##############################################################################"
+     echo " #                                                                            #"
+     echo " #  ${GREEN}This is ${RED}$FCT_NAME: ${YEL}$VERSION on ${GREEN}$OSTYPE${NC}${YEL} system.${NC}"
+     echo " #  CopyL®®v 2020, Zucchelli Bryan                                            #"
+     echo " #                                                                            #"
+     echo " #  Unless required by applicable law or agreed to in writing, software       #"
+     echo " #  distributed under the License is distributed on an AS IS BASIS,           #"
+     echo " #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #"
+     echo " #  See the License for the specific language governing permissions and       #"
+     echo " #  limitations under the License.                                            #"
+     echo " #                                                                            #"
+     echo " ##############################################################################"
+     echo ""
+}
+
+help(){
+    cat<<__EOF__
+    ${RED} 
+    usage: firewallapp [ globalstate | setblockall | getblockall | list | add | remove | help ]
+
+    Examples:
+      firewallapp globalstate                    # Show status of firewallapp.
+      firewallapp globalstate  ON/OFF            # Enable/Disabled firewallapp.
+       
+      firewallapp setblockall  ON/OFF            # Set block all non-essential incoming connections : enable or disable.'
+      firewallapp getblockall                    # Get status of block all non-essential incoming connections.'
+
+      firewallapp list                           # List applications handled by firewallapp.
+      firewallapp add /path/to/file              # Add app to firewallapp.
+      firewallapp remove /path/to/file           # Remove app from firewallapp.
+    ${NC}
+__EOF__
+}
+
+#-------------------------------------------------------------------------------------------#
+#                                              SCRIPT
+#-------------------------------------------------------------------------------------------#
+banner
+case $1 in
+    help)
+        help
+        ;;
+    status)
+        sudo /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate
+        ;;
+    globalstate)
+        case $2 in
+          [oO][nN])
+              $ECHO "${GREEN}Enable firewallapp.${NC}"
+              sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate on
+              ;;
+          [oO][fF][fF])
+              $ECHO "${GREEN}Disabled firewallapp.${NC}"
+              sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
+              ;;
+          *)
+              STATUS=$(sudo /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate | sed 's/.*(//' | sed 's/).*//' | awk '{ print $3 }')
+              case $STATUS in
+                0)
+                    STATUS="disabled"
+                    ;;
+                1)
+                    STATUS="enabled"
+                    ;;
+                *)
+                    $ECHO "We can't read firewallapp status" && return 1
+                    ;;
+              esac
+              $ECHO "firewallapp : $STATUS"
+        esac
+        ;;
+    setblockall)
+        case $2 in
+          [oO][nN])
+              $ECHO "${GREEN}Block all non-essential incoming connections is enabled.${NC}"
+              sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setblockall on
+              ;;
+          [oO][fF][fF])
+              $ECHO "${GREEN}Block all non-essential incoming connections is disabled.${NC}"
+              sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setblockall off
+              ;;
+          *)
+              help
+              ;;
+        esac
+        ;;
+    getblockall)
+        /usr/libexec/ApplicationFirewall/socketfilterfw --getblockall
+        ;;
+    
+    
+    list)
+        sudo /usr/libexec/ApplicationFirewall/socketfilterfw --list
+        ;;
+    
+    addapp)
+        [ -z "$2" ] && help && exit 1
+        sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add $2
+        ;;
+    removeapp)
+        [ -z "$2" ] && help && exit 1
+        sudo /usr/libexec/ApplicationFirewall/socketfilterfw --remove $2
+        ;;
+    *)
+        help
+        ;;
+esac
+
+# vim: ts=4 sw=4 softtabstop=4 expandtab

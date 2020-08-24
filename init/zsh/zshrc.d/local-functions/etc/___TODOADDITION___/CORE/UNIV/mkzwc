@@ -1,0 +1,23 @@
+autoload -U zrecompile
+
+zrecompile -p \
+    -R ~/.zshrc -- \
+    -M ~/.zsh/cache/zcompdump -- \
+    -R ~/.zsh/zeesh.zsh --
+
+zrecompile -p ~/.zsh/plugins/autocomplete/comp.zwc ~/.zsh/plugins/autocomplete/comp/_*
+zrecompile -p ~/.zsh/func.zwc ~/.zsh/func/*
+
+for a in ~/.zsh/plugins/*/plugin; do
+    zrecompile -p -R $a --
+done
+
+for a in ~/.zsh/plugins/*/func; do
+    zrecompile -p $a.zwc $a/*
+done
+
+for a in ~/.zsh/plugins/*/comp; do
+    zrecompile -p $a.zwc $a/*
+done
+
+# vim: ft=zsh

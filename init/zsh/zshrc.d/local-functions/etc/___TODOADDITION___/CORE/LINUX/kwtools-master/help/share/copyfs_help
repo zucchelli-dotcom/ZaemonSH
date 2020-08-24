@@ -1,0 +1,10 @@
+# copyfs_help {{{
+TITLE=$(gettext 'Dateisystem kopieren::${gv_Help}')
+MSG=$(gettext 'Kopieren/Klonen von einem Dateisystem auf eine andere Partition.
+Im Anschluss wird die Groesse der Parttion angepasst. Es gehen nur Partitionen
+mit dem gleichen Dateisystemtyp zu kopieren.')
+#}}}
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:                                                                               
+### }}}

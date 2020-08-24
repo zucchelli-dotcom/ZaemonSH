@@ -1,0 +1,186 @@
+#!/bin/zsh
+#
+# Autor: Kai Wilke <kiste@netzworkk.de> 25.06.2015
+#
+# Script: kwraid, Konfiguriert und kreiert Software RAID Systeme.
+# Version: 0.4.0
+
+trap 'setterm --inversescreen off ; setterm --reset ;
+rm -rf $gv_Script_Lock $gv_WorkDir &>/dev/null' EXIT INT
+
+gv_ScriptName=${0##*/}
+
+#
+# Verzeichniss in denen nach Funktionen gesucht wird
+#
+if [ -f /usr/local/share/kwtools/functions/sys/script_init ] ; then
+	PREFIX=/usr/local
+else
+	PREFIX=/usr
+fi
+Script_init_Fpath="${PREFIX}/share/kwtools/functions/sys"
+export TEXTDOMAINDIR="${PREFIX}/share/locale"
+export TEXTDOMAIN="$gv_ScriptName"
+
+if [ -z ${(M)${FPATH}##*${Script_init_Fpath}*} ] ; then
+	FPATH=${Script_init_Fpath}:${FPATH}
+fi
+
+# script_init enthält die globalen Scripteinstellungen und lädt
+# diese automatisch.
+#
+autoload -U script_init
+
+# Scriptinitialisierung
+script_init
+
+# pruefen, ob die SW-RAID-Treiber geladen sind und ob die richtige# {{{
+# Kernelversion installiert ist.
+# RAID Module laden.
+kernel_release
+if [[ "${gv_K_Release%%-*}" < 2.6.33 ]] ; then
+	MSG=$(gettext 'Sie benoetigen mindestens Kernel Version >=2.6.33. Das Script bricht jetzt ab.')
+	msgbox "$gv_Info" "$MSG"
+	exit 0
+else
+	load_module 'md xor linear raid0 raid1 raid5 raid6 raid10 multipath'
+fi
+## }}}
+# Pruefen ob mdadm installiert ist# {{{
+prog_check mdadm
+if [ -z "$PROGS" ] ; then
+	exit 0
+fi
+## }}}
+
+# auf Root pruefen
+root_check
+
+# Nachdem das Script initialisiert wurde, kann man die anderen
+# benötigten Funktionen laden.
+autoload -U drive_conf raiddisk raid_create_conf \
+	read_raid_conf raidhotadd_remove raidstat \
+	no_raid_part_msg no_raid_arrays_msg no_raid_part_anz_msg
+
+##################################################################
+#
+# Hauptprogramm
+#
+##################################################################
+#
+# generelle Funktionen ausfuehren
+hw_conf
+fs_conf
+#
+disk
+if [ -z "${DISK_DEV[1]}" ] ; then
+	no_disks_msg
+	exit 0
+fi
+partdb -i raid
+# Gibts keine RAID Partitionen kommt eine Info
+if [ -z "$PART" ] ; then
+	no_raid_part_msg
+fi
+
+raid
+os_check
+if_conf_file "$OS" raid
+
+# Variablen# {{{
+lv_Chunk_Size=$(gettext 'chunk-size')
+lv_Drives=$(gettext 'Laufwerke')
+lv_Monitor=$(gettext 'Monitor')
+lv_Nr_Raiddisk=$(gettext 'nr-raid-disk')
+lv_Nr_Sparedisk=$(gettext 'nr-spare-disk')
+lv_Persistent_Sb=$(gettext 'persistent-superblock')
+lv_Parity_Alg=$(gettext 'parity-algorithm')
+lv_Raiddev=$(gettext 'raiddev')
+lv_Raid_Level=$(gettext 'raid-level')
+lv_Raiddisks=$(gettext 'raiddisks')
+lv_Raid_Hot_Ar=$(gettext 'Laufwerkswechsel')
+lv_Repair=$(gettext 'Reparatur')
+lv_Sparedisks=$(gettext 'sparedisks')
+lv_Status=$(gettext 'Status')
+lv_Mailadr=$(gettext 'Mailadresse')
+lv_Mailfrom=$(gettext 'Mail Absender')
+lv_Hostname=$(gettext 'Rechnername')
+lv_Program=$(gettext 'Programm')
+lv_Create=$(gettext 'Standard Erstellung')
+lv_Owner=$(gettext 'Besitzer')
+lv_Mode=$(gettext 'Rechte')
+lv_Auto=$(gettext 'Device Erstellung')
+lv_Metadata=$(gettext 'Metadaten')
+lv_Symlinks=$(gettext 'symbolische Links')
+## }}}
+# Alle Arrays zusammenfuegen und starten{{{
+#
+# -A --assemble = Arrays zusammenfuehren.
+# -s --scan = scannt config Datei (/etc/mdadm/mdadm.conf) oder /proc/mdstat.
+# -a --auto-detect = md Devices anlegen falls nicht vorhanden.
+#
+# Alle Arrays in /etc/mdadm/mdadm.conf werden gestartet.
+RAIDTAB="${RAIDTAB:-/etc/mdadm/mdadm.conf}"
+if [ -f "$RAIDTAB" ] ; then
+	MSG=$(gettext 'Die Initialisierung der RAID Arrays kann etwas dauern. Pruefen Sie anschliessend, ob alle Arrays richtig initialisiert wurden (Status).')
+	msgbox "$gv_Info" "$MSG"
+	mdadm -A -s -amd &>/dev/null
+fi
+#}}}
+# Funktion (main_menu){{{
+#
+MAIN_MENU=($gv_Configuration \"\" $lv_Drives \"\"
+$lv_Monitor \"\" $lv_Status \"\" $gv_Exit \"\")
+main_menu() {
+	menubox "$1" "$gv_Mainmenu" "$gv_Menupoint" "$MAIN_MENU"
+}
+#}}}
+main_menu
+while [ "$gv_Auswahl" ] ; do
+	case $gv_Auswahl in
+		HELP*)
+			# Hilfe Messagebox
+			script_help help
+			main_menu "${gv_Auswahl#HELP }"
+			;;
+		$gv_Configuration)
+			# Konfiguration der mdadm.conf.# {{{
+			# und fuers erstellen von 
+			# neuen RAID Devices.
+			autoload -U net_conf raid_conf
+			net_conf
+			raid_conf
+			## }}}
+			main_menu $gv_Configuration
+			;;
+		$lv_Drives)
+			# RAID Arrays verwalten, erstellen,....
+			drive_conf
+			main_menu $lv_Drives
+			;;
+		$lv_Monitor)
+			# RAID Monitor anschalten und konfigurieren{{{
+			raid
+			if [ -n "$MD_DEV" ] ; then
+				if_conf_prog "$OS" raid
+			else
+				no_raid_arrays_msg
+			fi
+			#}}}
+			main_menu $lv_Monitor
+			;;
+		$lv_Status)
+			# Status anzeigen
+			raidstat
+			main_menu $lv_Status
+			;;
+		$gv_Exit)	break
+			;;
+	esac
+done	
+#
+exit 0
+### Modeline {{{
+### vim:ft=zsh:foldmethod=marker
+### vim:set ts=4:                                                                               
+### }}}

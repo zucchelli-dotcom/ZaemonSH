@@ -1,0 +1,166 @@
+#! /usr/bin/env zsh -f
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# ggl :
+# Multi cli search engine.
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+# 2020-08-06 :
+#  • Debug script
+#  • Ruby to zsh
+#  • To finish
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+# 13/0/2018 :
+#  • Modify function presentation.
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+#######################
+## COMMAND VARIABLES ##
+#######################
+local VERSION FCT_NAME
+
+VERSION="0.0.1"
+FCT_NAME="$(echo $0)"
+
+
+#----------------------------------------------------------------------------------------#
+#                                      FUNCTIONS
+#----------------------------------------------------------------------------------------#
+banner () {
+  clear
+  echo "${NC}"  
+  echo " ###################################################################################################"
+  echo " #                                                                                                 #"
+  echo " #     ${GREEN}This is ${RED}$FCT_NAME : ${YEL}$VERSION FOR $OSTYPE ${NC}                                #"
+  echo " #     CopyL®®v 2019, Zucchelli Bryan                                                              #"
+  echo " #                                                                                                 #"
+  echo " #     Unless required by applicable law or agreed to in writing, software                         #"
+  echo " #     distributed under the License is distributed on an "AS IS" BASIS,                             #"
+  echo " #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.                    #"
+  echo " #     See the License for the specific language governing permissions and                         #"
+  echo " #     limitations under the License.                                                              #"
+  echo " #                                                                                                 #"
+  echo " ###################################################################################################"
+  echo ""
+}
+
+help(){
+  cat<<__EOF__
+  ${RED}
+    usage:  [  ]
+
+    Examples:
+                                                 # .
+
+  ${NC}
+__EOF__
+}
+
+#----------------------------------------------------------------------------------------#
+#                                       SCRIPT
+#----------------------------------------------------------------------------------------#
+banner
+
+def search_for_query(command)
+  query = ARGV.unshift(command).join(' ')
+  system "#{open_command} https://www.google.com/search?q=\"#{query}\""
+end
+
+def search_for_images
+  system "#{open_command} \"https://www.google.com/search?q=#{query}&tbm=isch\""
+end
+
+def search_youtube
+  system "#{open_command} https://www.youtube.com/results?search_query=\"#{query}\""
+end
+
+def search_ddg
+  system "#{open_command} https://duckduckgo.com/?q=\"#{query}\""
+end
+
+def search_stack
+  system "#{open_command} http://stackoverflow.com/search?q=#{query('+')}"
+end
+
+def search_wiki
+  system "#{open_command} http://www.wikipedia.org/w/index.php?search=\"#{query('+')}\""
+end
+
+def open_command
+  `uname -s`.strip == 'Darwin' ? 'open' : 'xdg-open'
+end
+
+def query(symbol = ' ')
+  ARGV.join(symbol)
+end
+
+def usage
+  puts <<-USAGE
+ ggl - Google right from your command line
+
+ Usage:
+
+   ggl [query]
+   ggl -i/--images [query]
+   ggl -y/--youtube [query]
+   ggl -s/--stack/--stackoverflow [query]
+   ggl -w/--wiki/--wikipedia [query]
+   ggl -d/--ddg/--duckduckgo [query]
+
+   ggl -h/--help
+
+   USAGE
+end
+
+command = ARGV.shift
+case command
+when '-i', '--images'
+  search_for_images
+when '-y', '--youtube'
+  search_youtube
+when '-s', '--stack', '--stackoverflow'
+  search_stack
+when '-w', '--wiki', '--wikipedia'
+  search_wiki
+when '-d', '--ddg', '--duckduckgo'
+  search_ddg
+when '-h', '--help', nil, '-'
+  usage
+else
+  search_for_query(command)
+end=end

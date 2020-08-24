@@ -1,0 +1,86 @@
+### git / zeesh! plugin
+
+fpath=( $plugin_dir/comp $fpath )
+autoload -U $plugin_dir/comp/*(:t)
+
+# Ensure vcs info uses git, not hub
+zstyle ':vcs_info:git:*:-all-' command `which git`
+
+export PATH=$PATH:$plugin_dir/commands
+
+if hash hub 2>/dev/null; then
+    alias git=hub
+fi
+
+function gca() {
+    # check for unmerged files
+    if [ ! -z "`git status -s | grep '^U'`" ]; then
+        git commit
+    else
+        noglob git-quick-commit -a $@
+    fi
+}
+
+function gcA() {
+    # check for unmerged files
+    if [ ! -z "`git status -s | grep '^U'`" ]; then
+        git commit
+    else
+        git add -A .
+        noglob git-quick-commit $@
+    fi
+}
+
+alias ga='git add'
+alias gau='git add --update'
+alias gb='git branch -v -v'
+alias gba='git branch -v -v -a'
+alias gbd='git branch -D'
+alias gbt=git-branch-by-time
+alias gc='noglob git-quick-commit'
+alias gcl='git clone'
+alias gco-ours="git ls-files --unmerged | cut -f2 | uniq | xargs git checkout --ours"
+alias gco-theirs="git ls-files --unmerged | cut -f2 | uniq | xargs git checkout --theirs"
+alias gco='git checkout'
+alias gd='git diff --color=never'
+alias gds='git diff --color=never --stat'
+alias gda='git diff HEAD --color=never'
+alias gdas='git diff HEAD --color=never --stat'
+alias gds='git diff --color=never --staged'
+alias gdss='git diff --color=never --staged --stat'
+alias gf='git fetch'
+alias gl="git log -n 500 --pretty=format':%C(yellow)%h%Cblue%d%Creset %s %C(white)%an, %ar%Creset'"
+alias glg="gl --graph"
+alias glp="git log -n 500 --patch"
+alias gls="gl --stat"
+alias gm='git merge --no-ff'
+alias gmf='git merge --ff-only'
+alias gmt='git mergetool -y'
+alias gpl='git pull'
+alias gprq='hub pull-request'
+alias gps='git push'
+alias gr='git reset'
+alias grb='git rebase'
+alias grbc='git rebase --continue'
+alias grh='git reset --hard'
+alias gs='git status -s'
+alias gum=git-unmerged
+alias gv='noglob git vim'
+
+# completion for custom commands
+zstyle ':completion:*:*:hub:*' user-commands \
+    pull-request:'open a pull request on GitHub' \
+    fork:'fork remote repository on GitHub and add as remote' \
+    create:'create this repository on GitHub and add GitHub as origin' \
+    browse:'open a GitHub page in the default browser' \
+    compare:'open a compare page on GitHub' \
+    branch-by-time:'list branches ordered by time' \
+    changes:'show file and line changes' \
+    churn:'show files with most commits' \
+    divergence:'show differences between incoming and outgoing branches' \
+    promote:'promotes a local topic branch to a remote tracking branch of the same name' \
+    quick-commit:'quickly commit' \
+    resolve:'resolve merge conflicts using a specific version of the conflicted files' \
+    unmerged:'list unmerged files'
+
+# vim: ft=zsh

@@ -1,0 +1,123 @@
+#autoload
+
+##########################################################################################
+#                                                                                        #
+#  ZaemonSH created by :                                                                 #
+#  Zucchelli Bryan && @N@TOME && Admiral Gr@ss H0pper on Oct 13, 2016.                   #
+#  Copyright (c) 2020. All rights reserved.                                              #
+#  Inspired by zsh-templates-osx created by :                                            #
+#  William Scott on May 11, 2007.                                                        #
+#  Copyright (c) 2007. All rights reserved.                                              #
+#                                                                                        #
+#  This program is free software; you can redistribute it and/or modify it under         #
+#  the terms of the GNU General Public License as published by the Free Software         #
+#  Foundation; either version 2 of the License, or (at your option) any later version.   #
+#                                                                                        #
+#  This program is distributed in the hope that it will be useful, but WITHOUT           #
+#  ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or                #
+#  FITNESS FOR A PARTICULAR PURPOSE.                                                     #
+#  See the GNU General Public License for more details.                                  #
+#                                                                                        #
+#  You should have received a copy of the GNU General Public License                     #
+#  along with this program ; if not, write to the Free Software Foundation,              #
+#  Inc., 51 Franklin Street, Fifth Floor, Boston,  MA 02110-1301 USA                     #
+#                                                                                        #
+#  cf. URL:   http://www.fsf.org/licensing/licenses/gpl.html                             #
+#                                                                                        #
+##########################################################################################
+
+#----------------------------------------------------------------------------------------#
+#                                     DESCRIPTION
+#----------------------------------------------------------------------------------------#
+# _mac_files_for_application :
+# Author: Motoi Washida
+# November 12 2004 CVS version
+
+#----------------------------------------------------------------------------------------#
+#                                        TODO
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CHANGES
+#----------------------------------------------------------------------------------------#
+
+#----------------------------------------------------------------------------------------#
+#                                       CONFIG
+#----------------------------------------------------------------------------------------#
+_retrieve_mac_apps
+_mac_rsrc_check() {
+  [[ ! -s "$REPLY/..namedfork/rsrc" ]] && return 1
+  if [[ -x /Developer/Tools/GetFileInfo ]]; then
+    local ftype="$(command /Developer/Tools/GetFileInfo -t $REPLY)"
+    ftype="${ftype//\"/}"
+    [[ -n "$types[(r)$ftype]" ]]
+  else
+      grep --quiet "\(${(j/\|/)types}\)" "$REPLY/..namedfork/rsrc"
+  fi
+}
+
+_mac_parse_info_plist() {
+  # For now, awk is used because builtin function "read" was too slow.
+  # '<' is used for the delimiter because some Info.plist files use CR as
+  # newline but read doesn't treat them as so
+  local s='
+    BEGIN { RS="<" }
+      /^key>/ { sub(/key>/, ""); reading_key=$0 }
+      /^string>/ {
+        sub(/string>/, "")
+        if (reading_key == "CFBundleTypeExtensions") exts=exts " \"" $0 "\""
+        if (reading_key == "CFBundleTypeOSTypes") types=types " \"" $0 "\""
+      }
+      END {
+        print "exts=(" exts ")\ntypes=(" types ")"
+      }
+    '
+    command awk $s "$app_path/Contents/Info.plist" | while read; do
+      eval "$REPLY"
+    done
+}
+
+# Try to complete files for the specified application.
+_mac_files_for_application() {
+  local -a opts
+  zparseopts -D -a opts q n 1 2 P: S: r: R: W: X+: M+: F: J+: V+:
+
+  local app_path
+  _retrieve_mac_apps
+  app_path="${_mac_apps[(r)*/$1(|.app)]:-$1}"
+
+  local -a glob_patterns
+  glob_patterns=()
+
+  # Try to get extentions from "Info.plist" XML file.
+  if [[ -f "$app_path/Contents/Info.plist" ]]; then
+    local -a exts types
+    _mac_parse_info_plist
+
+    if [[ -n "$exts[(r)\*]" ]]; then
+      glob_patterns=( "*" )
+    else
+      if (( #exts != 0 )); then
+        glob_patterns+=( "*.(${(j/|/)exts})(N)" )
+      fi
+
+      if (( #types != 0 )); then
+        glob_patterns+=( "^*.[[:alnum:]]##(.Ne:_mac_rsrc_check:)" )
+      fi
+    fi
+  else
+    glob_patterns=( "*" )
+  fi
+
+  case ${#glob_patterns} in
+    0) return 1 ;;
+    1) _files "$opts[@]" -g "$glob_patterns[1]" ;;
+    *) _files "$opts[@]" -g "{${(j/,/)glob_patterns}}" ;;
+  esac
+}
+#----------------------------------------------------------------------------------------#
+#                                      COMPLETION
+#----------------------------------------------------------------------------------------#
+
+
+_mac_files_for_application "$@"

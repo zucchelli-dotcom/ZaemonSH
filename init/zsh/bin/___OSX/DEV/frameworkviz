@@ -1,0 +1,106 @@
+#! /bin/zsh
+
+
+	USAGE="${RED}Usage${NC}: frameworkviz [frameworkname]"
+	
+	DESTFOLDER="$HOME/Pictures"
+
+	OUTPUTNAME="framvizRes_${1}"
+	
+	FRAMIZO="$ZDOT/bin/___OSX/DEV/Framviz"
+	
+	OUTPUT_FORMAT="png"
+	#OUTPUT_FORMAT="ps"
+	
+	#PSEDITOR="Preview"
+	#PSEDITOR="Adobe Acrobat Pro"
+
+	FRAMNAME="${1}"
+
+	FRAMLIST=$(find /System/Library/Frameworks -name \*.framework | sed 's/.*\///' | sed 's/\..*//' | grep $FRAMNAME 2>/dev/null)
+	#echo ${RED}
+	#FRAMNAME=${1:?"Error.Framework name without extensions is needed."}
+	#echo ${NC}
+	# TYPCONV=${2:?"Error"}
+	 if [[ $# == "0" ]]; then
+	 		#echo $zob
+	 		echo $USAGE
+	 		return 1
+	 fi
+	 if [[ $# != "1" ]]; then
+	 		#echo $zob
+	 		echo $USAGE
+	 		return 1
+	 fi
+
+     
+    # Ensure MacPorts in default/recommanded PATH
+	if [ -x /opt/local/bin/port ]; then
+		echo "$(tput bold)Aborting!$(tput reset) /opt/local/bin/port is in your path and executable."
+    # Ensure Homebrew in default/recommanded PATH
+	elif [ -x /usr/local/bin/brew ]; then
+		echo "$(tput bold)Aborting!$(tput reset) /usr/local/bin/brew is in your path not executable."
+    else
+        echo "You must install the Homebrew or MacPorts project in order to use \`$(basename $0)'"
+		return 1
+	fi
+
+    # Ensure Macport graphviz is available
+	if [ -x /opt/local/bin/dot ]; then
+		echo "$(tput bold)Warning!$(tput reset) /opt/local/bin/dot is in your path and executable."
+    # Ensure Homebrew graphviz is available
+	elif [ -x /usr/local/bin/dot ]; then
+		echo "$(tput bold)Warning!$(tput reset) /usr/local/bin/dot is in your path and executable"
+    else
+        echo "You should install \`graphviz' with Homebrew or macports for graphic output"
+		return 1
+	fi
+
+	
+    # Ensure Framviz.py is available
+	if [ ! -e ${FRAMIZO} ]; then
+		echo "$(tput bold)Aborting!$(tput reset) $FRAMIZO is not found."
+		return 1
+	fi
+	
+	# Ensure $DESTFOLDER is available
+	if [ ! -e ${DESTFOLDER} ]; then
+			echo "$(tput bold)Aborting!$(tput reset) $DESTFOLDER is not found."
+			return 1
+	else
+		cd $DESTFOLDER
+	fi		
+
+echo "---${FRAMNAME}"
+
+	# Ensure framework you choose is available.
+	if [[ $FRAMLIST == "" ]]; then
+		echo "$(tput bold)Aborting!$(tput reset) $FRAMLIST is not a valid framework name.."
+		return 1
+	fi	
+
+	if [ -e $OUTPUTNAME ]; then	
+		# Ensure $DESTFOLDER is available 
+	 	echo "${RED}${OUTPUTNAME} already exist.${NC}"
+	 	return 1
+	else
+		mkdir "$OUTPUTNAME"
+		cd "$OUTPUTNAME"
+		${FRAMIZO} /System/Library ${1} 2>/dev/null  1>${1}.dot 
+		echo "Now drawing graphs from $OUTPUTNAME.dot, please wait..."
+		dot -T${OUTPUT_FORMAT} -o ${1}.${OUTPUT_FORMAT}  "$1.dot"
+		echo "Generation of $OUTPUTNAME ${RED}complete${NC}."
+		killall Preview 2>/dev/null
+		# open -a "$1.png"
+		#open -a "${PSEDITOR}" "${1}.${OUTPUT_FORMAT}"
+		open  "${1}.${OUTPUT_FORMAT}"
+
+		return 0
+	fi	
+
+
+
+
+	 
+	
+
